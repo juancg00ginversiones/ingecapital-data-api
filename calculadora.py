@@ -1,26 +1,59 @@
 import pandas as pd
 import numpy as np
 import requests
-from datetime import date, datetime
+from datetime import date
 import math
 
 
 # ============================================================
-# SANITIZADOR PARA JSON (evita NaN, inf, None)
+# FUNCIONES DE SANITIZACIÓN PARA JSON
 # ============================================================
-def safe(x):
-    """Convierte NaN, inf, -inf en None para que JSON no falle."""
-    if x is None:
+def clean_value(v):
+    """
+    Convierte valores problemáticos (NaN, inf, tipos raros) en algo JSON-safe.
+    """
+    if v is None:
         return None
-    if isinstance(x, float) and (math.isnan(x) or math.isinf(x)):
+
+    # numpy types -> python
+    if isinstance(v, (np.floating, np.float64, np.float32)):
+        v = float(v)
+    if isinstance(v, (np.integer, np.int64, np.int32)):
+        v = int(v)
+
+    if isinstance(v, float):
+        if math.isnan(v) or math.isinf(v):
+            return None
+        return float(v)
+
+    if isinstance(v, (int, str, bool)):
+        return v
+
+    # cualquier otra cosa (por ej. NA de pandas) -> string
+    try:
+        return str(v)
+    except Exception:
         return None
-    return x
+
+
+def limpiar_resultados(lista_dicts):
+    """
+    Recorre toda la lista de resultados y limpia cada valor para que sea JSON válido.
+    """
+    salida = []
+    for item in lista_dicts:
+        nuevo = {}
+        for k, v in item.items():
+            nuevo[k] = clean_value(v)
+        salida.append(nuevo)
+    return salida
 
 
 # ============================================================
 # 1) CARGAR EXCEL Y ARMAR FLUJOS POR TICKER
 # ============================================================
 def cargar_excel():
+    # El Excel debe estar en el mismo directorio que calculadora.py
     RUTA_EXCEL = "BONOS Y ONS data.xlsx"
 
     df = pd.read_excel(RUTA_EXCEL)
@@ -68,7 +101,8 @@ def cargar_api():
                         "precio": float(price),
                         "pct_change": float(pct) if pct is not None else 0.0
                     }
-        except:
+        except Exception:
+            # Si falla la API, simplemente no carga nada de ese endpoint
             pass
 
     leer(URL_BONOS)
@@ -78,34 +112,39 @@ def cargar_api():
 
 
 # ============================================================
-# 3) XIRR / NPV / DURATION
+# 3) XNPV / XIRR / DURATION
 # ============================================================
 def xnpv(rate, cashflows, dates):
-    if rate <= -1:
+    if rate is None or rate <= -1:
         return np.nan
 
     t0 = dates[0]
-    total = 0
+    total = 0.0
 
     for cf, d in zip(cashflows, dates):
-        t = (d - t0).days / 365
-        total += cf / ((1 + rate) ** t)
+        t = (d - t0).days / 365.0
+        total += cf / ((1.0 + rate) ** t)
 
     return total
 
 
 def xirr(cfs, dates, lo=-0.99, hi=5.0, tol=1e-8):
-    def f(r): return xnpv(r, cfs, dates)
+    def f(r): 
+        return xnpv(r, cfs, dates)
 
     f_lo = f(lo)
     f_hi = f(hi)
 
-    if f_lo * f_hi > 0:
+    # Si no hay cambio de signo, devolvemos None
+    if math.isnan(f_lo) or math.isnan(f_hi) or f_lo * f_hi > 0:
         return None
 
     for _ in range(200):
-        mid = (lo + hi) / 2
+        mid = (lo + hi) / 2.0
         fm = f(mid)
+
+        if math.isnan(fm):
+            return None
 
         if abs(fm) < tol:
             return mid
@@ -124,12 +163,12 @@ def duration_macaulay(r, cf_fut, dates_fut, T0):
     if r is None:
         return None
 
-    pv_total = 0
-    acc = 0
+    pv_total = 0.0
+    acc = 0.0
 
     for cf, d in zip(cf_fut, dates_fut):
-        t = (d - T0).days / 365
-        pv = cf / ((1 + r)**t)
+        t = (d - T0).days / 365.0
+        pv = cf / ((1.0 + r) ** t)
         pv_total += pv
         acc += t * pv
 
@@ -142,7 +181,7 @@ def duration_macaulay(r, cf_fut, dates_fut, T0):
 def duration_modificada(d_mac, r):
     if d_mac is None or r is None:
         return None
-    return d_mac / (1 + r)
+    return d_mac / (1.0 + r)
 
 
 # ============================================================
@@ -156,7 +195,6 @@ def calcular_todo():
     RESULTADOS = []
 
     for ticker, lista in flujos.items():
-
         if ticker not in precios:
             continue
 
@@ -168,22 +206,29 @@ def calcular_todo():
         if not fut:
             continue
 
-        # Estructura XIRR
         cfs = [-precio] + [c["flujo"] for c in fut]
         dates = [T0] + [c["fecha"] for c in fut]
 
         # Cálculos
         tir = xirr(cfs, dates)
-        d_mac = duration_macaulay(tir, [c["flujo"] for c in fut],
-                                         [c["fecha"] for c in fut], T0)
+        d_mac = duration_macaulay(
+            tir,
+            [c["flujo"] for c in fut],
+            [c["fecha"] for c in fut],
+            T0
+        )
         d_mod = duration_modificada(d_mac, tir)
 
         valor_nominal = fut[-1]["flujo"] if fut else None
-        paridad = (precio / valor_nominal * 100) if valor_nominal else None
+        paridad = (precio / valor_nominal * 100.0) if valor_nominal else None
 
-        tipo = df[df["ticker"] == ticker]["type"].iloc[0]
+        # Tipo (categoría del Excel)
+        try:
+            tipo = df[df["ticker"] == ticker]["type"].iloc[0]
+        except Exception:
+            tipo = None
 
-        # Clasificación curva
+        # Clasificación de curva (AL / GD / otros)
         if ticker.startswith("AL"):
             curva = "AL"
         elif ticker.startswith("GD"):
@@ -192,17 +237,18 @@ def calcular_todo():
             curva = None
 
         RESULTADOS.append({
-            "ticker": safe(ticker),
-            "type": safe(tipo),
-            "curva": safe(curva),
-            "precio": safe(precio),
-            "pct_change": safe(pct),
-            "tir_pct": safe(tir * 100 if tir is not None else None),
-            "paridad": safe(paridad),
-            "duration_mod": safe(d_mod)
+            "ticker": ticker,
+            "type": tipo,
+            "curva": curva,
+            "precio": precio,
+            "pct_change": pct,
+            "tir_pct": (tir * 100.0) if tir is not None else None,
+            "paridad": paridad,
+            "duration_mod": d_mod,
         })
 
-    return RESULTADOS
+    # MUY IMPORTANTE: limpiar todos los valores para que JSON no tenga NaN
+    return limpiar_resultados(RESULTADOS)
 
 
 # ============================================================
@@ -210,9 +256,11 @@ def calcular_todo():
 # ============================================================
 def curva_AL():
     data = calcular_todo()
-    return [x for x in data if x["curva"] == "AL"]
+    al = [x for x in data if x.get("curva") == "AL"]
+    return al
 
 
 def curva_GD():
     data = calcular_todo()
-    return [x for x in data if x["curva"] == "GD"]
+    gd = [x for x in data if x.get("curva") == "GD"]
+    return gd
