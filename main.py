@@ -3,9 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 
-app = FastAPI(title="Curvas Opciones API")
+app = FastAPI()
 
-# Permitir acceso desde cualquier frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -14,35 +13,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
-def root():
-    return {"message": "API de Curvas de Opciones funcionando"}
+def home():
+    return {"status": "API funcionando"}
 
 @app.get("/tickers")
 def tickers():
-    """Lista oficial de tickers que acepta la API."""
     return {"tickers": LISTA_TICKERS}
 
 @app.get("/curvas/opciones")
 def curvas_opciones(ticker: str):
-    """
-    Endpoint principal.
-    Devuelve:
-      - forward curve
-      - expected move
-      - bandas
-      - análisis
-    """
+
     ticker = ticker.upper()
 
     if ticker not in LISTA_TICKERS:
-        raise HTTPException(status_code=400, detail="Ticker no permitido")
+        raise HTTPException(status_code=400, detail=f"Ticker no permitido: {ticker}")
 
+    # === DEBUG MODE: atrapamos errores paso a paso ===
     try:
-        data = analyze_ticker_for_api(ticker)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        result = analyze_ticker_for_api(ticker)
+        return result
 
-    return data
+    except Exception as e:
+        # Log detallado para ver en Render qué está pasando
+        return {
+            "error": "Exception inside analyze_ticker_for_api",
+            "message": str(e),
+            "type": type(e).__name__
+        }
 
