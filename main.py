@@ -1,4 +1,3 @@
-# trigger redeploy
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,7 +7,7 @@ from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 app = FastAPI()
 
 # ============================
-# HABILITAR CORS
+# CORS
 # ============================
 app.add_middleware(
     CORSMiddleware,
@@ -22,6 +21,10 @@ app.add_middleware(
 def home():
     return {"status": "API funcionando"}
 
+
+# ============================
+# BONOS (YA FUNCIONA)
+# ============================
 @app.get("/bonos")
 def bonos():
     return calcular_todo()
@@ -34,18 +37,20 @@ def curva_al():
 def curva_gd():
     return curva_GD()
 
-# =======================================
-# NUEVO: LISTA OFICIAL DE TICKERS (17)
-# =======================================
+
+# ============================
+# OPCIONES: LISTA DE TICKERS
+# ============================
 @app.get("/curvas/opciones/lista")
 def lista_opciones():
     return {"tickers": LISTA_TICKERS}
 
-# =======================================
-# NUEVO: ANALISIS DE OPCIONES POR TICKER
-# =======================================
+
+# ============================
+# OPCIONES: ANALISIS (DEBUG)
+# ============================
 @app.get("/curvas/opciones")
-def curvas_opciones(ticker: str = Query(..., description="Ticker entre los 17 activos permitidos")):
+def curvas_opciones(ticker: str = Query(...)):
     t = ticker.upper().strip()
 
     if t not in LISTA_TICKERS:
@@ -54,11 +59,6 @@ def curvas_opciones(ticker: str = Query(..., description="Ticker entre los 17 ac
             detail=f"Ticker '{t}' no permitido. Use uno de: {', '.join(LISTA_TICKERS)}"
         )
 
-    try:
-        result = analyze_ticker_for_api(t)
-        return result
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error interno en el análisis de opciones")
-
+    # Ahora analyze_ticker_for_api NUNCA levanta excepción
+    result = analyze_ticker_for_api(t)
+    return result
