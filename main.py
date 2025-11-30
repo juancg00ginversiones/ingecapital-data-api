@@ -1,15 +1,17 @@
-from fastapi import FastAPI, HTTPException, Query, Form
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
+
+# ====== ARCHIVOS ORIGINALES ======
 from calculadora import calcular_todo, curva_AL, curva_GD
 from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 
-# ============================================================
-# CONTENEDOR EN MEMORIA PARA CONTENIDO PRO
-# ============================================================
+# ====== CONTENIDO PRO (memoria) ======
 CONTENIDO_PRO = []
 
+
 # ============================================================
-# FASTAPI BASE
+# FASTAPI
 # ============================================================
 app = FastAPI()
 
@@ -21,14 +23,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ============================================================
-# ENDPOINTS ORIGINALES – FUNCIONAN PERFECTO
-# ============================================================
 
+# ============================================================
+# HOME
+# ============================================================
 @app.get("/")
 def home():
     return {"status": "API funcionando"}
 
+
+# ============================================================
+# RUTAS ORIGINALES (NO TOCAR)
+# ============================================================
 @app.get("/bonos")
 def bonos():
     return calcular_todo()
@@ -41,9 +47,14 @@ def curva_al():
 def curva_gd():
     return curva_GD()
 
+
+# ============================================================
+# OPCIONES
+# ============================================================
 @app.get("/curvas/opciones/lista")
 def lista_opciones():
     return {"tickers": LISTA_TICKERS}
+
 
 @app.get("/curvas/opciones")
 def curvas_opciones(ticker: str = Query(...)):
@@ -51,30 +62,40 @@ def curvas_opciones(ticker: str = Query(...)):
     if t not in LISTA_TICKERS:
         raise HTTPException(
             status_code=400,
-            detail=f"Ticker '{t}' no permitido. Use uno de: {', '.join(LISTA_TICKERS)}"
+            detail=f"Ticker {t} no permitido. Use uno de: {', '.join(LISTA_TICKERS)}"
         )
+
     try:
-        result = analyze_ticker_for_api(t)
-        return result
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        return analyze_ticker_for_api(t)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {e}")
 
+
 # ============================================================
-# CONTENIDO PRO – VERSIÓN SIMPLE (TEXTO + LINK)
+# PRO – CONTENIDO (VERSION JSON ESTABLE)
 # ============================================================
 
 @app.get("/pro/contenido")
 def leer_contenido():
     return CONTENIDO_PRO
 
+
 @app.post("/pro/contenido")
-def agregar_contenido(
-    texto: str = Form(...),
-    link: str = Form(None)
-):
+def agregar_contenido(data: dict):
+    """
+    Formato JSON esperado:
+    {
+        "texto": "...",
+        "link": "https://x.com/...."
+    }
+    """
     from datetime import date
+
+    texto = data.get("texto")
+    link = data.get("link")
+
+    if not texto:
+        raise HTTPException(status_code=400, detail="El campo 'texto' es obligatorio")
 
     nuevo = {
         "texto": texto,
