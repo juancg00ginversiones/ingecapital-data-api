@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 # Tus módulos internos
 from calculadora import calcular_todo, curva_AL, curva_GD
@@ -7,23 +8,29 @@ from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 from contenido_pro import agregar_contenido_pro, obtener_contenido_pro
 
 # ============================================
+# MODELO PARA CONTENIDO PRO
+# ============================================
+class ContenidoPRO(BaseModel):
+    titulo: str
+    texto: str
+    imagen_url: str | None = None
+    fecha: str | None = None
+
+
+# ============================================
 # INICIAR APP
 # ============================================
 app = FastAPI()
 
 # ============================================
-# CONFIGURACIÓN CORS (versión estable)
-# Permite:
-#   - llamadas desde frontend
-#   - archivos locales "file://"
-#   - origen "null" (HTML local)
+# CORS ESTABLE PARA HTML LOCAL
 # ============================================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "*",        # cualquier origen
-        "file://",  # archivos locales
-        "null"      # HTML local
+        "*",
+        "null",
+        "file://"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -53,17 +60,14 @@ def curva_gd():
     return curva_GD()
 
 # ============================================
-# CURVAS DE OPCIONES: lista de tickers
+# CURVAS DE OPCIONES
 # ============================================
 @app.get("/tickers")
 def tickers():
     return {"tickers": LISTA_TICKERS}
 
-# ============================================
-# CURVAS DE OPCIONES: análisis por ticker
-# ============================================
 @app.get("/curvas/opciones")
-def curvas_opciones(ticker: str = Query(..., description="Ticker entre los activos permitidos")):
+def curvas_opciones(ticker: str):
     t = ticker.upper().strip()
 
     if t not in LISTA_TICKERS:
@@ -73,35 +77,32 @@ def curvas_opciones(ticker: str = Query(..., description="Ticker entre los activ
         )
 
     try:
-        result = analyze_ticker_for_api(t)
-        return result
+        return analyze_ticker_for_api(t)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 # ============================================
-# CONTENIDO PRO: OBTENER PUBLICACIONES
+# CONTENIDO PRO (GET)
 # ============================================
 @app.get("/pro/contenido")
 def contenido_pro_listado():
-    try:
-        return obtener_contenido_pro()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al leer contenido PRO: {str(e)}")
+    return obtener_contenido_pro()
 
 # ============================================
-# CONTENIDO PRO: AGREGAR PUBLICACIÓN
+# CONTENIDO PRO (POST JSON)
 # ============================================
 @app.post("/pro/contenido")
-def contenido_pro_agregar(
-    titulo: str,
-    texto: str,
-    imagen_url: str = None,
-    fecha: str = None
-):
+def contenido_pro_agregar_endpoint(payload: ContenidoPRO):
     try:
-        agregar_contenido_pro(titulo, texto, imagen_url, fecha)
+        agregar_contenido_pro(
+            payload.titulo,
+            payload.texto,
+            payload.imagen_url,
+            payload.fecha
+        )
         return {"status": "ok", "mensaje": "Contenido agregado correctamente"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al agregar contenido PRO: {str(e)}")
+
