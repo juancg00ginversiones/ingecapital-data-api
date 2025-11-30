@@ -3,34 +3,31 @@ warnings.filterwarnings("ignore")
 
 import math
 import datetime as dt
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Dict, Any, Tuple, Optional
 
 import requests
 import pandas as pd
 import yfinance as yf
 
+
 # ============================================================
 # CONFIG
 # ============================================================
-
-DERIBIT_BASE = "https://www.deribit.com/api/v2"
 MESES_HORIZONTE = 6
+DERIBIT_BASE = "https://www.deribit.com/api/v2"
 
 LISTA_TICKERS = [
-    "SPY","QQQ","IWM","DIA",
-    "VIX","VXN",
-    "AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA",
-    "BTC","ETH",
-    "TLT","IEF"
+    "SPY", "QQQ", "IWM", "DIA",
+    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+    "TLT", "IEF",
+    "BTC", "ETH"
 ]
 
 
 # ============================================================
 # HELPERS
 # ============================================================
-
-def clean_iv(iv: Any) -> Optional[float]:
-    """Limpia IV por seguridad."""
+def clean_iv(iv):
     if iv is None:
         return None
     try:
@@ -39,25 +36,23 @@ def clean_iv(iv: Any) -> Optional[float]:
         return None
 
     if v > 3:
-        v = v / 100.0
-    if v < 0.01 or v > 3.0:
+        v /= 100.0
+    if v < 0.01 or v > 3:
         return None
-
     return v
 
 
 def pick_monthly_expiries(expiries, n=MESES_HORIZONTE):
-    """Toma 1 expiración por mes."""
-    expiries = sorted(expiries)
+    expiries = sorted(set(expiries))
     today = dt.date.today()
     monthly = {}
 
-    for exp in expiries:
-        if exp <= today:
+    for e in expiries:
+        if e <= today:
             continue
-        key = exp.strftime("%Y-%m")
+        key = e.strftime("%Y-%m")
         if key not in monthly:
-            monthly[key] = exp
+            monthly[key] = e
         if len(monthly) >= n:
             break
 
@@ -65,10 +60,9 @@ def pick_monthly_expiries(expiries, n=MESES_HORIZONTE):
 
 
 # ============================================================
-# BTC – DERIBIT
+# DERIBIT (BTC)
 # ============================================================
-
-def fetch_deribit_btc() -> pd.DataFrame:
+def fetch_deribit_btc():
     url = f"{DERIBIT_BASE}/public/get_book_summary_by_currency"
     r = requests.get(url, params={"currency": "BTC", "kind": "option"})
     r.raise_for_status()
@@ -93,65 +87,64 @@ def fetch_deribit_btc() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def summarize_deribit(df: pd.DataFrame):
+def summarize_deribit(df):
     expiries = pick_monthly_expiries(df["expiry"].unique())
-    df2 = df[df["expiry"].isin(expiries)].copy()
+    df2 = df[df["expiry"].isin(expiries)]
+
     spot = df2["spot"].dropna().mean()
 
     rows = []
-    for exp in expiries:
-        sub = df2[df2["expiry"] == exp].dropna(subset=["iv"])
-        if sub.empty:
+    for e in expiries:
+        subset = df2[df2["expiry"] == e].dropna(subset=["iv"])
+        if subset.empty:
             continue
-
-        central_row = sub.loc[sub["iv"].idxmin()]
+        cs = subset.loc[subset["iv"].idxmin()]["strike"]
         rows.append({
-            "expiry": exp,
+            "expiry": e,
             "spot": spot,
-            "central_strike": central_row["strike"]
+            "central_strike": cs
         })
 
     return df2, pd.DataFrame(rows)
 
 
 # ============================================================
-# YFINANCE
+# YFINANCE OPTIONS
 # ============================================================
-
-def yfin_get_raw_chains(ticker: str):
-    yf_ticker = yf.Ticker(ticker)
+def yfin_get_raw_chains(ticker):
+    tk = yf.Ticker(ticker)
 
     try:
-        expiries_raw = yf_ticker.options
+        y_expiries = tk.options
     except:
         return None, None, [], None
 
-    hist = yf_ticker.history(period="1d")
+    hist = tk.history(period="1d")
     if hist.empty:
         return None, None, [], None
 
     spot = float(hist["Close"].iloc[0])
 
     expiries = []
-    for e in expiries_raw:
+    for e in y_expiries:
         try:
             expiries.append(dt.datetime.strptime(e, "%Y-%m-%d").date())
         except:
-            continue
+            pass
 
     expiries = pick_monthly_expiries(expiries)
 
-    calls = []
-    puts = []
+    call_rows = []
+    put_rows = []
 
     for exp in expiries:
         try:
-            chain = yf_ticker.option_chain(exp.strftime("%Y-%m-%d"))
+            chain = tk.option_chain(exp.strftime("%Y-%m-%d"))
         except:
             continue
 
         for _, row in chain.calls.iterrows():
-            calls.append({
+            call_rows.append({
                 "expiry": exp,
                 "strike": row["strike"],
                 "iv_call": clean_iv(row["impliedVolatility"]),
@@ -160,7 +153,7 @@ def yfin_get_raw_chains(ticker: str):
             })
 
         for _, row in chain.puts.iterrows():
-            puts.append({
+            put_rows.append({
                 "expiry": exp,
                 "strike": row["strike"],
                 "iv_put": clean_iv(row["impliedVolatility"]),
@@ -168,44 +161,43 @@ def yfin_get_raw_chains(ticker: str):
                 "ask_put": row["ask"]
             })
 
-    return pd.DataFrame(calls), pd.DataFrame(puts), expiries, spot
+    return pd.DataFrame(call_rows), pd.DataFrame(put_rows), expiries, spot
 
 
 # ============================================================
-# MERGE CALL + PUT
+# FUSIÓN CALL + PUT
 # ============================================================
+def fuse_calls_puts(calls, puts, spot, expiries):
+    merged = pd.merge(calls, puts, on=["expiry", "strike"], how="outer")
 
-def fuse_calls_puts(calls_df, puts_df, spot, expiries):
-    merged = pd.merge(calls_df, puts_df, on=["expiry", "strike"], how="outer")
     rows = []
-
     for _, row in merged.iterrows():
         iv_c = clean_iv(row.get("iv_call"))
         iv_p = clean_iv(row.get("iv_put"))
 
         if iv_c is None and iv_p is None:
-            iv_f = None
+            iv = None
         elif iv_c is None:
-            iv_f = iv_p
+            iv = iv_p
         elif iv_p is None:
-            iv_f = iv_c
+            iv = iv_c
         else:
-            # Ponderación por spread
-            bid_c, ask_c = row.get("bid_call"), row.get("ask_call")
-            bid_p, ask_p = row.get("bid_put"), row.get("ask_put")
+            # ponderación por spread
+            bc, ac = row.get("bid_call"), row.get("ask_call")
+            bp, ap = row.get("bid_put"), row.get("ask_put")
 
-            spread_c = (ask_c - bid_c) if (ask_c and bid_c and ask_c > bid_c) else 1
-            spread_p = (ask_p - bid_p) if (ask_p and bid_p and ask_p > bid_p) else 1
+            spread_c = ac - bc if ac and bc and ac > bc else 1
+            spread_p = ap - bp if ap and bp and ap > bp else 1
 
             w_c = 1 / spread_c
             w_p = 1 / spread_p
 
-            iv_f = (iv_c * w_c + iv_p * w_p) / (w_c + w_p)
+            iv = (iv_c * w_c + iv_p * w_p) / (w_c + w_p)
 
         rows.append({
             "expiry": row["expiry"],
             "strike": row["strike"],
-            "iv": iv_f,
+            "iv": iv,
             "spot": spot
         })
 
@@ -213,33 +205,36 @@ def fuse_calls_puts(calls_df, puts_df, spot, expiries):
     return df[df["expiry"].isin(expiries)]
 
 
-def summarize_fused(df, expiries, spot):
+# ============================================================
+# SUMMARY YFINANCE
+# ============================================================
+def summarize_yfin(df, expiries, spot):
     rows = []
-    for exp in expiries:
-        sub = df[df["expiry"] == exp].dropna(subset=["iv"])
+    for e in expiries:
+        sub = df[df["expiry"] == e].dropna(subset=["iv"])
         if sub.empty:
             continue
-        central_row = sub.loc[sub["iv"].idxmin()]
+        cs = sub.loc[sub["iv"].idxmin()]["strike"]
         rows.append({
-            "expiry": exp,
+            "expiry": e,
             "spot": spot,
-            "central_strike": central_row["strike"]
+            "central_strike": cs
         })
+
     return pd.DataFrame(rows)
 
 
 # ============================================================
 # FORWARD CURVE
 # ============================================================
-
-def build_forward_table(df, summary_df):
+def build_forward_table(df, summary):
     rows = []
     today = dt.date.today()
 
-    for _, row in summary_df.iterrows():
-        exp = row["expiry"]
-        spot = float(row["spot"])
-        central = float(row["central_strike"])
+    for _, r in summary.iterrows():
+        exp = r["expiry"]
+        central = float(r["central_strike"])
+        spot = float(r["spot"])
 
         sub = df[df["expiry"] == exp].dropna(subset=["iv"])
         if sub.empty:
@@ -249,10 +244,9 @@ def build_forward_table(df, summary_df):
         if dte <= 0:
             continue
 
-        # atm iv
-        sub = sub.copy()
-        sub["dist"] = (sub["strike"] - central).abs()
-        atm_iv = sub.sort_values("dist").head(10)["iv"].median()
+        sub2 = sub.copy()
+        sub2["dist"] = (sub2["strike"] - central).abs()
+        atm_iv = sub2.sort_values("dist").head(10)["iv"].median()
 
         if pd.isna(atm_iv):
             em = None
@@ -262,25 +256,24 @@ def build_forward_table(df, summary_df):
         rows.append({
             "expiry": exp.strftime("%Y-%m-%d"),
             "central": central,
-            "em_up": (central + em) if em else central,
-            "em_down": (central - em) if em else central,
-            "expected_move": em if em else 0.0
+            "em_up": None if em is None else central + em,
+            "em_down": None if em is None else central - em,
+            "expected_move": em,
+            "pct_vs_spot": (central / spot - 1) * 100
         })
 
-    df_fwd = pd.DataFrame(rows)
-    return df_fwd.sort_values("expiry")
+    return pd.DataFrame(rows)
 
 
 # ============================================================
 # ANALYSIS
 # ============================================================
-
-def analyze_forward(forward_df):
-    if forward_df.empty or len(forward_df) < 2:
+def analyze_forward(df):
+    if df.empty or len(df) < 2:
         return "NEUTRAL", 0.0, "DESCONOCIDA"
 
-    first = forward_df.iloc[0]
-    last = forward_df.iloc[-1]
+    first = df.iloc[0]
+    last = df.iloc[-1]
 
     total_change = (last["central"] / first["central"] - 1) * 100
 
@@ -291,58 +284,45 @@ def analyze_forward(forward_df):
     else:
         trend = "NEUTRAL"
 
-    em_rel = (
-        forward_df["expected_move"] / forward_df["central"]
-    ).replace([None, float("nan")], 0)
+    try:
+        em_rel = (df["expected_move"] / df["central"]).fillna(0)
+        avg = em_rel.mean() * 100
 
-    avg_em = em_rel.mean() * 100
-
-    if avg_em < 1:
-        vol = "BAJA"
-    elif avg_em < 5:
-        vol = "MEDIA"
-    else:
-        vol = "ALTA"
+        if avg < 1:
+            vol = "BAJA"
+        elif avg < 5:
+            vol = "MEDIA"
+        else:
+            vol = "ALTA"
+    except:
+        vol = "DESCONOCIDA"
 
     return trend, total_change, vol
 
 
 # ============================================================
-# MAIN API FUNCTION
+# API MAIN
 # ============================================================
-
 def analyze_ticker_for_api(ticker: str):
     ticker = ticker.upper()
 
-    if ticker not in LISTA_TICKERS:
-        raise ValueError("Ticker no permitido.")
-
     if ticker == "BTC":
-        df = fetch_deribit_btc()
-        df_chain, summary = summarize_deribit(df)
+        raw = fetch_deribit_btc()
+        chain, summary = summarize_deribit(raw)
     else:
         calls, puts, expiries, spot = yfin_get_raw_chains(ticker)
         if calls is None:
-            raise ValueError("No hay datos de opciones disponibles.")
-        df_chain = fuse_calls_puts(calls, puts, spot, expiries)
-        summary = summarize_fused(df_chain, expiries, spot)
+            raise ValueError("Ticker sin datos")
+        chain = fuse_calls_puts(calls, puts, spot, expiries)
+        summary = summarize_yfin(chain, expiries, spot)
 
-    # Construir tabla forward
-    forward_df = build_forward_table(df_chain, summary)
-
-    # Spot consistente
-    try:
-        spot_out = float(df_chain["spot"].iloc[0])
-    except:
-        spot_out = float(summary["spot"].iloc[0])
-
-    # Analizar tendencia / volatilidad
-    trend, total_change, vol = analyze_forward(forward_df)
+    forward = build_forward_table(chain, summary)
+    trend, total_change, vol = analyze_forward(forward)
 
     return {
         "ticker": ticker,
-        "spot": spot_out,
-        "forward_curve": forward_df.to_dict(orient="records"),
+        "spot": float(chain["spot"].dropna().iloc[0]),
+        "forward_curve": forward.to_dict(orient="records"),
         "analysis": {
             "trend": trend,
             "total_change_pct": total_change,
