@@ -1,84 +1,71 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
-from calculadora import calcular_todo, curva_AL, curva_GD
+from market912 import fetch_market912
+from docta_services import (
+    get_cashflow,
+    get_yields_intraday,
+    get_yields_historical,
+    run_pricer
+)
+
 from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 
-app = FastAPI()
+app = FastAPI(title="Ingecapital Data API")
 
-# ============================
-# HABILITAR CORS
-# ============================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 @app.get("/")
 def home():
-    return {"status": "API funcionando"}
+    return {"status": "API funcionando OK"}
 
-@app.get("/bonos")
-def bonos():
-    return calcular_todo()
+# =====================
+# MARKET DATA
+# =====================
 
-@app.get("/curva/al")
-def curva_al():
-    return curva_AL()
+@app.get("/market/912")
+def market_data():
+    return fetch_market912()
 
-@app.get("/curva/gd")
-def curva_gd():
-    return curva_GD()
+# =====================
+# DOCTA – BONOS
+# =====================
 
-# =======================================
-# LISTA OFICIAL DE TICKERS (17)
-# =======================================
+@app.get("/bonds/{ticker}/cashflow")
+def cashflow(ticker: str):
+    return get_cashflow(ticker.upper())
+
+@app.get("/bonds/{ticker}/yields/intraday")
+def yields_intraday(ticker: str):
+    return get_yields_intraday(ticker.upper())
+
+@app.get("/bonds/{ticker}/yields/historical")
+def yields_historical(ticker: str):
+    return get_yields_historical(ticker.upper())
+
+@app.get("/bonds/{ticker}/pricer")
+def pricer(
+    ticker: str,
+    target: str = Query("price"),
+    value: float = Query(65)
+):
+    return run_pricer(ticker.upper(), target, value)
+
+# =====================
+# OPCIONES (SE MANTIENE)
+# =====================
+
 @app.get("/curvas/opciones/lista")
 def lista_opciones():
     return {"tickers": LISTA_TICKERS}
 
-# =======================================
-# ANALISIS DE OPCIONES POR TICKER
-# =======================================
 @app.get("/curvas/opciones")
-def curvas_opciones(ticker: str = Query(...)):
-    t = ticker.upper().strip()
+def opciones(ticker: str):
+    return analyze_ticker_for_api(ticker.upper())
 
-    if t not in LISTA_TICKERS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Ticker '{t}' no permitido. Use uno de: {', '.join(LISTA_TICKERS)}"
-        )
-
-    try:
-        result = analyze_ticker_for_api(t)
-        return result
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=500, detail="Error interno en el análisis de opciones")
-
-
-# ===================================================
-# NUEVO: API PARA PUBLICAR CONTENIDO (texto + link)
-# ===================================================
-
-contenidos = []  # almacenamiento simple en memoria
-
-class Contenido(BaseModel):
-    texto: str
-    link: str
-
-@app.post("/pro/contenido")
-def crear_contenido(item: Contenido):
-    contenidos.append(item)
-    return {"status": "ok", "mensaje": "Contenido guardado", "data": item}
-
-@app.get("/pro/contenido")
-def leer_contenidos():
-    return {"contenidos": contenidos}
 
