@@ -1,71 +1,104 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from market912 import fetch_market912
-from docta_services import (
-    get_cashflow,
-    get_yields_intraday,
-    get_yields_historical,
-    run_pricer
-)
+from jobs.scheduler import start_scheduler, stop_scheduler
+from services.cache import cache_get, cache_set, CACHE_KEYS
 
-from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
+app = FastAPI(title="INGECAPITAL Data API", version="1.0.0")
 
-app = FastAPI(title="Ingecapital Data API")
-
+# ============================
+# CORS (permitimos todo)
+# ============================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ============================
+# CONFIG DOCTA (PEGAR ACA)
+# ============================
+# ⚠️ Reemplazá por tus credenciales reales
+DOCTA_CLIENT_ID = "docta-api-5431ff99-juancg00ginversiones"
+DOCTA_CLIENT_SECRET = "e1ggoBcbMkl1_j698Yuiu2LIx45uH8dPbaK_R5C-Ju0"
+DOCTA_SCOPE = "bonds:read cedears:read stocks:read"
+
+# Le pasamos config al scheduler a través del cache (simple y directo)
+cache_set(CACHE_KEYS.DOCTA_CONFIG, {
+    "client_id": DOCTA_CLIENT_ID,
+    "client_secret": DOCTA_CLIENT_SECRET,
+    "scope": DOCTA_SCOPE
+}, ttl_seconds=365 * 24 * 3600)
+
+@app.on_event("startup")
+async def _startup():
+    await start_scheduler()
+
+@app.on_event("shutdown")
+async def _shutdown():
+    await stop_scheduler()
+
 @app.get("/")
 def home():
-    return {"status": "API funcionando OK"}
+    return {"status": "ok", "service": "ingecapital-data-api"}
 
-# =====================
-# MARKET DATA
-# =====================
+# ============================
+# ENDPOINTS PARA HORIZONS
+# ============================
 
-@app.get("/market/912")
-def market_data():
-    return fetch_market912()
+@app.get("/v1/market/summary")
+def market_summary():
+    """
+    Devuelve instrumentos de Data912 (notes/corp/bonds) + clasificación.
+    Cache: 2 min
+    """
+    return cache_get(CACHE_KEYS.MARKET_SUMMARY) or {"status": "warming_up"}
 
-# =====================
-# DOCTA – BONOS
-# =====================
+@app.get("/v1/bonds/yields")
+def bonds_yields():
+    """
+    Devuelve yields intraday (último dato) por ticker, para TODOS los tickers que detectamos.
+    Cache: 10 min
+    """
+    return cache_get(CACHE_KEYS.DOCTA_YIELDS) or {"status": "warming_up"}
 
-@app.get("/bonds/{ticker}/cashflow")
-def cashflow(ticker: str):
-    return get_cashflow(ticker.upper())
+@app.get("/v1/bonds/cashflows")
+def bonds_cashflows():
+    """
+    Devuelve cashflows por ticker (para calendario de pagos).
+    Cache: 24 hs
+    """
+    return cache_get(CACHE_KEYS.DOCTA_CASHFLOWS) or {"status": "warming_up"}
 
-@app.get("/bonds/{ticker}/yields/intraday")
-def yields_intraday(ticker: str):
-    return get_yields_intraday(ticker.upper())
+@app.get("/v1/bonds/historical")
+def bonds_historical():
+    """
+    Devuelve histórico (rango fijo) por ticker.
+    Cache: 24 hs
+    """
+    return cache_get(CACHE_KEYS.DOCTA_HISTORICAL) or {"status": "warming_up"}
 
-@app.get("/bonds/{ticker}/yields/historical")
-def yields_historical(ticker: str):
-    return get_yields_historical(ticker.upper())
+@app.get("/v1/bonds/pricer_scenarios")
+def bonds_pricer_scenarios():
+    """
+    Devuelve escenarios prefijados (variaciones de precio) por ticker.
+    Cache: 24 hs
+    """
+    return cache_get(CACHE_KEYS.DOCTA_PRICER) or {"status": "warming_up"}
 
-@app.get("/bonds/{ticker}/pricer")
-def pricer(
-    ticker: str,
-    target: str = Query("price"),
-    value: float = Query(65)
-):
-    return run_pricer(ticker.upper(), target, value)
-
-# =====================
-# OPCIONES (SE MANTIENE)
-# =====================
-
-@app.get("/curvas/opciones/lista")
-def lista_opciones():
-    return {"tickers": LISTA_TICKERS}
-
-@app.get("/curvas/opciones")
-def opciones(ticker: str):
-    return analyze_ticker_for_api(ticker.upper())
+@app.get("/v1/all")
+def all_in_one():
+    """
+    “Todo en uno” por si Horizons prefiere 1 sola llamada.
+    """
+    return {
+        "market": cache_get(CACHE_KEYS.MARKET_SUMMARY) or {"status": "warming_up"},
+        "yields": cache_get(CACHE_KEYS.DOCTA_YIELDS) or {"status": "warming_up"},
+        "cashflows": cache_get(CACHE_KEYS.DOCTA_CASHFLOWS) or {"status": "warming_up"},
+        "historical": cache_get(CACHE_KEYS.DOCTA_HISTORICAL) or {"status": "warming_up"},
+        "pricer_scenarios": cache_get(CACHE_KEYS.DOCTA_PRICER) or {"status": "warming_up"},
+    }
 
 
