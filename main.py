@@ -1,18 +1,19 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
-# ============================
-# IMPORTS EXISTENTES (NO TOCAR)
-# ============================
-from calculadora import calcular_todo, curva_AL, curva_GD
+# ============================================================
+# IMPORT CURVAS OPCIONES (CLAVE)
+# ============================================================
 from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 
-app = FastAPI(title="INGECAPITAL DATA API")
+app = FastAPI(
+    title="INGECAPITAL DATA API",
+    version="1.0"
+)
 
-# ============================
-# CORS (igual que antes)
-# ============================
+# ============================================================
+# CORS
+# ============================================================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,19 +22,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ============================
-# ENDPOINT BASE
-# ============================
+# ============================================================
+# HEALTH CHECK
+# ============================================================
 @app.get("/")
-def home():
+def root():
     return {
         "ok": True,
         "service": "ingecapital-data-api"
     }
 
-# ============================
-# TEST (NUEVO – NO ROMPE NADA)
-# ============================
 @app.get("/test")
 def test():
     return {
@@ -42,38 +40,20 @@ def test():
         "service": "ingecapital-data-api"
     }
 
-# ============================
-# BONOS (IGUAL QUE ANTES)
-# ============================
-@app.get("/bonos")
-def bonos():
-    return calcular_todo()
-
-# ============================
-# CURVAS (IGUAL QUE ANTES)
-# ============================
-@app.get("/curva/al")
-def curva_al():
-    return curva_AL()
-
-@app.get("/curva/gd")
-def curva_gd():
-    return curva_GD()
-
-# =======================================
-# LISTA OFICIAL DE TICKERS (OPCIONES)
-# =======================================
+# ============================================================
+# CURVAS DE OPCIONES
+# ============================================================
 @app.get("/curvas/opciones/lista")
 def lista_opciones():
     return {
-        "tickers": LISTA_TICKERS
+        "tickers": LISTA_TICKERS,
+        "total": len(LISTA_TICKERS)
     }
 
-# =======================================
-# ANALISIS DE OPCIONES POR TICKER
-# =======================================
 @app.get("/curvas/opciones")
-def curvas_opciones(ticker: str = Query(..., description="Ticker permitido")):
+def curvas_opciones(
+    ticker: str = Query(..., description="Ticker permitido")
+):
     t = ticker.upper().strip()
 
     if t not in LISTA_TICKERS:
@@ -83,38 +63,13 @@ def curvas_opciones(ticker: str = Query(..., description="Ticker permitido")):
         )
 
     try:
-        result = analyze_ticker_for_api(t)
-        return result
+        return analyze_ticker_for_api(t)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail="Error interno en el análisis de opciones"
+            detail=f"Error interno en curvas_opciones: {str(e)}"
         )
-
-# ===================================================
-# CONTENIDO PRO (IGUAL QUE TENÍAS)
-# ===================================================
-contenidos = []
-
-class Contenido(BaseModel):
-    texto: str
-    link: str
-
-@app.post("/pro/contenido")
-def crear_contenido(item: Contenido):
-    contenidos.append(item)
-    return {
-        "status": "ok",
-        "mensaje": "Contenido guardado",
-        "data": item
-    }
-
-@app.get("/pro/contenido")
-def leer_contenidos():
-    return {
-        "contenidos": contenidos
-    }
 
 
