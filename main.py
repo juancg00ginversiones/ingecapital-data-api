@@ -2,9 +2,15 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 # ============================================================
-# IMPORT CURVAS OPCIONES (CLAVE)
+# IMPORT CURVAS OPCIONES (EXISTENTE – NO SE TOCA)
 # ============================================================
 from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
+
+# ============================================================
+# IMPORT BONOS (NUEVO)
+# ============================================================
+from bonos import get_all_bonds_for_api
+
 
 app = FastAPI(
     title="INGECAPITAL DATA API",
@@ -41,7 +47,7 @@ def test():
     }
 
 # ============================================================
-# CURVAS DE OPCIONES
+# CURVAS DE OPCIONES (EXISTENTE – NO SE TOCA)
 # ============================================================
 @app.get("/curvas/opciones/lista")
 def lista_opciones():
@@ -72,4 +78,25 @@ def curvas_opciones(
             detail=f"Error interno en curvas_opciones: {str(e)}"
         )
 
-
+# ============================================================
+# BONOS SOBERANOS (NUEVO – HORIZONS)
+# ============================================================
+@app.get("/bonos")
+def bonos():
+    """
+    Devuelve TODOS los bonos soberanos con:
+    - precio actual
+    - TIR (YTM)
+    - duration
+    - paridad
+    - flujo de fondos
+    - sensibilidad
+    - TIR histórica
+    """
+    try:
+        return get_all_bonds_for_api()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno en bonos: {str(e)}"
+        )
