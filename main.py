@@ -10,7 +10,11 @@ from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 # IMPORT BONOS (NUEVO)
 # ============================================================
 from bonos import get_all_bonds_for_api
+# ============================================================
+# IMPORT DOLARES
+# ============================================================
 
+from dolares import get_dolares_for_api
 
 app = FastAPI(
     title="INGECAPITAL DATA API",
@@ -100,3 +104,10 @@ def bonos():
             status_code=500,
             detail=f"Error interno en bonos: {str(e)}"
         )
+
+@app.get("/dolares")
+def dolares():
+    try:
+        return get_dolares_for_api(history_days=365)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno en dolares: {str(e)}")
