@@ -19,6 +19,11 @@ from dolares import get_dolares_for_api
 # ============================================================
 from noticias import get_financial_news_for_api
 # ============================================================
+# IMPORT NIVELES DE OPCIONES
+# ============================================================
+from opciones_estructura import get_options_structure_for_api
+# ============================================================
+
 app = FastAPI(
     title="INGECAPITAL DATA API",
     version="1.0"
@@ -122,5 +127,19 @@ def noticias():
         raise HTTPException(
             status_code=500,
             detail=f"Error interno en noticias: {str(e)}"
+        )
+
+@app.get("/opciones/estructura")
+def opciones_estructura():
+    """
+    Devuelve estructura de mercado de opciones para un universo curado:
+    SPY, QQQ, Dow, Magníficas, Oro, Plata y BTC (proxy IBIT)
+    """
+    try:
+        return get_options_structure_for_api()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno en opciones_estructura: {str(e)}"
         )
 
