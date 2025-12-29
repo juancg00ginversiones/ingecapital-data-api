@@ -1,23 +1,18 @@
 # ============================================================
-# FORECAST CUANTITATIVO – INGECAPITAL PRO
+# FORECAST TRADING CUANTITATIVO – INGECAPITAL PRO (FINAL)
 # ============================================================
 
 import time
-import math
 import datetime as dt
-import numpy as np
-import yfinance as yf
 
 # ============================================================
 # CONFIG
 # ============================================================
 
 CACHE_TTL = 60 * 30  # 30 minutos
-
-N_SIM = 2000
+N_SIM = 1500
 TRADING_DAYS = 252
 
-# Universo fijo
 UNIVERSE = {
     "indices": ["SPY", "QQQ"],
     "magnificas": ["AAPL", "MSFT", "NVDA", "AMZN", "META"],
@@ -30,31 +25,67 @@ _CACHE = {
 }
 
 # ============================================================
-# UTILIDADES
+# LAZY IMPORTS (CLAVE PARA RENDER)
 # ============================================================
 
-def download_prices(ticker, years=3):
-    end = dt.date.today()
-    start = end - dt.timedelta(days=365 * years)
-    data = yf.download(ticker, start=start, end=end, progress=False)
-    if data.empty:
-        raise ValueError("No hay datos")
-    return data["Adj Close"]
+def _imports():
+    import math
+    import numpy as np
+    import yfinance as yf
+    return math, np, yf
 
-def log_returns(series):
+# ============================================================
+# DATA
+# ============================================================
+
+def _download_prices(ticker):
+    _, _, yf = _imports()
+
+    end = dt.date.today()
+    start = end - dt.timedelta(days=365 * 3)
+
+    data = yf.download(
+        ticker,
+        start=start,
+        end=end,
+        progress=False,
+        threads=False
+    )
+
+    if data is None or data.empty:
+        raise ValueError("No hay datos históricos")
+
+    # FIX DEFINITIVO yfinance (Adj Close no siempre existe)
+    if "Adj Close" in data.columns:
+        return data["Adj Close"]
+    elif "Close" in data.columns:
+        return data["Close"]
+    else:
+        raise ValueError("No se encontró columna de precios válida")
+
+def _log_returns(series):
+    import numpy as np
     return np.log(series / series.shift(1)).dropna()
 
-def simulate_gbm(spot, mu, sigma, days, n_sim):
+# ============================================================
+# MODELO
+# ============================================================
+
+def _simulate_gbm(spot, mu, sigma, days, n_sim):
+    math, np, _ = _imports()
+
     dt_step = 1 / TRADING_DAYS
+
     shocks = np.random.normal(
         (mu - 0.5 * sigma**2) * dt_step,
         sigma * math.sqrt(dt_step),
         (n_sim, days)
     )
-    paths = spot * np.exp(np.cumsum(shocks, axis=1))
-    return paths
 
-def percentiles(paths):
+    return spot * np.exp(np.cumsum(shocks, axis=1))
+
+def _percentiles(paths):
+    import numpy as np
     return {
         "p5": float(np.percentile(paths[:, -1], 5)),
         "p50": float(np.percentile(paths[:, -1], 50)),
@@ -65,39 +96,39 @@ def percentiles(paths):
 # FORECAST POR ACTIVO
 # ============================================================
 
-def forecast_asset(ticker):
-    prices = download_prices(ticker)
+def _forecast_asset(ticker):
+    import numpy as np
+
+    prices = _download_prices(ticker)
     spot = float(prices.iloc[-1])
 
-    rets = log_returns(prices)
+    rets = _log_returns(prices)
     mu = rets.mean() * TRADING_DAYS
-    sigma = rets.std() * math.sqrt(TRADING_DAYS)
+    sigma = rets.std() * (TRADING_DAYS ** 0.5)
 
-    # -------- DAILY --------
+    # -------- LARGO PLAZO --------
     daily = {}
-    for d in [5, 20, 60]:
-        paths = simulate_gbm(spot, mu, sigma, d, N_SIM)
-        daily[f"{d}d"] = percentiles(paths)
+    for d in (5, 20, 60):
+        paths = _simulate_gbm(spot, mu, sigma, d, N_SIM)
+        daily[f"{d}d"] = _percentiles(paths)
 
-    # Probabilidades
-    one_day = simulate_gbm(spot, mu, sigma, 1, N_SIM)[:, -1]
-    prob_up = float(np.mean(one_day > spot))
-    prob_up_5 = float(np.mean(one_day > spot * 1.05))
-    prob_down_5 = float(np.mean(one_day < spot * 0.95))
+    # -------- PROBABILIDADES --------
+    one_day = _simulate_gbm(spot, mu, sigma, 1, N_SIM)[:, -1]
 
     table = {
-        "P(subir)": round(prob_up, 3),
-        "P(+5%)": round(prob_up_5, 3),
-        "P(-5%)": round(prob_down_5, 3)
+        "P(subir)": round(float((one_day > spot).mean()), 3),
+        "P(+5%)": round(float((one_day > spot * 1.05).mean()), 3),
+        "P(-5%)": round(float((one_day < spot * 0.95).mean()), 3)
     }
 
-    # Semáforo simple
-    if prob_up > 0.55:
+    p_up = table["P(subir)"]
+
+    if p_up > 0.55:
         semaphore = {
             "status": "FAVORABLE",
             "text": "Sesgo probabilístico positivo."
         }
-    elif prob_up < 0.45:
+    elif p_up < 0.45:
         semaphore = {
             "status": "DESFAVORABLE",
             "text": "Sesgo probabilístico negativo."
@@ -108,16 +139,11 @@ def forecast_asset(ticker):
             "text": "Balance de riesgos equilibrado."
         }
 
-    # -------- SHORT --------
+    # -------- CORTO PLAZO --------
     short = {}
-    for d in [2, 5]:
-        paths = simulate_gbm(spot, mu, sigma, d, N_SIM)
-        short[f"{d}d"] = percentiles(paths)
-
-    combined = {
-        "status": "HABILITADO",
-        "text": "Forecast cuantitativo disponible."
-    }
+    for d in (2, 5):
+        paths = _simulate_gbm(spot, mu, sigma, d, N_SIM)
+        short[f"{d}d"] = _percentiles(paths)
 
     return {
         "spot": spot,
@@ -126,17 +152,17 @@ def forecast_asset(ticker):
             "table": table,
             "semaphore": semaphore
         },
-        "short": short,
-        "combined": combined
+        "short": short
     }
 
 # ============================================================
-# API
+# API PUBLICA
 # ============================================================
 
 def get_forecast_cuantitativo_for_api():
     now = time.time()
-    if _CACHE["data"] is not None and (now - _CACHE["ts"]) < CACHE_TTL:
+
+    if _CACHE["data"] and (now - _CACHE["ts"]) < CACHE_TTL:
         return _CACHE["data"]
 
     data = {}
@@ -144,7 +170,7 @@ def get_forecast_cuantitativo_for_api():
     for group, tickers in UNIVERSE.items():
         for t in tickers:
             try:
-                data[t] = forecast_asset(t)
+                data[t] = _forecast_asset(t)
             except Exception as e:
                 data[t] = {"error": str(e)}
 
