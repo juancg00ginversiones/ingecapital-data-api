@@ -1,6 +1,7 @@
 # ============================================================
-# FORECAST TRADING CUANTITATIVO – INGECAPITAL PRO (V2)
-# - Incluye histórico de spot + fan chart por día + tablas completas
+# FORECAST TRADING CUANTITATIVO – INGECAPITAL PRO (V3 FINAL)
+# - Histórico SPOT último mes + forecast corto/largo + fan chart + tablas
+# - Fix robusto para yfinance (Series vs DataFrame / MultiIndex)
 # ============================================================
 
 import time
@@ -11,17 +12,15 @@ import datetime as dt
 # ============================================================
 
 CACHE_TTL = 60 * 30          # 30 minutos
-N_SIM = 2000                # simulaciones (subir/bajar según performance)
+N_SIM = 2000                # simulaciones (ajustar si querés más velocidad)
 TRADING_DAYS = 252
 
-# Histórico para “contexto visual” (días calendario hacia atrás)
-HISTORY_CAL_DAYS = 180      # ~6 meses (ajustable)
-# Cuánto histórico mostramos en el gráfico (puntos)
-HISTORY_MAX_POINTS = 90     # limitar para que sea liviano
+# Histórico a mostrar (último mes aprox: 21 ruedas)
+MONTH_POINTS = 21
 
 # Horizontes
-SHORT_HORIZONS = [2, 5]         # corto plazo
-LONG_HORIZONS = [5, 20, 60]     # largo plazo
+SHORT_HORIZONS = [2, 5]          # corto plazo
+LONG_HORIZONS = [5, 20, 60]      # largo plazo
 
 UNIVERSE = {
     "indices": ["SPY", "QQQ"],
@@ -32,27 +31,42 @@ UNIVERSE = {
 _CACHE = {"ts": 0, "data": None}
 
 # ============================================================
-# LAZY IMPORTS (seguro para Render)
+# LAZY IMPORTS
 # ============================================================
 
 def _imports():
     import math
     import numpy as np
+    import pandas as pd
     import yfinance as yf
-    return math, np, yf
+    return math, np, pd, yf
 
 # ============================================================
-# DATA HELPERS
+# HELPERS
 # ============================================================
+
+def _ensure_series_1d(x):
+    """
+    yfinance a veces devuelve DataFrame de 1 columna.
+    Esto lo convierte a Serie 1D siempre.
+    """
+    _, _, pd, _ = _imports()
+
+    if isinstance(x, pd.DataFrame):
+        if x.shape[1] == 1:
+            return x.iloc[:, 0]
+        # Si viniera con MultiIndex raro, intentamos aplastar:
+        return x.squeeze(axis=1)
+    return x
 
 def _download_prices(ticker: str):
     """
-    Descarga precios diarios. Devuelve una Serie de precios (Close / Adj Close).
+    Descarga precios (Serie 1D), robusto ante MultiIndex/DF 1-col.
     """
-    _, _, yf = _imports()
+    _, _, pd, yf = _imports()
 
     end = dt.date.today()
-    start = end - dt.timedelta(days=max(365 * 3, HISTORY_CAL_DAYS + 30))
+    start = end - dt.timedelta(days=365 * 3)
 
     df = yf.download(
         ticker,
@@ -65,60 +79,57 @@ def _download_prices(ticker: str):
     if df is None or df.empty:
         raise ValueError("No hay datos históricos")
 
-    # yfinance: Adj Close no siempre existe
+    # Close / Adj Close robusto
     if "Adj Close" in df.columns:
         s = df["Adj Close"]
     elif "Close" in df.columns:
         s = df["Close"]
     else:
-        raise ValueError("No se encontró columna de precios válida (Close/Adj Close)")
+        raise ValueError("No se encontró columna Close/Adj Close")
 
+    s = _ensure_series_1d(s)
     s = s.dropna()
-    if s.empty:
+
+    if not hasattr(s, "iloc") or s.empty:
         raise ValueError("Serie de precios vacía")
+
+    # Asegurar index datetime
+    if not isinstance(s.index, pd.DatetimeIndex):
+        s.index = pd.to_datetime(s.index)
 
     return s
 
 def _log_returns(price_series):
-    import numpy as np
-    return np.log(price_series / price_series.shift(1)).dropna()
-
-def _trim_history(series, max_points: int):
-    if len(series) <= max_points:
-        return series
-    return series.iloc[-max_points:]
+    _, np, _, _ = _imports()
+    r = np.log(price_series / price_series.shift(1)).dropna()
+    return r
 
 # ============================================================
-# MODEL HELPERS
+# SIMULACIÓN + FAN CHART
 # ============================================================
 
 def _simulate_gbm_paths(spot, mu, sigma, days, n_sim):
     """
-    Devuelve paths: shape (n_sim, days+1) incluyendo spot al inicio.
+    Paths: (n_sim, days+1) incluyendo spot en t=0
     """
-    math, np, _ = _imports()
-    dt_step = 1 / TRADING_DAYS
+    math, np, _, _ = _imports()
 
-    # shocks para days pasos
+    dt_step = 1 / TRADING_DAYS
     shocks = np.random.normal(
         (mu - 0.5 * sigma**2) * dt_step,
         sigma * math.sqrt(dt_step),
         (n_sim, days)
     )
 
-    # acumulado y prepend spot
     growth = np.exp(np.cumsum(shocks, axis=1))
-    # insertar 1.0 como t=0
-    growth = np.concatenate([np.ones((n_sim, 1)), growth], axis=1)
+    growth = np.concatenate([np.ones((n_sim, 1)), growth], axis=1)  # t0
     return spot * growth
 
 def _fan_series(paths):
     """
-    Calcula percentiles para cada paso del tiempo.
-    paths: (n_sim, T) donde T = days+1
-    Devuelve dict con arrays p5/p50/p95 (listas float).
+    Percentiles en cada paso temporal.
     """
-    _, np, _ = _imports()
+    _, np, _, _ = _imports()
     p5 = np.percentile(paths, 5, axis=0)
     p50 = np.percentile(paths, 50, axis=0)
     p95 = np.percentile(paths, 95, axis=0)
@@ -128,103 +139,104 @@ def _fan_series(paths):
         "p95": [float(x) for x in p95],
     }
 
-def _probs_at_horizon(paths, spot):
+def _probs_end(paths, spot):
     """
-    Probabilidades al final del horizonte (último punto del path).
+    Probabilidades al final del horizonte.
     """
-    _, np, _ = _imports()
+    _, np, _, _ = _imports()
     end_vals = paths[:, -1]
-    p_up = float((end_vals > spot).mean())
-    p_up_5 = float((end_vals > spot * 1.05).mean())
-    p_down_5 = float((end_vals < spot * 0.95).mean())
     return {
-        "P(subir)": round(p_up, 4),
-        "P(+5%)": round(p_up_5, 4),
-        "P(-5%)": round(p_down_5, 4)
+        "P(subir)": round(float((end_vals > spot).mean()), 4),
+        "P(+5%)": round(float((end_vals > spot * 1.05).mean()), 4),
+        "P(-5%)": round(float((end_vals < spot * 0.95).mean()), 4),
     }
 
-def _risk_label(mu, sigma):
-    """
-    Etiqueta simple de riesgo basada en volatilidad anualizada.
-    """
-    # sigma ya está anualizada
-    if sigma < 0.18:
+def _risk_label(sigma_annual):
+    if sigma_annual < 0.18:
         return {"level": "BAJO", "text": "Volatilidad histórica baja/moderada."}
-    if sigma < 0.30:
+    if sigma_annual < 0.30:
         return {"level": "MEDIO", "text": "Volatilidad histórica media."}
     return {"level": "ALTO", "text": "Volatilidad histórica elevada."}
 
 # ============================================================
-# FORECAST POR ACTIVO (API CONTRACT)
+# PAYLOAD POR ACTIVO
 # ============================================================
 
 def _build_asset_payload(ticker: str):
     prices = _download_prices(ticker)
 
-    # histórico visible (para el gráfico “como venía”)
-    hist = prices.iloc[-HISTORY_CAL_DAYS:]  # recorte por días de calendario aproximado
-    hist = _trim_history(hist, HISTORY_MAX_POINTS)
+    # Último mes (aprox 21 ruedas)
+    hist_month = prices.iloc[-MONTH_POINTS:]
+    hist_month = _ensure_series_1d(hist_month)
 
-    spot = float(prices.iloc[-1])
+    # Spot T0
+    spot_val = hist_month.iloc[-1]
+    # spot_val puede venir como 1-element array/serie si hay rareza -> normalizamos:
+    if hasattr(spot_val, "__len__") and not isinstance(spot_val, (str, bytes)) and not isinstance(spot_val, float):
+        try:
+            spot_val = spot_val.iloc[0]  # por si fuera Series 1 elem
+        except Exception:
+            pass
+    spot = float(spot_val)
 
+    # Parámetros GBM
     rets = _log_returns(prices)
     mu = float(rets.mean() * TRADING_DAYS)
     sigma = float(rets.std() * (TRADING_DAYS ** 0.5))
 
-    risk = _risk_label(mu, sigma)
+    risk = _risk_label(sigma)
 
-    # ---------- SHORT ----------
-    short = {"horizons": {}, "table": {}}
+    # Short + Long forecasts (fan chart por día + tabla probs)
+    short_term = {"horizons": {}, "table": {}}
     for d in SHORT_HORIZONS:
         paths = _simulate_gbm_paths(spot, mu, sigma, d, N_SIM)
-        short["horizons"][f"{d}d"] = {
+        short_term["horizons"][f"{d}d"] = {
             "days": list(range(0, d + 1)),
-            "fan": _fan_series(paths)
+            "fan": _fan_series(paths),
         }
-        short["table"][f"{d}d"] = _probs_at_horizon(paths, spot)
+        short_term["table"][f"{d}d"] = _probs_end(paths, spot)
 
-    # ---------- LONG ----------
-    long = {"horizons": {}, "table": {}}
+    long_term = {"horizons": {}, "table": {}}
     for d in LONG_HORIZONS:
         paths = _simulate_gbm_paths(spot, mu, sigma, d, N_SIM)
-        long["horizons"][f"{d}d"] = {
+        long_term["horizons"][f"{d}d"] = {
             "days": list(range(0, d + 1)),
-            "fan": _fan_series(paths)
+            "fan": _fan_series(paths),
         }
-        long["table"][f"{d}d"] = _probs_at_horizon(paths, spot)
+        long_term["table"][f"{d}d"] = _probs_end(paths, spot)
 
-    # Semáforo simple (por prob. 5d si existe, si no 2d)
-    ref_key = "5d" if "5d" in short["table"] else "2d"
-    p_up_ref = short["table"][ref_key]["P(subir)"]
-    if p_up_ref > 0.55:
-        semaphore = {"status": "FAVORABLE", "text": "Sesgo probabilístico alcista en el corto plazo."}
-    elif p_up_ref < 0.45:
-        semaphore = {"status": "DESFAVORABLE", "text": "Sesgo probabilístico bajista en el corto plazo."}
+    # Semáforo (tomamos P(subir) a 5d si existe)
+    ref = "5d" if "5d" in short_term["table"] else "2d"
+    p_up = short_term["table"][ref]["P(subir)"]
+    if p_up > 0.55:
+        semaphore = {"status": "FAVORABLE", "text": "Sesgo probabilístico alcista (corto plazo)."}
+    elif p_up < 0.45:
+        semaphore = {"status": "DESFAVORABLE", "text": "Sesgo probabilístico bajista (corto plazo)."}
     else:
         semaphore = {"status": "NEUTRAL", "text": "Balance de probabilidades relativamente equilibrado."}
 
     return {
         "ticker": ticker,
-        "spot": spot,
-        "risk": risk,
         "updated_at": dt.datetime.utcnow().isoformat() + "Z",
+        "spot": spot,
 
-        # Histórico para “cómo venía”
-        "history": {
-            "dates": [d.strftime("%Y-%m-%d") for d in hist.index],
-            "prices": [float(x) for x in hist.values]
+        # Histórico del último mes para que el gráfico “venga con contexto”
+        "history_month": {
+            "dates": [d.strftime("%Y-%m-%d") for d in hist_month.index],
+            "prices": [float(x) for x in hist_month.values],
         },
 
-        # Proyecciones separadas
-        "short_term": short,
-        "long_term": long,
+        # Forecasts
+        "short_term": short_term,
+        "long_term": long_term,
 
-        # señales
-        "semaphore": semaphore
+        # Labels
+        "risk": risk,
+        "semaphore": semaphore,
     }
 
 # ============================================================
-# API PUBLICA (TODOS LOS ACTIVOS)
+# API PUBLICA
 # ============================================================
 
 def get_forecast_cuantitativo_for_api():
@@ -248,7 +260,7 @@ def get_forecast_cuantitativo_for_api():
         "updated_at": dt.datetime.utcnow().isoformat() + "Z",
         "universe": UNIVERSE,
         "universe_flat": sorted(universe_flat),
-        "data": data
+        "data": data,
     }
 
     _CACHE["data"] = output
