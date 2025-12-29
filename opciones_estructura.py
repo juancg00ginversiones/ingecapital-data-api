@@ -1,5 +1,5 @@
 # ============================================================
-# ESTRUCTURA DE OPCIONES – INGECAPITAL PRO
+# ESTRUCTURA DE OPCIONES – INGECAPITAL PRO (FINAL)
 # ============================================================
 
 import math
@@ -9,7 +9,7 @@ import yfinance as yf
 import pandas as pd
 
 # ============================================================
-# CONFIG
+# CONFIGURACIÓN
 # ============================================================
 
 RISK_FREE = 0.0
@@ -17,7 +17,7 @@ CONTRACT_MULT = 100
 
 CACHE_TTL = 60 * 10  # 10 minutos
 
-# Universo curado (índices, magnif., commodities, BTC proxy)
+# Universo curado (índices, magnificas, commodities, BTC proxy)
 UNIVERSE = [
     "SPY",   # S&P 500
     "QQQ",   # Nasdaq
@@ -98,7 +98,7 @@ def get_options_chain(symbol):
     return df.sort_values("strike"), spot, expiry
 
 # ============================================================
-# NIVELES
+# CÁLCULO DE NIVELES
 # ============================================================
 
 def build_levels(df, spot, expiry):
@@ -127,15 +127,52 @@ def build_levels(df, spot, expiry):
             break
 
     return {
-        "spot": spot,
+        "spot": float(spot),
         "expiry": expiry.isoformat(),
-        "dte": dte,
+        "dte": int(dte),
         "analysis_type": "gamma" if use_gamma else "oi_proxy",
         "put_wall": float(df.loc[df["oi_put"].idxmax(), "strike"]),
         "call_wall": float(df.loc[df["oi_call"].idxmax(), "strike"]),
         "gamma_peak": float(df.loc[df["gex_net"].abs().idxmax(), "strike"]),
         "gamma_flip": float(gamma_flip) if gamma_flip else None
     }
+
+# ============================================================
+# RESUMEN INTERPRETATIVO (CLAVE)
+# ============================================================
+
+def explain_market_structure(levels):
+    spot = levels["spot"]
+    pw = levels["put_wall"]
+    cw = levels["call_wall"]
+    gp = levels["gamma_peak"]
+    gf = levels["gamma_flip"]
+    use_gamma = levels["analysis_type"] == "gamma"
+
+    lines = []
+    lines.append("Resumen del mercado de opciones:")
+
+    if use_gamma:
+        lines.append("Análisis basado en Gamma Exposure.")
+    else:
+        lines.append("Análisis basado en Open Interest (vencimiento inmediato).")
+
+    if abs(spot - gp) / spot < 0.01:
+        lines.append("El precio se encuentra en zona de equilibrio (Gamma Peak), lo que sugiere lateralización.")
+    elif spot < pw:
+        lines.append("El precio está por debajo del Put Wall, aumentando el riesgo de aceleración bajista.")
+    elif spot > cw:
+        lines.append("El precio está por encima del Call Wall, lo que puede generar aceleración alcista.")
+    else:
+        lines.append("El mercado se encuentra en transición entre niveles clave.")
+
+    if gf:
+        if spot < gf:
+            lines.append("Por debajo del Gamma Flip se espera mayor volatilidad.")
+        else:
+            lines.append("Por encima del Gamma Flip el mercado suele comportarse de forma más estable.")
+
+    return " ".join(lines)
 
 # ============================================================
 # API PRINCIPAL
@@ -151,6 +188,7 @@ def get_options_structure_for_api():
         try:
             df, spot, expiry = get_options_chain(symbol)
             levels = build_levels(df, spot, expiry)
+            levels["summary"] = explain_market_structure(levels)
             data[symbol] = levels
         except Exception as e:
             data[symbol] = {"error": str(e)}
@@ -164,3 +202,4 @@ def get_options_structure_for_api():
     _CACHE["data"] = output
     _CACHE["ts"] = now
     return output
+
