@@ -61,7 +61,7 @@ def _download_prices(ticker):
     elif "Close" in data.columns:
         return data["Close"]
     else:
-        raise ValueError("No se encontró columna de precios válida")
+        raise ValueError("No se encontró columna de precios válida (Close/Adj Close)")
 
 def _log_returns(series):
     import numpy as np
@@ -97,14 +97,12 @@ def _percentiles(paths):
 # ============================================================
 
 def _forecast_asset(ticker):
-    import numpy as np
-
     prices = _download_prices(ticker)
     spot = float(prices.iloc[-1])
 
     rets = _log_returns(prices)
-    mu = rets.mean() * TRADING_DAYS
-    sigma = rets.std() * (TRADING_DAYS ** 0.5)
+    mu = float(rets.mean() * TRADING_DAYS)
+    sigma = float(rets.std() * (TRADING_DAYS ** 0.5))
 
     # -------- LARGO PLAZO --------
     daily = {}
@@ -115,29 +113,22 @@ def _forecast_asset(ticker):
     # -------- PROBABILIDADES --------
     one_day = _simulate_gbm(spot, mu, sigma, 1, N_SIM)[:, -1]
 
+    p_up = float((one_day > spot).mean())
+    p_up_5 = float((one_day > spot * 1.05).mean())
+    p_down_5 = float((one_day < spot * 0.95).mean())
+
     table = {
-        "P(subir)": round(float((one_day > spot).mean()), 3),
-        "P(+5%)": round(float((one_day > spot * 1.05).mean()), 3),
-        "P(-5%)": round(float((one_day < spot * 0.95).mean()), 3)
+        "P(subir)": round(p_up, 3),
+        "P(+5%)": round(p_up_5, 3),
+        "P(-5%)": round(p_down_5, 3)
     }
 
-    p_up = table["P(subir)"]
-
     if p_up > 0.55:
-        semaphore = {
-            "status": "FAVORABLE",
-            "text": "Sesgo probabilístico positivo."
-        }
+        semaphore = {"status": "FAVORABLE", "text": "Sesgo probabilístico positivo."}
     elif p_up < 0.45:
-        semaphore = {
-            "status": "DESFAVORABLE",
-            "text": "Sesgo probabilístico negativo."
-        }
+        semaphore = {"status": "DESFAVORABLE", "text": "Sesgo probabilístico negativo."}
     else:
-        semaphore = {
-            "status": "NEUTRAL",
-            "text": "Balance de riesgos equilibrado."
-        }
+        semaphore = {"status": "NEUTRAL", "text": "Balance de riesgos equilibrado."}
 
     # -------- CORTO PLAZO --------
     short = {}
@@ -162,7 +153,8 @@ def _forecast_asset(ticker):
 def get_forecast_cuantitativo_for_api():
     now = time.time()
 
-    if _CACHE["data"] and (now - _CACHE["ts"]) < CACHE_TTL:
+    # Cache
+    if _CACHE["data"] is not None and (now - _CACHE["ts"]) < CACHE_TTL:
         return _CACHE["data"]
 
     data = {}
@@ -174,9 +166,15 @@ def get_forecast_cuantitativo_for_api():
             except Exception as e:
                 data[t] = {"error": str(e)}
 
+    # Universe plano (frontend-friendly)
+    universe_flat = []
+    for tickers in UNIVERSE.values():
+        universe_flat.extend(tickers)
+
     output = {
         "updated_at": dt.datetime.utcnow().isoformat() + "Z",
-        "universe": UNIVERSE,
+        "universe": UNIVERSE,               # categorizado (para UI por secciones)
+        "universe_flat": universe_flat,     # plano (para loops simples/sort)
         "data": data
     }
 
