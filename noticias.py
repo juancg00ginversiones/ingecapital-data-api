@@ -32,13 +32,15 @@ def _fetch_news():
     params = {
         "apikey": NEWSDATA_API_KEY,
         "language": "es",
+        "country": "ar",        # 🔴 CLAVE PARA EVITAR 422
         "category": "business",
-        "size": 20  # traemos más y filtramos luego
+        "size": 20              # traemos más y filtramos luego
     }
 
     r = requests.get(NEWS_URL, params=params, timeout=20)
     r.raise_for_status()
     return r.json()
+
 
 # ============================================================
 # FILTRO FINANCIERO LOCAL (SEGURO)
