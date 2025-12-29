@@ -1,5 +1,5 @@
 # ============================================================
-# NOTICIAS FINANCIERAS – BACKEND INGECAPITAL (ESTABLE)
+# NOTICIAS FINANCIERAS – BACKEND INGECAPITAL (NEWSDATA.IO)
 # ============================================================
 
 import time
@@ -16,7 +16,7 @@ NEWS_URL = "https://newsdata.io/api/1/news"
 # Cache: 12 horas → máx 2 consultas por día
 CACHE_TTL = 12 * 60 * 60  # segundos
 
-# Noticias a entregar a Horizons
+# Cantidad de noticias a entregar a Horizons
 MAX_NEWS = 8
 
 _CACHE = {
@@ -25,40 +25,24 @@ _CACHE = {
 }
 
 # ============================================================
-# FETCH DESDE NEWSDATA (ESTABLE)
+# FETCH DESDE NEWSDATA
 # ============================================================
 
 def _fetch_news():
     params = {
         "apikey": NEWSDATA_API_KEY,
         "language": "es",
-        "country": "ar",        # 🔴 CLAVE PARA EVITAR 422
+        "country": "ar",
         "category": "business",
-        "size": 20              # traemos más y filtramos luego
+        "size": MAX_NEWS
     }
 
     r = requests.get(NEWS_URL, params=params, timeout=20)
     r.raise_for_status()
     return r.json()
 
-
 # ============================================================
-# FILTRO FINANCIERO LOCAL (SEGURO)
-# ============================================================
-
-FINANCIAL_TERMS = [
-    "banco central", "fed", "reserva federal", "inflación", "tasas",
-    "acciones", "mercado", "wall street", "nasdaq", "s&p", "sp500",
-    "bonos", "deuda", "dólar", "oro", "plata", "petróleo",
-    "nvidia", "tesla", "apple", "microsoft", "trump"
-]
-
-def _is_financial(article: dict) -> bool:
-    text = f"{article.get('title','')} {article.get('description','')}".lower()
-    return any(term in text for term in FINANCIAL_TERMS)
-
-# ============================================================
-# API FUNCTION
+# FUNCIÓN PRINCIPAL PARA EL API
 # ============================================================
 
 def get_financial_news_for_api():
@@ -70,27 +54,23 @@ def get_financial_news_for_api():
 
     raw = _fetch_news()
 
-    filtered = []
+    news = []
     for a in raw.get("results", []):
-        if _is_financial(a):
-            filtered.append({
-                "title": a.get("title"),
-                "source": a.get("source_id"),
-                "published_at": a.get("pubDate"),
-                "snippet": a.get("description"),
-                "url": a.get("link"),
-                "country": a.get("country"),
-                "category": a.get("category")
-            })
-        if len(filtered) >= MAX_NEWS:
-            break
+        news.append({
+            "title": a.get("title"),
+            "source": a.get("source_id"),
+            "published_at": a.get("pubDate"),
+            "snippet": a.get("description"),
+            "url": a.get("link"),
+            "country": a.get("country"),
+            "category": a.get("category")
+        })
 
     output = {
         "updated_at": dt.datetime.utcnow().isoformat() + "Z",
         "provider": "newsdata.io",
-        "filter": "business + filtro financiero local",
         "refresh_policy": "cada 12 horas",
-        "news": filtered
+        "news": news
     }
 
     _CACHE["data"] = output
