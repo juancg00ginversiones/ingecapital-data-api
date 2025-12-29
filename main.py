@@ -13,9 +13,12 @@ from bonos import get_all_bonds_for_api
 # ============================================================
 # IMPORT DOLARES
 # ============================================================
-
 from dolares import get_dolares_for_api
-
+# ============================================================
+# IMPORT NOTICIAS
+# ============================================================
+from noticias import get_financial_news_for_api
+# ============================================================
 app = FastAPI(
     title="INGECAPITAL DATA API",
     version="1.0"
@@ -111,3 +114,13 @@ def dolares():
         return get_dolares_for_api(history_days=365)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno en dolares: {str(e)}")
+@app.get("/noticias")
+def noticias():
+    try:
+        return get_financial_news_for_api()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno en noticias: {str(e)}"
+        )
+
