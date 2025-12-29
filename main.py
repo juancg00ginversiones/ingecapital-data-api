@@ -23,6 +23,11 @@ from noticias import get_financial_news_for_api
 # ============================================================
 from opciones_estructura import get_options_structure_for_api
 # ============================================================
+from forecast_cuantitativo import get_forecast_cuantitativo_for_api
+# IMPORT FORECAST CUANTITATIVO
+# ============================================================
+from forecast_cuantitativo import get_forecast_cuantitativo_for_api
+# ============================================================
 
 app = FastAPI(
     title="INGECAPITAL DATA API",
@@ -142,4 +147,14 @@ def opciones_estructura():
             status_code=500,
             detail=f"Error interno en opciones_estructura: {str(e)}"
         )
+@app.get("/forecastcuantitativo")
+def forecast_cuantitativo():
+    """
+    Forecast cuantitativo probabilístico:
+    - Fan charts
+    - Tablas
+    - Semáforos
+    """
+    return get_forecast_cuantitativo_for_api()
+
 
