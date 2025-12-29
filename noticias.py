@@ -1,5 +1,5 @@
 # ============================================================
-# NOTICIAS FINANCIERAS – BACKEND INGECAPITAL (NEWSDATA.IO)
+# NOTICIAS FINANCIERAS – FILTRO AVANZADO (NEWSDATA.IO)
 # ============================================================
 
 import time
@@ -7,17 +7,23 @@ import requests
 import datetime as dt
 
 # ============================================================
-# CONFIGURACIÓN
+# CONFIG
 # ============================================================
 
 NEWSDATA_API_KEY = "pub_fd353114f8294f019b96757767cd82e8"
 NEWS_URL = "https://newsdata.io/api/1/news"
 
-# Cache: 12 horas → máx 2 consultas por día
-CACHE_TTL = 12 * 60 * 60  # segundos
-
-# Cantidad de noticias a entregar a Horizons
+CACHE_TTL = 12 * 60 * 60  # 12 horas
 MAX_NEWS = 8
+
+# Keywords financieros (OR lógico)
+FINANCIAL_KEYWORDS = (
+    "banco central OR reserva federal OR fed OR inflación OR tasas OR "
+    "acciones OR mercado bursátil OR wall street OR s&p OR nasdaq OR "
+    "sp500 OR qqq OR dow jones OR dólar OR bonos OR deuda OR "
+    "oro OR plata OR petróleo OR nvidia OR tesla OR apple OR microsoft OR "
+    "trump"
+)
 
 _CACHE = {
     "ts": 0,
@@ -25,14 +31,14 @@ _CACHE = {
 }
 
 # ============================================================
-# FETCH DESDE NEWSDATA
+# FETCH
 # ============================================================
 
 def _fetch_news():
     params = {
         "apikey": NEWSDATA_API_KEY,
         "language": "es",
-        "country": "ar",
+        "q": FINANCIAL_KEYWORDS,
         "category": "business",
         "size": MAX_NEWS
     }
@@ -42,7 +48,7 @@ def _fetch_news():
     return r.json()
 
 # ============================================================
-# FUNCIÓN PRINCIPAL PARA EL API
+# API FUNCTION
 # ============================================================
 
 def get_financial_news_for_api():
@@ -69,6 +75,7 @@ def get_financial_news_for_api():
     output = {
         "updated_at": dt.datetime.utcnow().isoformat() + "Z",
         "provider": "newsdata.io",
+        "filter": "financiero / mercado (macro, acciones, commodities)",
         "refresh_policy": "cada 12 horas",
         "news": news
     }
