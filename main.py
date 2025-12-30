@@ -28,6 +28,10 @@ from forecast_cuantitativo import get_forecast_cuantitativo_for_api
 # ============================================================
 from forecast_cuantitativo import get_forecast_cuantitativo_for_api
 # ============================================================
+# IMPORT MARKET SCREENER TECNICO (NUEVO)
+# ============================================================
+from market_screener import get_market_screener_for_api
+# ============================================================
 
 app = FastAPI(
     title="INGECAPITAL DATA API",
@@ -156,5 +160,28 @@ def forecast_cuantitativo():
     - Semáforos
     """
     return get_forecast_cuantitativo_for_api()
+
+# ============================================================
+# MARKET SCREENER TECNICO (CEDEARs / ADRs / CRYPTO ETF)
+# ============================================================
+@app.get("/market/screener")
+def market_screener():
+    """
+    Devuelve screener técnico batch con:
+    - Precio
+    - Variación diaria
+    - RSI (valor + diagnóstico)
+    - MACD (sesgo)
+    - SMA21 / SMA200 (encima/debajo)
+    - Volumen (alto/bajo + en alza/en baja)
+    - Agrupado por sector
+    """
+    try:
+        return get_market_screener_for_api()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno en market_screener: {str(e)}"
+        )
 
 
