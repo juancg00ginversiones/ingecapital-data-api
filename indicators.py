@@ -48,7 +48,7 @@ def sma(series: pd.Series, window: int) -> pd.Series:
 def analyze_volume(
     volume: pd.Series,
     session_type: str = "close",
-    session_progress: float | None = None
+    session_progress: Optional[float] = None
 ) -> dict:
     """
     Analiza volumen de forma contextual.
@@ -74,14 +74,10 @@ def analyze_volume(
     vol_sma20 = volume.rolling(20).mean().iloc[-1]
     vol_sma5 = volume.rolling(5).mean().iloc[-1]
 
-    # --------------------------------------------------------
-    # Tendencia (válida en ambos casos)
-    # --------------------------------------------------------
+    # Tendencia
     trend = "en alza" if vol_sma5 > vol_sma20 else "en baja"
 
-    # --------------------------------------------------------
-    # CIERRE DE RUEDA
-    # --------------------------------------------------------
+    # CIERRE
     if session_type == "close":
         if vol_last > vol_sma20 * 1.3:
             level = "alto"
@@ -92,15 +88,12 @@ def analyze_volume(
 
         diagnostic = f"Volumen {level} {trend} en el día"
 
-    # --------------------------------------------------------
     # RUEDA ABIERTA
-    # --------------------------------------------------------
     elif session_type == "open":
         if session_progress is None:
             raise ValueError("session_progress es requerido cuando session_type='open'")
 
         expected_volume = vol_sma20 * session_progress
-
         ratio = vol_last / expected_volume if expected_volume > 0 else 0
 
         if ratio > 1.2:
@@ -121,6 +114,7 @@ def analyze_volume(
         "session": session_type,
         "diagnostic": diagnostic
     }
+
 
 
 # ============================================================
