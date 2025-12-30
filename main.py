@@ -1,3 +1,8 @@
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -183,5 +188,6 @@ def market_screener():
             status_code=500,
             detail=f"Error interno en market_screener: {str(e)}"
         )
+
 
 
