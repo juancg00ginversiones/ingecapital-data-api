@@ -1,8 +1,14 @@
+# ============================================================
+# PYTHON PATH FIX (IMPORTANTE PARA RENDER)
+# ============================================================
 import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+# ============================================================
+# FASTAPI
+# ============================================================
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,32 +18,38 @@ from fastapi.middleware.cors import CORSMiddleware
 from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 
 # ============================================================
-# IMPORT BONOS (NUEVO)
+# IMPORT BONOS
 # ============================================================
 from bonos import get_all_bonds_for_api
+
 # ============================================================
 # IMPORT DOLARES
 # ============================================================
 from dolares import get_dolares_for_api
+
 # ============================================================
 # IMPORT NOTICIAS
 # ============================================================
 from noticias import get_financial_news_for_api
+
 # ============================================================
 # IMPORT NIVELES DE OPCIONES
 # ============================================================
 from opciones_estructura import get_options_structure_for_api
+
 # ============================================================
-from forecast_cuantitativo import get_forecast_cuantitativo_for_api
 # IMPORT FORECAST CUANTITATIVO
 # ============================================================
 from forecast_cuantitativo import get_forecast_cuantitativo_for_api
+
 # ============================================================
 # IMPORT MARKET SCREENER TECNICO (NUEVO)
 # ============================================================
 from market_screener import get_market_screener_for_api
-# ============================================================
 
+# ============================================================
+# FASTAPI APP
+# ============================================================
 app = FastAPI(
     title="INGECAPITAL DATA API",
     version="1.0"
@@ -105,7 +117,7 @@ def curvas_opciones(
         )
 
 # ============================================================
-# BONOS SOBERANOS (NUEVO – HORIZONS)
+# BONOS SOBERANOS
 # ============================================================
 @app.get("/bonos")
 def bonos():
@@ -127,12 +139,22 @@ def bonos():
             detail=f"Error interno en bonos: {str(e)}"
         )
 
+# ============================================================
+# DOLARES
+# ============================================================
 @app.get("/dolares")
 def dolares():
     try:
         return get_dolares_for_api(history_days=365)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno en dolares: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno en dolares: {str(e)}"
+        )
+
+# ============================================================
+# NOTICIAS FINANCIERAS
+# ============================================================
 @app.get("/noticias")
 def noticias():
     try:
@@ -143,6 +165,9 @@ def noticias():
             detail=f"Error interno en noticias: {str(e)}"
         )
 
+# ============================================================
+# ESTRUCTURA DE OPCIONES
+# ============================================================
 @app.get("/opciones/estructura")
 def opciones_estructura():
     """
@@ -156,6 +181,10 @@ def opciones_estructura():
             status_code=500,
             detail=f"Error interno en opciones_estructura: {str(e)}"
         )
+
+# ============================================================
+# FORECAST CUANTITATIVO
+# ============================================================
 @app.get("/forecastcuantitativo")
 def forecast_cuantitativo():
     """
@@ -164,21 +193,27 @@ def forecast_cuantitativo():
     - Tablas
     - Semáforos
     """
-    return get_forecast_cuantitativo_for_api()
+    try:
+        return get_forecast_cuantitativo_for_api()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno en forecastcuantitativo: {str(e)}"
+        )
 
 # ============================================================
-# MARKET SCREENER TECNICO (CEDEARs / ADRs / CRYPTO ETF)
+# MARKET SCREENER TECNICO (NUEVO – HORIZONS)
 # ============================================================
 @app.get("/market/screener")
 def market_screener():
     """
-    Devuelve screener técnico batch con:
+    Screener técnico batch:
     - Precio
     - Variación diaria
-    - RSI (valor + diagnóstico)
+    - RSI
     - MACD (sesgo)
-    - SMA21 / SMA200 (encima/debajo)
-    - Volumen (alto/bajo + en alza/en baja)
+    - SMA21 / SMA200
+    - Volumen contextual (open / close)
     - Agrupado por sector
     """
     try:
@@ -188,6 +223,3 @@ def market_screener():
             status_code=500,
             detail=f"Error interno en market_screener: {str(e)}"
         )
-
-
-
