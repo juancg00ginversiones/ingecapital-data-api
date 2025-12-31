@@ -7,9 +7,9 @@ from typing import Dict, Any, List
 # CONFIG
 # ============================================================
 URL_NOTES = "https://data912.com/live/arg_notes"
-URL_BONDS = "https://data912.com/live/arg_bonds"
+URL_MEP = "https://data912.com/live/mep"
 
-# Escenarios de dólar (en pesos)
+# Escenarios de dólar (en pesos) alrededor del dólar actual
 DOLAR_OFFSETS = [-200, -100, 0, 100, 200]
 
 
@@ -42,22 +42,36 @@ def to_timestamp(d: date) -> int:
 
 
 def fetch_json(url: str):
-    r = requests.get(url, timeout=15)
+    r = requests.get(url, timeout=20)
     r.raise_for_status()
     return r.json()
 
 
-def fetch_dolar_al30() -> float:
+def fetch_dolar_al30_from_mep() -> float:
     """
-    Toma el dólar implícito desde AL30 (ask).
+    Dólar actual = AL30 ask tomado desde https://data912.com/live/mep
+
+    Ejemplo de item:
+    {
+      "ticker": "AL30",
+      "bid": ...,
+      "ask": 1481.1083,
+      ...
+    }
     """
-    bonds = fetch_json(URL_BONDS)
+    mep = fetch_json(URL_MEP)
 
-    for item in bonds:
-        if item.get("ticker") == "AL30" and item.get("ask"):
-            return float(item["ask"])
+    if not isinstance(mep, list):
+        raise ValueError("Respuesta inesperada en /live/mep (no es lista).")
 
-    raise ValueError("No se encontró AL30 con campo 'ask'")
+    for item in mep:
+        if item.get("ticker") == "AL30":
+            ask = item.get("ask")
+            if ask is None:
+                raise ValueError("AL30 encontrado en /live/mep pero sin campo 'ask'.")
+            return float(ask)
+
+    raise ValueError("No se encontró ticker 'AL30' en /live/mep.")
 
 
 # ============================================================
@@ -74,8 +88,8 @@ def get_lecap_band_for_api() -> Dict[str, Any]:
         if i.get("symbol") in LECAPS and i.get("px_ask")
     }
 
-    # --- dólar hoy (AL30 ask) ---
-    dolar_hoy = fetch_dolar_al30()
+    # --- dólar actual (AL30 ask desde /live/mep) ---
+    dolar_hoy = fetch_dolar_al30_from_mep()
 
     escenarios_dolar = [round(dolar_hoy + x, 2) for x in DOLAR_OFFSETS]
 
@@ -91,13 +105,16 @@ def get_lecap_band_for_api() -> Dict[str, Any]:
         if days <= 0:
             continue
 
-        # rendimiento en pesos
-        rendimiento = (cfg["vpv"] / price) - 1.0
+        vpv = float(cfg["vpv"])
 
-        # breakeven USD = 0
-        break_even = dolar_hoy * (cfg["vpv"] / price)
+        # Rendimiento en pesos
+        rendimiento = (vpv / price) - 1.0
 
-        # escenarios USD (SIGNO CORRECTO)
+        # Breakeven USD = 0
+        # D_BE = D_hoy * (VPV / Precio)
+        break_even = dolar_hoy * (vpv / price)
+
+        # Escenarios: retorno USD (%) = (D_BE / D_scenario) - 1
         escenarios = {}
         for d in escenarios_dolar:
             escenarios[str(d)] = round((break_even / d - 1.0) * 100.0, 2)
@@ -107,7 +124,7 @@ def get_lecap_band_for_api() -> Dict[str, Any]:
             "expiry": cfg["expiry"],
             "days_remaining": days,
             "price": round(price, 6),
-            "vpv": cfg["vpv"],
+            "vpv": round(vpv, 6),
             "rendimiento_directo": round(rendimiento, 6),
             "break_even": round(break_even, 2),
             "chart_point": {
@@ -123,7 +140,7 @@ def get_lecap_band_for_api() -> Dict[str, Any]:
         "ok": True,
         "as_of": now,
         "dolar_hoy": round(dolar_hoy, 2),
-        "dolar_source": "AL30 ask (data912)",
+        "dolar_source": "AL30 ask (data912 /live/mep)",
         "escenarios_dolar": escenarios_dolar,
         "lecaps": lecaps_out
     }
