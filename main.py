@@ -73,21 +73,10 @@ def forecast_cuantitativo():
 def market_screener():
     return get_market_screener_for_api()
 # ================= CALCULADORA LECAPS-BONCAPS =================
-@app.get("/letras-bonos")
-def letras_bonos(monto: float = 100000):
-    """
-    Letras y Bonos Capitalizables:
-    - filtra vencidos
-    - busca precio en el endpoint correcto
-    - calcula rendimiento, TNA, TEM
-    - monto es input del usuario
-    """
-    try:
-        return get_letras_bonos_for_api(monto=monto)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno en letras-bonos: {str(e)}"
-        )
+@@app.get("/letras-bonos")
+def letras_bonos():
+    return get_letras_bonos_for_api()
+
+
 
 
