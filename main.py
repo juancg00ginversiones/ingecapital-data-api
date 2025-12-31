@@ -1,63 +1,22 @@
-# ============================================================
-# PYTHON PATH FIX (IMPORTANTE PARA RENDER)
-# ============================================================
-import sys
-import os
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# ============================================================
-# FASTAPI
-# ============================================================
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-# ============================================================
-# IMPORT CURVAS OPCIONES (EXISTENTE – NO SE TOCA)
-# ============================================================
 from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
-
-# ============================================================
-# IMPORT BONOS
-# ============================================================
 from bonos import get_all_bonds_for_api
-
-# ============================================================
-# IMPORT DOLARES
-# ============================================================
 from dolares import get_dolares_for_api
-
-# ============================================================
-# IMPORT NOTICIAS
-# ============================================================
 from noticias import get_financial_news_for_api
-
-# ============================================================
-# IMPORT NIVELES DE OPCIONES
-# ============================================================
 from opciones_estructura import get_options_structure_for_api
-
-# ============================================================
-# IMPORT FORECAST CUANTITATIVO
-# ============================================================
 from forecast_cuantitativo import get_forecast_cuantitativo_for_api
 
-# ============================================================
-# IMPORT MARKET SCREENER TECNICO (NUEVO)
-# ============================================================
+# NUEVO
 from market_screener import get_market_screener_for_api
 
-# ============================================================
-# FASTAPI APP
-# ============================================================
+
 app = FastAPI(
     title="INGECAPITAL DATA API",
     version="1.0"
 )
 
-# ============================================================
-# CORS
-# ============================================================
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -66,160 +25,53 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ============================================================
-# HEALTH CHECK
-# ============================================================
 @app.get("/")
 def root():
-    return {
-        "ok": True,
-        "service": "ingecapital-data-api"
-    }
+    return {"ok": True, "service": "ingecapital-data-api"}
 
 @app.get("/test")
 def test():
-    return {
-        "ok": True,
-        "message": "Endpoint /test funcionando correctamente",
-        "service": "ingecapital-data-api"
-    }
+    return {"ok": True}
 
-# ============================================================
-# CURVAS DE OPCIONES (EXISTENTE – NO SE TOCA)
-# ============================================================
+# ================= OPCIONES =================
 @app.get("/curvas/opciones/lista")
 def lista_opciones():
-    return {
-        "tickers": LISTA_TICKERS,
-        "total": len(LISTA_TICKERS)
-    }
+    return {"tickers": LISTA_TICKERS, "total": len(LISTA_TICKERS)}
 
 @app.get("/curvas/opciones")
-def curvas_opciones(
-    ticker: str = Query(..., description="Ticker permitido")
-):
+def curvas_opciones(ticker: str = Query(...)):
     t = ticker.upper().strip()
-
     if t not in LISTA_TICKERS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Ticker '{t}' no permitido. Use uno de: {', '.join(LISTA_TICKERS)}"
-        )
+        raise HTTPException(status_code=400, detail="Ticker no permitido")
+    return analyze_ticker_for_api(t)
 
-    try:
-        return analyze_ticker_for_api(t)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno en curvas_opciones: {str(e)}"
-        )
-
-# ============================================================
-# BONOS SOBERANOS
-# ============================================================
+# ================= BONOS =================
 @app.get("/bonos")
 def bonos():
-    """
-    Devuelve TODOS los bonos soberanos con:
-    - precio actual
-    - TIR (YTM)
-    - duration
-    - paridad
-    - flujo de fondos
-    - sensibilidad
-    - TIR histórica
-    """
-    try:
-        return get_all_bonds_for_api()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno en bonos: {str(e)}"
-        )
+    return get_all_bonds_for_api()
 
-# ============================================================
-# DOLARES
-# ============================================================
+# ================= DOLARES =================
 @app.get("/dolares")
 def dolares():
-    try:
-        return get_dolares_for_api(history_days=365)
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno en dolares: {str(e)}"
-        )
+    return get_dolares_for_api(history_days=365)
 
-# ============================================================
-# NOTICIAS FINANCIERAS
-# ============================================================
+# ================= NOTICIAS =================
 @app.get("/noticias")
 def noticias():
-    try:
-        return get_financial_news_for_api()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno en noticias: {str(e)}"
-        )
+    return get_financial_news_for_api()
 
-# ============================================================
-# ESTRUCTURA DE OPCIONES
-# ============================================================
+# ================= OPCIONES ESTRUCTURA =================
 @app.get("/opciones/estructura")
 def opciones_estructura():
-    """
-    Devuelve estructura de mercado de opciones para un universo curado:
-    SPY, QQQ, Dow, Magníficas, Oro, Plata y BTC (proxy IBIT)
-    """
-    try:
-        return get_options_structure_for_api()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno en opciones_estructura: {str(e)}"
-        )
+    return get_options_structure_for_api()
 
-# ============================================================
-# FORECAST CUANTITATIVO
-# ============================================================
+# ================= FORECAST =================
 @app.get("/forecastcuantitativo")
 def forecast_cuantitativo():
-    """
-    Forecast cuantitativo probabilístico:
-    - Fan charts
-    - Tablas
-    - Semáforos
-    """
-    try:
-        return get_forecast_cuantitativo_for_api()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno en forecastcuantitativo: {str(e)}"
-        )
+    return get_forecast_cuantitativo_for_api()
 
-# ============================================================
-# MARKET SCREENER TECNICO (NUEVO – HORIZONS)
-# ============================================================
+# ================= MARKET SCREENER =================
 @app.get("/market/screener")
 def market_screener():
-    """
-    Screener técnico batch:
-    - Precio
-    - Variación diaria
-    - RSI
-    - MACD (sesgo)
-    - SMA21 / SMA200
-    - Volumen contextual (open / close)
-    - Agrupado por sector
-    """
-    try:
-        return get_market_screener_for_api()
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno en market_screener: {str(e)}"
-        )
+    return get_market_screener_for_api()
+
