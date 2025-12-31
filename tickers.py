@@ -1,7 +1,7 @@
 TICKERS_BY_SECTOR = {
 
     # 🟦 Mega Tecnología (Plataformas / Magnificent)
-    "BIG TECH": [
+    "mega_tecnologia": [
         "AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA"
     ],
 
@@ -13,24 +13,24 @@ TICKERS_BY_SECTOR = {
     ],
 
     # 🟩 Finanzas
-    "Sector Bancario": [
+    "finanzas": [
         "JPM","BAC","WFC","GS","MS","C","BK","SCHW",
         "V","MA","AXP","PYPL","BRK-B","BLK"
     ],
 
     # 🟨 Consumo Discrecional
-    "consumo Discrecional": [
+    "consumo_discrecional": [
         "AMZN","NFLX","DIS","NKE","MCD","SBUX","HD","LOW",
         "BKNG","RCL","MAR","GM","F","TSLA","ABNB"
     ],
 
     # 🟨 Consumo Básico (Defensivo)
-    "Consumo Basico": [
+    "consumo_basico": [
         "WMT","KO","PEP","PG","COST","MDLZ","CL","KMB","GIS"
     ],
 
     # 🟥 Energía
-    "Energia": [
+    "energia": [
         "XOM","CVX","SLB","COP","EOG","OXY","PSX","BP","SHEL"
     ],
 
@@ -47,13 +47,13 @@ TICKERS_BY_SECTOR = {
     ],
 
     # 🟫 Materiales y Minería
-    "Materiales": [
+    "materiales": [
         "LIN","APD","SHW","FCX","NEM","GOLD","RIO","BHP",
         "VALE","SCCO","AA","X"
     ],
 
     # 🟦 Utilities (Servicios Públicos)
-    "Utilities": [
+    "utilities": [
         "NEE","DUK","SO","AEP","EXC","SRE","NGG"
     ],
 
@@ -63,19 +63,19 @@ TICKERS_BY_SECTOR = {
     ],
 
     # 🟫 Telecomunicaciones
-    "Telecomunicaciones": [
+    "telecomunicaciones": [
         "VZ","T","TMUS","AMX","TEF","VOD"
     ],
 
     # 🟨 ADRs Internacionales (No Argentina)
-    "ADRS internacionales": [
+    "adrs_internacionales": [
         "BABA","JD","PDD","NTES","BIDU",
         "TSM","INFY","HDB","IBN",
         "NVO","SAP","SONY","TM","HMC"
     ],
 
     # 🟪 Cripto y ETFs relacionados
-    "Cripto": [
+    "cripto_etf": [
         "IBIT","ETHA","COIN","MSTR","RIOT","MARA","HUT"
     ],
 
@@ -83,8 +83,5 @@ TICKERS_BY_SECTOR = {
     "etfs_mercado": [
         "SPY","QQQ","IWM","DIA","EEM","EWZ","EWJ","FXI",
         "XLF","XLK","XLE","XLV","XLY","XLP","XLI","XLB"
-    ]
-    "Acciones argentinas": [
-        "YPF","GGAL","PAM","BMA","CEPU","EDN","SUPV","TGS","TEO"
     ]
 }
