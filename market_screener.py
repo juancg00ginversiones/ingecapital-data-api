@@ -3,76 +3,64 @@ from datetime import datetime
 from typing import Optional
 
 from tickers import TICKERS_BY_SECTOR
-from indicators import (
-    rsi,
-    macd_bias,
-    sma,
-    analyze_volume,
-    get_session_progress
-)
+from indicators import rsi, macd_bias, sma, analyze_volume
 
 
-def analyze_ticker(ticker: str, session_type: str) -> Optional[dict]:
-    df = yf.download(ticker, period="1y", interval="1d", progress=False)
-    if df.empty:
+def analyze_ticker(ticker: str) -> Optional[dict]:
+    try:
+        df = yf.download(ticker, period="1y", interval="1d", progress=False)
+
+        if df.empty or "Close" not in df.columns:
+            return None
+
+        close = df["Close"].dropna()
+        volume = df["Volume"].dropna() if "Volume" in df.columns else None
+
+        if len(close) < 210:
+            return None
+
+        last = close.iloc[-1]
+        prev = close.iloc[-2]
+
+        rsi_val = round(float(rsi(close).iloc[-1]), 2)
+
+        sma21 = sma(close, 21).iloc[-1]
+        sma200 = sma(close, 200).iloc[-1]
+
+        volume_info = analyze_volume(volume)
+
+        summary = " | ".join([
+            "RSI sobrecompra" if rsi_val >= 70 else
+            "RSI sobreventa" if rsi_val <= 30 else
+            "RSI neutral",
+            macd_bias(close),
+            f"SMA21 {'encima' if last > sma21 else 'debajo'}",
+            f"SMA200 {'encima' if last > sma200 else 'debajo'}",
+            volume_info["diagnostic"]
+        ])
+
+        return {
+            "ticker": ticker,
+            "price": round(float(last), 2),
+            "daily_change_pct": round(((last - prev) / prev) * 100, 2),
+            "indicators": {
+                "rsi14": {"value": rsi_val},
+                "macd": {"diagnostic": macd_bias(close)},
+                "sma21": {"status": "above" if last > sma21 else "below"},
+                "sma200": {"status": "above" if last > sma200 else "below"},
+                "volume": volume_info
+            },
+            "summary": summary
+        }
+
+    except Exception as e:
+        print(f"[ERROR] {ticker}: {e}")
         return None
-
-    close = df["Close"].dropna()
-    volume = df["Volume"].dropna()
-
-    if len(close) < 210:
-        return None
-
-    last = close.iloc[-1]
-    prev = close.iloc[-2]
-
-    rsi_val = round(float(rsi(close).iloc[-1]), 2)
-
-    sma21 = sma(close, 21).iloc[-1]
-    sma200 = sma(close, 200).iloc[-1]
-
-    session_progress = (
-        get_session_progress() if session_type == "open" else None
-    )
-
-    volume_info = analyze_volume(
-        volume,
-        session_type=session_type,
-        session_progress=session_progress
-    )
-
-    summary = " | ".join([
-        "RSI sobrecompra" if rsi_val >= 70 else
-        "RSI sobreventa" if rsi_val <= 30 else
-        "RSI neutral",
-        macd_bias(close),
-        f"SMA21 {'encima' if last > sma21 else 'debajo'}",
-        f"SMA200 {'encima' if last > sma200 else 'debajo'}",
-        volume_info["diagnostic"]
-    ])
-
-    return {
-        "ticker": ticker,
-        "price": round(float(last), 2),
-        "daily_change_pct": round(((last - prev) / prev) * 100, 2),
-        "indicators": {
-            "rsi14": {"value": rsi_val},
-            "macd": {"diagnostic": macd_bias(close)},
-            "sma21": {"status": "above" if last > sma21 else "below"},
-            "sma200": {"status": "above" if last > sma200 else "below"},
-            "volume": volume_info
-        },
-        "summary": summary
-    }
 
 
 def get_market_screener_for_api() -> dict:
-    now = datetime.now()
-    session_type = "open" if now.hour < 17 else "close"
-
     output = {
-        "as_of": now.isoformat(),
-        "session_type": session_type,
+        "as_of": datetime.now().isoformat(),
         "sectors": {}
     }
 
@@ -80,7 +68,7 @@ def get_market_screener_for_api() -> dict:
         output["sectors"][sector] = []
 
         for ticker in tickers:
-            data = analyze_ticker(ticker, session_type)
+            data = analyze_ticker(ticker)
             if data:
                 output["sectors"][sector].append(data)
 
