@@ -6,9 +6,18 @@ from tickers import TICKERS_BY_SECTOR
 from indicators import rsi, macd_bias, sma
 
 
+# ============================================================
+# ANALISIS POR TICKER (ROBUSTO – SIN VOLUMEN)
+# ============================================================
 def analyze_ticker(ticker: str) -> Optional[dict]:
     try:
-        df = yf.download(ticker, period="1y", interval="1d", progress=False)
+        df = yf.download(
+            ticker,
+            period="1y",
+            interval="1d",
+            auto_adjust=False,
+            progress=False
+        )
 
         if df is None or df.empty or "Close" not in df.columns:
             return None
@@ -18,15 +27,15 @@ def analyze_ticker(ticker: str) -> Optional[dict]:
         if len(close) < 120:
             return None
 
-        last = float(close.iloc[-1])
-        prev = float(close.iloc[-2])
+        last = close.iloc[-1].item()
+        prev = close.iloc[-2].item()
 
-        rsi_val = float(rsi(close).iloc[-1])
-        sma21 = float(sma(close, 21).iloc[-1])
+        rsi_val = rsi(close).iloc[-1].item()
+        sma21 = sma(close, 21).iloc[-1].item()
 
         sma200 = None
         if len(close) >= 200:
-            sma200 = float(sma(close, 200).iloc[-1])
+            sma200 = sma(close, 200).iloc[-1].item()
 
         summary_parts = [
             "RSI sobrecompra" if rsi_val >= 70 else
@@ -64,6 +73,9 @@ def analyze_ticker(ticker: str) -> Optional[dict]:
         return None
 
 
+# ============================================================
+# ENDPOINT BATCH
+# ============================================================
 def get_market_screener_for_api() -> dict:
     output = {
         "as_of": datetime.now().isoformat(),
@@ -79,4 +91,5 @@ def get_market_screener_for_api() -> dict:
                 output["sectors"][sector].append(data)
 
     return output
+
 
