@@ -73,9 +73,10 @@ def forecast_cuantitativo():
 def market_screener():
     return get_market_screener_for_api()
 # ================= CALCULADORA LECAPS-BONCAPS =================
-@@app.get("/letras-bonos")
+@app.get("/letras-bonos")
 def letras_bonos():
     return get_letras_bonos_for_api()
+
 
 
 
