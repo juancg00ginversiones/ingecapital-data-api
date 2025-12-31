@@ -36,3 +36,58 @@ def macd_bias(series: pd.Series) -> str:
 # ================= SMA =================
 def sma(series: pd.Series, window: int) -> pd.Series:
     return series.rolling(window).mean()
+import yfinance as yf
+
+
+# ============================================================
+# ANALYZE TICKER (FUNCIÓN QUE FALTABA)
+# ============================================================
+
+def analyze_ticker(ticker: str) -> dict:
+    """
+    Devuelve un resumen técnico diario para el market screener.
+    """
+
+    df = yf.download(
+        ticker,
+        period="1y",
+        interval="1d",
+        progress=False
+    )
+
+    if df.empty or len(df) < 50:
+        raise ValueError("Datos insuficientes")
+
+    close = df["Close"]
+
+    last = float(close.iloc[-1].item())
+    prev = float(close.iloc[-2].item())
+    daily_change_pct = round((last / prev - 1) * 100, 2)
+
+    # ================= INDICADORES =================
+
+    rsi_val = float(rsi(close).iloc[-1].item())
+    sma21 = float(sma(close, 21).iloc[-1].item())
+    sma200 = float(sma(close, 200).iloc[-1].item())
+
+    macd_diag = macd_bias(close)
+
+    return {
+        "ticker": ticker,
+        "price": round(last, 2),
+        "daily_change_pct": daily_change_pct,
+        "indicators": {
+            "rsi14": {
+                "value": round(rsi_val, 2)
+            },
+            "macd": {
+                "diagnostic": macd_diag
+            },
+            "sma21": {
+                "status": "above" if last > sma21 else "below"
+            },
+            "sma200": {
+                "status": "above" if last > sma200 else "below"
+            }
+        }
+    }
