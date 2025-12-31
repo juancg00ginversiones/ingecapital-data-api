@@ -7,14 +7,14 @@ from typing import Dict, Any, List
 # CONFIG
 # ============================================================
 URL_NOTES = "https://data912.com/live/arg_notes"
-URL_MEP = "https://data912.com/live/mep"
+URL_BONDS = "https://data912.com/live/arg_bonds"
 
-# Escenarios de dólar (offsets)
+# Escenarios de dólar (en pesos)
 DOLAR_OFFSETS = [-200, -100, 0, 100, 200]
 
 
 # ============================================================
-# LECAPS (MISMAS QUE YA USÁS)
+# LECAPS
 # ============================================================
 LECAPS = {
     "S16E6": {"expiry": "2026-01-16", "vpv": 119.625},
@@ -41,10 +41,23 @@ def to_timestamp(d: date) -> int:
     return int(datetime(d.year, d.month, d.day).timestamp() * 1000)
 
 
-def fetch_json(url: str) -> List[Dict[str, Any]]:
+def fetch_json(url: str):
     r = requests.get(url, timeout=15)
     r.raise_for_status()
     return r.json()
+
+
+def fetch_dolar_al30() -> float:
+    """
+    Toma el dólar implícito desde AL30 (ask).
+    """
+    bonds = fetch_json(URL_BONDS)
+
+    for item in bonds:
+        if item.get("ticker") == "AL30" and item.get("ask"):
+            return float(item["ask"])
+
+    raise ValueError("No se encontró AL30 con campo 'ask'")
 
 
 # ============================================================
@@ -61,16 +74,8 @@ def get_lecap_band_for_api() -> Dict[str, Any]:
         if i.get("symbol") in LECAPS and i.get("px_ask")
     }
 
-    # --- dólar MEP ---
-    mep_data = fetch_json(URL_MEP)
-    dolar_hoy = None
-    for item in mep_data:
-        if item.get("ask"):
-            dolar_hoy = float(item["ask"])
-            break
-
-    if dolar_hoy is None:
-        raise ValueError("No se pudo obtener el dólar MEP")
+    # --- dólar hoy (AL30 ask) ---
+    dolar_hoy = fetch_dolar_al30()
 
     escenarios_dolar = [round(dolar_hoy + x, 2) for x in DOLAR_OFFSETS]
 
@@ -86,12 +91,16 @@ def get_lecap_band_for_api() -> Dict[str, Any]:
         if days <= 0:
             continue
 
+        # rendimiento en pesos
         rendimiento = (cfg["vpv"] / price) - 1.0
-        break_even = dolar_hoy * (1 + rendimiento)
 
+        # breakeven USD = 0
+        break_even = dolar_hoy * (cfg["vpv"] / price)
+
+        # escenarios USD (SIGNO CORRECTO)
         escenarios = {}
         for d in escenarios_dolar:
-            escenarios[str(d)] = round((d / break_even - 1) * 100, 2)
+            escenarios[str(d)] = round((break_even / d - 1.0) * 100.0, 2)
 
         lecaps_out.append({
             "symbol": sym,
@@ -114,6 +123,7 @@ def get_lecap_band_for_api() -> Dict[str, Any]:
         "ok": True,
         "as_of": now,
         "dolar_hoy": round(dolar_hoy, 2),
+        "dolar_source": "AL30 ask (data912)",
         "escenarios_dolar": escenarios_dolar,
         "lecaps": lecaps_out
     }
