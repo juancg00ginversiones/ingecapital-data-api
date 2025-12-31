@@ -8,6 +8,7 @@ from opciones_estructura import get_options_structure_for_api
 from forecast_cuantitativo import get_forecast_cuantitativo_for_api
 from letras_bonos_engine import get_letras_bonos_for_api
 from market_screener import get_market_screener_for_api
+from lecap_band_engine import get_lecap_band_for_api
 
 
 app = FastAPI(
@@ -76,7 +77,16 @@ def market_screener():
 @app.get("/letras-bonos")
 def letras_bonos():
     return get_letras_bonos_for_api()
-
+# ================= BANDA DOLAR-LECAPS-BONCAPS =================
+@app.get("/lecap-band")
+def lecap_band():
+    try:
+        return get_lecap_band_for_api()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno en lecap-band: {str(e)}"
+        )
 
 
 
