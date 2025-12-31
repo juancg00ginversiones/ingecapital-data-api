@@ -10,8 +10,6 @@ from typing import Dict, Any, List
 URL_NOTES = "https://data912.com/live/arg_notes"
 URL_BONDS = "https://data912.com/live/arg_bonds"
 
-DEFAULT_MONTO = 100000.0
-
 
 # ============================================================
 # LISTA CURADA DE INSTRUMENTOS
@@ -52,19 +50,17 @@ def fetch_json(url: str) -> List[Dict[str, Any]]:
     return r.json()
 
 
-def compute_metrics(price: float, vpv: float, days: int, monto: float):
+def compute_metrics(price: float, vpv: float, days: int):
     rendimiento = (vpv / price) - 1.0
     tna = (1.0 + rendimiento) ** (365.0 / days) - 1.0
     tem = (1.0 + tna) ** (1.0 / 12.0) - 1.0
-    monto_final = monto * (1.0 + rendimiento)
-
-    return rendimiento, tna, tem, monto_final
+    return rendimiento, tna, tem
 
 
 # ============================================================
 # CORE ENGINE
 # ============================================================
-def get_letras_bonos_for_api(monto: float = DEFAULT_MONTO) -> Dict[str, Any]:
+def get_letras_bonos_for_api() -> Dict[str, Any]:
     today = date.today()
     now = datetime.now().isoformat()
 
@@ -93,21 +89,20 @@ def get_letras_bonos_for_api(monto: float = DEFAULT_MONTO) -> Dict[str, Any]:
         expiry = parse_date(cfg["expiry"])
         days = days_to_expiry(expiry)
 
-        # 🔴 Si está vencido, se ignora
+        # 🔴 Vencido → se ignora
         if days <= 0:
             continue
 
         price = price_map.get(sym)
 
-        # 🔴 Si no hay precio actual, se ignora
+        # 🔴 Sin precio → se ignora
         if not price or price <= 0:
             continue
 
-        rendimiento, tna, tem, monto_final = compute_metrics(
+        rendimiento, tna, tem = compute_metrics(
             price=price,
             vpv=cfg["vpv"],
-            days=days,
-            monto=monto
+            days=days
         )
 
         rows.append({
@@ -119,9 +114,6 @@ def get_letras_bonos_for_api(monto: float = DEFAULT_MONTO) -> Dict[str, Any]:
             "rendimiento_directo": round(rendimiento, 8),
             "tna": round(tna, 8),
             "tem": round(tem, 8),
-            "monto_invertido": float(monto),
-            "monto_final": round(monto_final, 2),
-            "ganancia": round(monto_final - monto, 2),
         })
 
     rows.sort(key=lambda x: x["days_remaining"])
@@ -129,7 +121,6 @@ def get_letras_bonos_for_api(monto: float = DEFAULT_MONTO) -> Dict[str, Any]:
     return {
         "ok": True,
         "as_of": now,
-        "monto_input": float(monto),
         "total": len(rows),
         "items": rows,
     }
