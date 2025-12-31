@@ -1,21 +1,38 @@
 import numpy as np
 import pandas as pd
+import yfinance as yf
 
 
-# ================= RSI =================
+# ============================================================
+# RSI (WILDER CLÁSICO – CONSISTENTE CON TRADINGVIEW)
+# ============================================================
+
 def rsi(series: pd.Series, period: int = 14) -> pd.Series:
     delta = series.diff()
-    gain = delta.clip(lower=0)
-    loss = -delta.clip(upper=0)
 
-    avg_gain = gain.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
-    avg_loss = loss.ewm(alpha=1 / period, min_periods=period, adjust=False).mean()
+    gain = delta.where(delta > 0, 0.0)
+    loss = -delta.where(delta < 0, 0.0)
+
+    # Promedios iniciales con SMA
+    avg_gain = gain.rolling(period, min_periods=period).mean()
+    avg_loss = loss.rolling(period, min_periods=period).mean()
+
+    # Wilder smoothing (RMA)
+    avg_gain = avg_gain.combine_first(
+        gain.ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
+    )
+    avg_loss = avg_loss.combine_first(
+        loss.ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
+    )
 
     rs = avg_gain / avg_loss.replace(0, np.nan)
     return 100 - (100 / (1 + rs))
 
 
-# ================= MACD (SES GO) =================
+# ============================================================
+# MACD – SOLO SESGO (ALCISTA / BAJISTA)
+# ============================================================
+
 def macd_bias(series: pd.Series) -> str:
     ema12 = series.ewm(span=12, adjust=False).mean()
     ema26 = series.ewm(span=26, adjust=False).mean()
@@ -33,26 +50,34 @@ def macd_bias(series: pd.Series) -> str:
     return "MACD: neutro"
 
 
-# ================= SMA =================
+# ============================================================
+# SMA
+# ============================================================
+
 def sma(series: pd.Series, window: int) -> pd.Series:
     return series.rolling(window).mean()
-import yfinance as yf
 
 
 # ============================================================
-# ANALYZE TICKER (FUNCIÓN QUE FALTABA)
+# ANALYZE TICKER (USADO POR MARKET SCREENER)
 # ============================================================
 
 def analyze_ticker(ticker: str) -> dict:
     """
-    Devuelve un resumen técnico diario para el market screener.
+    Devuelve:
+    - precio
+    - variación diaria %
+    - RSI(14)
+    - sesgo MACD
+    - SMA21 / SMA200 (above / below)
     """
 
     df = yf.download(
         ticker,
         period="1y",
         interval="1d",
-        progress=False
+        progress=False,
+        auto_adjust=False   # 👈 CLAVE PARA RSI CORRECTO
     )
 
     if df.empty or len(df) < 50:
@@ -91,3 +116,4 @@ def analyze_ticker(ticker: str) -> dict:
             }
         }
     }
+
