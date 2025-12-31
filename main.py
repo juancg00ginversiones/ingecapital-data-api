@@ -1,14 +1,12 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-
 from curvas_opciones import analyze_ticker_for_api, LISTA_TICKERS
 from bonos import get_all_bonds_for_api
 from dolares import get_dolares_for_api
 from noticias import get_financial_news_for_api
 from opciones_estructura import get_options_structure_for_api
 from forecast_cuantitativo import get_forecast_cuantitativo_for_api
-
-# NUEVO
+from letras_bonos_engine import get_letras_bonos_for_api
 from market_screener import get_market_screener_for_api
 
 
@@ -74,4 +72,22 @@ def forecast_cuantitativo():
 @app.get("/market/screener")
 def market_screener():
     return get_market_screener_for_api()
+# ================= CALCULADORA LECAPS-BONCAPS =================
+@app.get("/letras-bonos")
+def letras_bonos(monto: float = 100000):
+    """
+    Letras y Bonos Capitalizables:
+    - filtra vencidos
+    - busca precio en el endpoint correcto
+    - calcula rendimiento, TNA, TEM
+    - monto es input del usuario
+    """
+    try:
+        return get_letras_bonos_for_api(monto=monto)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno en letras-bonos: {str(e)}"
+        )
+
 
