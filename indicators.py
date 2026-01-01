@@ -1,47 +1,88 @@
+import numpy as np
+import pandas as pd
+import yfinance as yf
+
+
+# ================= RSI SIMPLE (ESTABLE) =================
+def rsi(series: pd.Series, period: int = 14) -> pd.Series:
+    delta = series.diff()
+
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+
+    avg_gain = gain.ewm(alpha=1 / period, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1 / period, adjust=False).mean()
+
+    rs = avg_gain / avg_loss.replace(0, np.nan)
+    return 100 - (100 / (1 + rs))
+
+
+# ================= MACD (SES GO) =================
+def macd_bias(series: pd.Series) -> str:
+    ema12 = series.ewm(span=12, adjust=False).mean()
+    ema26 = series.ewm(span=26, adjust=False).mean()
+
+    macd = ema12 - ema26
+    signal = macd.ewm(span=9, adjust=False).mean()
+
+    macd_last = macd.iloc[-1]
+    signal_last = signal.iloc[-1]
+
+    if macd_last > signal_last:
+        return "MACD: sesgo alcista"
+    elif macd_last < signal_last:
+        return "MACD: sesgo bajista"
+    return "MACD: neutro"
+
+
+# ================= SMA =================
+def sma(series: pd.Series, window: int) -> pd.Series:
+    return series.rolling(window).mean()
+
+
+# ================= ANALYZE TICKER (BASELINE) =================
 def analyze_ticker(ticker: str) -> dict:
     df = yf.download(
         ticker,
-        period="6mo",
+        period="1y",
         interval="1d",
-        progress=False,
-        auto_adjust=False
+        progress=False
     )
 
-    if df.empty or df["Close"].dropna().shape[0] < 2:
-        raise ValueError("Sin datos de precio")
+    if df.empty:
+        raise ValueError("Sin datos")
 
     close = df["Close"].dropna()
 
+    # Usar última vela disponible (aunque sea vieja)
+    if len(close) < 2:
+        raise ValueError("Datos insuficientes")
+
     last = float(close.iloc[-1])
     prev = float(close.iloc[-2])
+
     daily_change_pct = (last / prev - 1) * 100
 
-    # RSI
-    rsi_val = None
+    # Indicadores (sin romper si faltan)
     try:
-        rsi_series = rsi(close, 14)
-        if not pd.isna(rsi_series.iloc[-1]):
-            rsi_val = round(float(rsi_series.iloc[-1]), 2)
+        rsi_val = float(rsi(close).iloc[-1])
     except:
-        pass
+        rsi_val = None
 
-    # MACD
     try:
         macd_diag = macd_bias(close)
     except:
         macd_diag = "MACD: na"
 
-    # SMA21
     try:
         sma21_val = sma(close, 21).iloc[-1]
-        sma21_status = "above" if last > float(sma21_val) else "below"
+        sma21_status = "above" if last > sma21_val else "below"
     except:
         sma21_status = "na"
 
-    # SMA200
     try:
         sma200_val = sma(close, 200).iloc[-1]
-        sma200_status = "above" if last > float(sma200_val) else "below"
+        sma200_status = "above" if last > sma200_val else "below"
     except:
         sma200_status = "na"
 
@@ -50,9 +91,10 @@ def analyze_ticker(ticker: str) -> dict:
         "price": round(last, 2),
         "daily_change_pct": round(daily_change_pct, 2),
         "indicators": {
-            "rsi14": {"value": rsi_val},
+            "rsi14": {"value": None if rsi_val is None else round(rsi_val, 2)},
             "macd": {"diagnostic": macd_diag},
             "sma21": {"status": sma21_status},
             "sma200": {"status": sma200_status}
         }
     }
+
