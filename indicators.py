@@ -6,27 +6,32 @@ import yfinance as yf
 # ============================================================
 # RSI (WILDER CLÁSICO – CONSISTENTE CON TRADINGVIEW)
 # ============================================================
-
 def rsi(series: pd.Series, period: int = 14) -> pd.Series:
     delta = series.diff()
 
-    gain = delta.where(delta > 0, 0.0)
-    loss = -delta.where(delta < 0, 0.0)
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
 
-    # Promedios iniciales con SMA
+    rsi_series = pd.Series(index=series.index, dtype=float)
+
+    # Primer promedio (SMA)
     avg_gain = gain.rolling(period, min_periods=period).mean()
     avg_loss = loss.rolling(period, min_periods=period).mean()
 
-    # Wilder smoothing (RMA)
-    avg_gain = avg_gain.combine_first(
-        gain.ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
-    )
-    avg_loss = avg_loss.combine_first(
-        loss.ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
-    )
+    # Valor inicial
+    for i in range(len(series)):
+        if i < period:
+            rsi_series.iloc[i] = np.nan
+        elif i == period:
+            rs = avg_gain.iloc[i] / avg_loss.iloc[i] if avg_loss.iloc[i] != 0 else np.nan
+            rsi_series.iloc[i] = 100 - (100 / (1 + rs))
+        else:
+            avg_gain.iloc[i] = (avg_gain.iloc[i - 1] * (period - 1) + gain.iloc[i]) / period
+            avg_loss.iloc[i] = (avg_loss.iloc[i - 1] * (period - 1) + loss.iloc[i]) / period
+            rs = avg_gain.iloc[i] / avg_loss.iloc[i] if avg_loss.iloc[i] != 0 else np.nan
+            rsi_series.iloc[i] = 100 - (100 / (1 + rs))
 
-    rs = avg_gain / avg_loss.replace(0, np.nan)
-    return 100 - (100 / (1 + rs))
+    return rsi_series
 
 
 # ============================================================
