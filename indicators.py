@@ -78,21 +78,22 @@ def analyze_ticker(ticker: str) -> dict:
     """
 
     df = yf.download(
-        ticker,
-        period="1y",
-        interval="1d",
-        progress=False,
-        auto_adjust=False   # 👈 CLAVE PARA RSI CORRECTO
-    )
+    ticker,
+    period="6mo",
+    interval="1d",
+    progress=False,
+    auto_adjust=False
+)
 
-    if df.empty or len(df) < 50:
-        raise ValueError("Datos insuficientes")
+# Validación mínima realista
+if df.empty or df["Close"].dropna().shape[0] < 20:
+    raise ValueError("Histórico insuficiente")
 
-    close = df["Close"]
+# Usar siempre la última vela cerrada
+close = df["Close"].dropna()
 
-    last = float(close.iloc[-1].item())
-    prev = float(close.iloc[-2].item())
-    daily_change_pct = round((last / prev - 1) * 100, 2)
+last = float(close.iloc[-1])
+prev = float(close.iloc[-2])
 
     # ================= INDICADORES =================
 
