@@ -1,205 +1,110 @@
-# ============================================================
-# ESTRUCTURA DE OPCIONES – INGECAPITAL PRO (FINAL)
-# ============================================================
-
 import math
 import time
 import datetime as dt
+from datetime import timezone
 import yfinance as yf
 import pandas as pd
+import numpy as np
 
-# ============================================================
 # CONFIGURACIÓN
-# ============================================================
-
 RISK_FREE = 0.0
 CONTRACT_MULT = 100
+CACHE_TTL = 60 * 10 
 
-CACHE_TTL = 60 * 10  # 10 minutos
+UNIVERSE = ["SPY", "QQQ", "DIA", "NVDA", "AAPL", "MSFT", "AMZN", "META", "TSLA", "GLD", "SLV", "IBIT"]
 
-# Universo curado (índices, magnificas, commodities, BTC proxy)
-UNIVERSE = [
-    "SPY",   # S&P 500
-    "QQQ",   # Nasdaq
-    "DIA",   # Dow Jones
-    "NVDA",
-    "AAPL",
-    "MSFT",
-    "AMZN",
-    "META",
-    "TSLA",
-    "GLD",   # Oro
-    "SLV",   # Plata
-    "IBIT"   # Bitcoin proxy
-]
-
-_CACHE = {
-    "ts": 0,
-    "data": None
-}
-
-# ============================================================
-# UTILIDADES
-# ============================================================
+_CACHE = {"ts": 0, "data": None}
 
 def clean_iv(iv):
-    if iv is None or pd.isna(iv):
-        return None
-    if iv > 3:
-        iv = iv / 100
-    if iv < 0.01 or iv > 3:
-        return None
-    return float(iv)
-
-def days_to_expiry(expiry):
-    return (expiry - dt.date.today()).days
+    if iv is None or pd.isna(iv): return None
+    if iv > 3: iv /= 100
+    return float(iv) if 0.01 <= iv <= 3 else None
 
 def norm_pdf(x):
     return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
 
 def bs_gamma(S, K, T, r, sigma):
-    if T <= 0 or sigma is None or sigma <= 0:
-        return 0.0
+    if T <= 0 or not sigma or sigma <= 0: return 0.0
     d1 = (math.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * math.sqrt(T))
     return norm_pdf(d1) / (S * sigma * math.sqrt(T))
 
-# ============================================================
-# OPCIONES
-# ============================================================
-
 def get_options_chain(symbol):
     ticker = yf.Ticker(symbol)
-    hist = ticker.history(period="5d")
-
-    if hist.empty or not ticker.options:
-        raise ValueError("Sin datos de opciones.")
-
+    hist = ticker.history(period="2d", auto_adjust=True)
+    if hist.empty: raise ValueError("Sin precio spot")
+    
     spot = float(hist["Close"].iloc[-1])
-    expiry = dt.datetime.strptime(ticker.options[0], "%Y-%m-%d").date()
-    chain = ticker.option_chain(ticker.options[0])
+    options_dates = ticker.options
+    if not options_dates: raise ValueError("Sin opciones")
+
+    chain = None
+    expiry_date = None
+    # Buscamos en las primeras 3 fechas hasta encontrar una con datos
+    for date in options_dates[:3]:
+        try:
+            temp_chain = ticker.option_chain(date)
+            if temp_chain.calls is not None and not temp_chain.calls.empty:
+                chain = temp_chain
+                expiry_date = date
+                break
+        except: continue
+
+    if not chain: raise ValueError("Cadena vacía")
 
     rows = []
-    for _, r in chain.calls.iterrows():
-        rows.append({
-            "strike": r["strike"],
-            "oi_call": r["openInterest"],
-            "oi_put": 0,
-            "iv": clean_iv(r["impliedVolatility"])
-        })
-    for _, r in chain.puts.iterrows():
-        rows.append({
-            "strike": r["strike"],
-            "oi_call": 0,
-            "oi_put": r["openInterest"],
-            "iv": clean_iv(r["impliedVolatility"])
-        })
+    # Procesamiento seguro de Calls
+    if chain.calls is not None:
+        for _, r in chain.calls.iterrows():
+            rows.append({"strike": r["strike"], "oi_call": r.get("openInterest", 0) or 0, "oi_put": 0, "iv": clean_iv(r.get("impliedVolatility"))})
+    # Procesamiento seguro de Puts
+    if chain.puts is not None:
+        for _, r in chain.puts.iterrows():
+            rows.append({"strike": r["strike"], "oi_call": 0, "oi_put": r.get("openInterest", 0) or 0, "iv": clean_iv(r.get("impliedVolatility"))})
 
-    df = pd.DataFrame(rows).groupby("strike").sum(numeric_only=True).reset_index()
-    return df.sort_values("strike"), spot, expiry
-
-# ============================================================
-# CÁLCULO DE NIVELES
-# ============================================================
+    df = pd.DataFrame(rows).groupby("strike").agg({"oi_call": "sum", "oi_put": "sum", "iv": "mean"}).reset_index()
+    return df, spot, dt.datetime.strptime(expiry_date, "%Y-%m-%d").date()
 
 def build_levels(df, spot, expiry):
-    dte = days_to_expiry(expiry)
-    T = max(dte, 0) / 365
+    dte = (expiry - dt.date.today()).days
+    T = max(dte, 0.5) / 365
     use_gamma = dte > 1
 
-    df["gex_call"] = 0.0
-    df["gex_put"] = 0.0
-
+    df["gex_net"] = 0.0
     for i, r in df.iterrows():
-        if use_gamma:
+        if use_gamma and r["iv"]:
             g = bs_gamma(spot, r["strike"], T, RISK_FREE, r["iv"])
-            df.at[i, "gex_call"] = g * r["oi_call"] * CONTRACT_MULT
-            df.at[i, "gex_put"] = -g * r["oi_put"] * CONTRACT_MULT
+            df.at[i, "gex_net"] = (r["oi_call"] - r["oi_put"]) * g * CONTRACT_MULT
         else:
-            df.at[i, "gex_call"] = r["oi_call"]
-            df.at[i, "gex_put"] = -r["oi_put"]
-
-    df["gex_net"] = df["gex_call"] + df["gex_put"]
+            df.at[i, "gex_net"] = r["oi_call"] - r["oi_put"]
 
     gamma_flip = None
-    for i in range(1, len(df)):
-        if df.iloc[i-1]["gex_net"] * df.iloc[i]["gex_net"] < 0:
-            gamma_flip = df.iloc[i]["strike"]
+    df_s = df.sort_values("strike")
+    for i in range(1, len(df_s)):
+        if df_s.iloc[i-1]["gex_net"] * df_s.iloc[i]["gex_net"] < 0:
+            gamma_flip = df_s.iloc[i]["strike"]
             break
 
     return {
-        "spot": float(spot),
+        "spot": round(spot, 2),
         "expiry": expiry.isoformat(),
-        "dte": int(dte),
-        "analysis_type": "gamma" if use_gamma else "oi_proxy",
+        "dte": dte,
         "put_wall": float(df.loc[df["oi_put"].idxmax(), "strike"]),
         "call_wall": float(df.loc[df["oi_call"].idxmax(), "strike"]),
-        "gamma_peak": float(df.loc[df["gex_net"].abs().idxmax(), "strike"]),
         "gamma_flip": float(gamma_flip) if gamma_flip else None
     }
 
-# ============================================================
-# RESUMEN INTERPRETATIVO (CLAVE)
-# ============================================================
-
-def explain_market_structure(levels):
-    spot = levels["spot"]
-    pw = levels["put_wall"]
-    cw = levels["call_wall"]
-    gp = levels["gamma_peak"]
-    gf = levels["gamma_flip"]
-    use_gamma = levels["analysis_type"] == "gamma"
-
-    lines = []
-    lines.append("Resumen del mercado de opciones:")
-
-    if use_gamma:
-        lines.append("Análisis basado en Gamma Exposure.")
-    else:
-        lines.append("Análisis basado en Open Interest (vencimiento inmediato).")
-
-    if abs(spot - gp) / spot < 0.01:
-        lines.append("El precio se encuentra en zona de equilibrio (Gamma Peak), lo que sugiere lateralización.")
-    elif spot < pw:
-        lines.append("El precio está por debajo del Put Wall, aumentando el riesgo de aceleración bajista.")
-    elif spot > cw:
-        lines.append("El precio está por encima del Call Wall, lo que puede generar aceleración alcista.")
-    else:
-        lines.append("El mercado se encuentra en transición entre niveles clave.")
-
-    if gf:
-        if spot < gf:
-            lines.append("Por debajo del Gamma Flip se espera mayor volatilidad.")
-        else:
-            lines.append("Por encima del Gamma Flip el mercado suele comportarse de forma más estable.")
-
-    return " ".join(lines)
-
-# ============================================================
-# API PRINCIPAL
-# ============================================================
-
 def get_options_structure_for_api():
     now = time.time()
-    if _CACHE["data"] is not None and (now - _CACHE["ts"]) < CACHE_TTL:
-        return _CACHE["data"]
+    if _CACHE["data"] and (now - _CACHE["ts"]) < CACHE_TTL: return _CACHE["data"]
 
     data = {}
     for symbol in UNIVERSE:
         try:
             df, spot, expiry = get_options_chain(symbol)
-            levels = build_levels(df, spot, expiry)
-            levels["summary"] = explain_market_structure(levels)
-            data[symbol] = levels
+            data[symbol] = build_levels(df, spot, expiry)
         except Exception as e:
             data[symbol] = {"error": str(e)}
 
-    output = {
-        "updated_at": dt.datetime.utcnow().isoformat() + "Z",
-        "universe": UNIVERSE,
-        "data": data
-    }
-
-    _CACHE["data"] = output
+    _CACHE["data"] = {"updated_at": dt.datetime.now(timezone.utc).isoformat(), "data": data}
     _CACHE["ts"] = now
-    return output
-
+    return _CACHE["data"]
