@@ -1,87 +1,74 @@
 TICKERS_BY_SECTOR = {
 
-    # 🟦 Mega Tecnología (Plataformas / Magnificent)
+    # 🇺🇸 ETFs de Mercado (Estados Unidos)
+    "etfs_mercado_usa": [
+        "SPY", "QQQ", "IWM", "DIA", "EEM", "EWJ", "FXI", "EWZ"
+    ],
+
+    # ⭐ Magníficas / Mega Tecnología
     "mega_tecnologia": [
-        "AAPL","MSFT","GOOGL","AMZN","META","NVDA","TSLA"
+        "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA", "NFLX"
     ],
 
-    # 🟦 Tecnología (Software, Semiconductores, Cloud, Ciberseguridad)
-    "tecnologia": [
-        "ADBE","ORCL","CRM","INTC","AMD","QCOM","AVGO","IBM",
-        "SNOW","NOW","PANW","CSCO","LRCX","ASML","TXN","MU",
-        "ARM","MRVL","KLAC","NET","DDOG","CRWD","ZS"
+    # 🇦🇷 ADRs Argentina
+    "adrs_argentina": [
+        "YPF", "GGAL", "BMA", "SUPV", "PAM", "CEPU", "EDN", "TGS"
     ],
 
-    # 🟩 Finanzas
-    "finanzas": [
-        "JPM","BAC","WFC","GS","MS","C","BK","SCHW",
-        "V","MA","AXP","PYPL","BRK-B","BLK"
+    # ₿ Cripto y relacionados
+    "cripto": [
+        "IBIT", "ETHA", "COIN", "MSTR", "RIOT", "MARA", "HUT", "BITF"
     ],
 
-    # 🟨 Consumo Discrecional
-    "consumo_discrecional": [
-        "AMZN","NFLX","DIS","NKE","MCD","SBUX","HD","LOW",
-        "BKNG","RCL","MAR","GM","F","TSLA","ABNB"
+    # 🇧🇷 Brasil
+    "brasil": [
+        "EWZ", "NU", "BBD", "XP", "VALE", "PBR", "ITUB", "ABEV"
     ],
 
-    # 🟨 Consumo Básico (Defensivo)
-    "consumo_basico": [
-        "WMT","KO","PEP","PG","COST","MDLZ","CL","KMB","GIS"
+    # 🇨🇳 China
+    "china": [
+        "FXI", "BABA", "JD", "NIO", "XPEV", "BIDU", "PDD", "NTES"
     ],
 
-    # 🟥 Energía
+    # 💻 Tecnología USA (no mega)
+    "tecnologia_usa": [
+        "ADBE", "ORCL", "CRM", "AMD", "INTC", "AVGO", "CSCO", "NOW"
+    ],
+
+    # 🏦 Finanzas USA
+    "finanzas_usa": [
+        "JPM", "BAC", "WFC", "GS", "MS", "V", "MA", "BRK-B"
+    ],
+
+    # 🛒 Consumo
+    "consumo_usa": [
+        "WMT", "KO", "PEP", "PG", "COST", "MCD", "NKE", "SBUX"
+    ],
+
+    # ⚡ Energía
     "energia": [
-        "XOM","CVX","SLB","COP","EOG","OXY","PSX","BP","SHEL"
+        "XOM", "CVX", "SLB", "COP", "EOG", "OXY", "BP", "PSX"
     ],
 
-    # 🟪 Salud y Biotecnología
+    # 🧬 Salud
     "salud": [
-        "JNJ","PFE","MRK","ABBV","LLY","UNH","MDT","ABT",
-        "TMO","DHR","BMY","GILD","ISRG","VRTX","BIIB"
+        "JNJ", "LLY", "UNH", "ABBV", "MRK", "PFE", "TMO", "DHR"
     ],
 
-    # 🟧 Industriales
+    # 🏭 Industriales
     "industriales": [
-        "CAT","DE","BA","GE","HON","MMM","UPS","FDX",
-        "LMT","RTX","NOC","ETN","EMR"
+        "CAT", "DE", "BA", "GE", "HON", "UPS", "FDX", "LMT"
     ],
 
-    # 🟫 Materiales y Minería
-    "materiales": [
-        "LIN","APD","SHW","FCX","NEM","GOLD","RIO","BHP",
-        "VALE","SCCO","AA","X"
+    # 🟡 Commodities
+    "commodities": [
+        "GLD", "SLV"
     ],
 
-    # 🟦 Utilities (Servicios Públicos)
-    "utilities": [
-        "NEE","DUK","SO","AEP","EXC","SRE","NGG"
-    ],
-
-    # 🟨 Inmobiliario (REITs)
-    "inmobiliario": [
-        "AMT","PLD","CCI","EQIX","SPG","O","PSA"
-    ],
-
-    # 🟫 Telecomunicaciones
-    "telecomunicaciones": [
-        "VZ","T","TMUS","AMX","TEF","VOD"
-    ],
-
-    # 🟨 ADRs Internacionales (No Argentina)
-    "adrs_internacionales": [
-        "BABA","JD","PDD","NTES","BIDU",
-        "TSM","INFY","HDB","IBN",
-        "NVO","SAP","SONY","TM","HMC"
-    ],
-
-    # 🟪 Cripto y ETFs relacionados
-    "cripto_etf": [
-        "IBIT","ETHA","COIN","MSTR","RIOT","MARA","HUT"
-    ],
-
-    # 🟦 ETFs de Mercado (Referencia Macro)
-    "etfs_mercado": [
-        "SPY","QQQ","IWM","DIA","EEM","EWZ","EWJ","FXI",
-        "XLF","XLK","XLE","XLV","XLY","XLP","XLI","XLB"
+    #  mineras
+    "mineras": [
+        "GOLD", "PAAS", "HMY", "CDE", "KGC"
     ]
+
 }
+
