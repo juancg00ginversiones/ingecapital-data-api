@@ -3,7 +3,9 @@ import pandas as pd
 import yfinance as yf
 
 
-# ================= RSI SIMPLE (ESTABLE) =================
+# ============================================================
+# RSI (ESTÁNDAR, ESTABLE)
+# ============================================================
 def rsi(series: pd.Series, period: int = 14) -> pd.Series:
     delta = series.diff()
 
@@ -14,10 +16,14 @@ def rsi(series: pd.Series, period: int = 14) -> pd.Series:
     avg_loss = loss.ewm(alpha=1 / period, adjust=False).mean()
 
     rs = avg_gain / avg_loss.replace(0, np.nan)
-    return 100 - (100 / (1 + rs))
+    rsi = 100 - (100 / (1 + rs))
+
+    return rsi
 
 
-# ================= MACD (SES GO) =================
+# ============================================================
+# MACD (SES GO)
+# ============================================================
 def macd_bias(series: pd.Series) -> str:
     ema12 = series.ewm(span=12, adjust=False).mean()
     ema26 = series.ewm(span=26, adjust=False).mean()
@@ -35,12 +41,16 @@ def macd_bias(series: pd.Series) -> str:
     return "MACD: neutro"
 
 
-# ================= SMA =================
+# ============================================================
+# SMA
+# ============================================================
 def sma(series: pd.Series, window: int) -> pd.Series:
     return series.rolling(window).mean()
 
 
-# ================= ANALYZE TICKER (BASELINE) =================
+# ============================================================
+# ANALYZE TICKER (BASELINE ESTABLE)
+# ============================================================
 def analyze_ticker(ticker: str) -> dict:
     df = yf.download(
         ticker,
@@ -50,40 +60,42 @@ def analyze_ticker(ticker: str) -> dict:
     )
 
     if df.empty:
-        raise ValueError("Sin datos")
+        raise ValueError("Sin datos de Yahoo Finance")
 
     close = df["Close"].dropna()
 
-    # Usar última vela disponible (aunque sea vieja)
     if len(close) < 2:
         raise ValueError("Datos insuficientes")
 
+    # Última vela disponible (aunque el mercado esté cerrado)
     last = float(close.iloc[-1])
     prev = float(close.iloc[-2])
 
     daily_change_pct = (last / prev - 1) * 100
 
-    # Indicadores (sin romper si faltan)
+    # ------------------------
+    # Indicadores (tolerantes)
+    # ------------------------
     try:
         rsi_val = float(rsi(close).iloc[-1])
-    except:
+    except Exception:
         rsi_val = None
 
     try:
         macd_diag = macd_bias(close)
-    except:
+    except Exception:
         macd_diag = "MACD: na"
 
     try:
         sma21_val = sma(close, 21).iloc[-1]
         sma21_status = "above" if last > sma21_val else "below"
-    except:
+    except Exception:
         sma21_status = "na"
 
     try:
         sma200_val = sma(close, 200).iloc[-1]
         sma200_status = "above" if last > sma200_val else "below"
-    except:
+    except Exception:
         sma200_status = "na"
 
     return {
@@ -91,10 +103,17 @@ def analyze_ticker(ticker: str) -> dict:
         "price": round(last, 2),
         "daily_change_pct": round(daily_change_pct, 2),
         "indicators": {
-            "rsi14": {"value": None if rsi_val is None else round(rsi_val, 2)},
-            "macd": {"diagnostic": macd_diag},
-            "sma21": {"status": sma21_status},
-            "sma200": {"status": sma200_status}
+            "rsi14": {
+                "value": None if rsi_val is None else round(rsi_val, 2)
+            },
+            "macd": {
+                "diagnostic": macd_diag
+            },
+            "sma21": {
+                "status": sma21_status
+            },
+            "sma200": {
+                "status": sma200_status
+            }
         }
     }
-
