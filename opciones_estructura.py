@@ -4,7 +4,6 @@ import datetime as dt
 from datetime import timezone
 import yfinance as yf
 import pandas as pd
-import numpy as np
 
 # CONFIGURACIÓN
 RISK_FREE = 0.0
@@ -31,15 +30,19 @@ def bs_gamma(S, K, T, r, sigma):
 def get_options_chain(symbol):
     ticker = yf.Ticker(symbol)
     hist = ticker.history(period="2d", auto_adjust=True)
-    if hist.empty: raise ValueError("Sin precio spot")
+    if hist.empty: raise ValueError("Precio spot no disponible")
+    
+    # Manejo de MultiIndex para el precio spot
+    if isinstance(hist.columns, pd.MultiIndex):
+        hist.columns = hist.columns.get_level_values(0)
     
     spot = float(hist["Close"].iloc[-1])
     options_dates = ticker.options
-    if not options_dates: raise ValueError("Sin opciones")
+    if not options_dates: raise ValueError("No hay opciones disponibles")
 
     chain = None
     expiry_date = None
-    # Buscamos en las primeras 3 fechas hasta encontrar una con datos
+    # Buscamos en las primeras 3 fechas una que tenga datos reales
     for date in options_dates[:3]:
         try:
             temp_chain = ticker.option_chain(date)
@@ -49,20 +52,66 @@ def get_options_chain(symbol):
                 break
         except: continue
 
-    if not chain: raise ValueError("Cadena vacía")
+    if not chain: raise ValueError("Cadena de opciones vacía")
 
     rows = []
-    # Procesamiento seguro de Calls
+    # Procesamiento de Calls
     if chain.calls is not None:
         for _, r in chain.calls.iterrows():
-            rows.append({"strike": r["strike"], "oi_call": r.get("openInterest", 0) or 0, "oi_put": 0, "iv": clean_iv(r.get("impliedVolatility"))})
-    # Procesamiento seguro de Puts
+            rows.append({
+                "strike": r["strike"], 
+                "oi_call": r.get("openInterest", 0) or 0, 
+                "oi_put": 0, 
+                "iv": clean_iv(r.get("impliedVolatility"))
+            })
+    # Procesamiento de Puts
     if chain.puts is not None:
         for _, r in chain.puts.iterrows():
-            rows.append({"strike": r["strike"], "oi_call": 0, "oi_put": r.get("openInterest", 0) or 0, "iv": clean_iv(r.get("impliedVolatility"))})
+            rows.append({
+                "strike": r["strike"], 
+                "oi_call": 0, 
+                "oi_put": r.get("openInterest", 0) or 0, 
+                "iv": clean_iv(r.get("impliedVolatility"))
+            })
 
-    df = pd.DataFrame(rows).groupby("strike").agg({"oi_call": "sum", "oi_put": "sum", "iv": "mean"}).reset_index()
+    df = pd.DataFrame(rows).groupby("strike").agg({
+        "oi_call": "sum", 
+        "oi_put": "sum", 
+        "iv": "mean"
+    }).reset_index()
+    
     return df, spot, dt.datetime.strptime(expiry_date, "%Y-%m-%d").date()
+
+def explain_market_structure(levels):
+    """Genera el resumen que lee tu componente de React"""
+    spot = levels["spot"]
+    pw = levels["put_wall"]
+    cw = levels["call_wall"]
+    gp = levels["gamma_peak"]
+    gf = levels["gamma_flip"]
+    
+    lines = []
+    if levels["analysis_type"] == "gamma":
+        lines.append("Análisis basado en Gamma Exposure.")
+    else:
+        lines.append("Análisis basado en Open Interest (vencimiento inmediato).")
+
+    if abs(spot - gp) / spot < 0.01:
+        lines.append("El precio se encuentra en zona de equilibrio (Gamma Peak), sugiriendo lateralización.")
+    elif spot < pw:
+        lines.append("Precio bajo el Put Wall: riesgo de aceleración bajista.")
+    elif spot > cw:
+        lines.append("Precio sobre el Call Wall: posible aceleración alcista.")
+    else:
+        lines.append("El mercado se encuentra en transición entre niveles clave.")
+
+    if gf:
+        if spot < gf:
+            lines.append(f"Bajo el Gamma Flip ({gf}), se espera mayor volatilidad.")
+        else:
+            lines.append(f"Sobre el Gamma Flip ({gf}), el mercado tiende a la estabilidad.")
+
+    return " ".join(lines)
 
 def build_levels(df, spot, expiry):
     dte = (expiry - dt.date.today()).days
@@ -77,34 +126,48 @@ def build_levels(df, spot, expiry):
         else:
             df.at[i, "gex_net"] = r["oi_call"] - r["oi_put"]
 
+    # Cálculo de Gamma Flip
     gamma_flip = None
     df_s = df.sort_values("strike")
     for i in range(1, len(df_s)):
-        if df_s.iloc[i-1]["gex_net"] * df_s.iloc[i]["gex_net"] < 0:
+        if (df_s.iloc[i-1]["gex_net"] * df_s.iloc[i]["gex_net"]) < 0:
             gamma_flip = df_s.iloc[i]["strike"]
             break
 
-    return {
-        "spot": round(spot, 2),
+    levels = {
+        "spot": float(round(spot, 2)),
         "expiry": expiry.isoformat(),
-        "dte": dte,
+        "dte": int(dte),
+        "analysis_type": "gamma" if use_gamma else "oi_proxy",
         "put_wall": float(df.loc[df["oi_put"].idxmax(), "strike"]),
         "call_wall": float(df.loc[df["oi_call"].idxmax(), "strike"]),
+        "gamma_peak": float(df.loc[df["gex_net"].abs().idxmax(), "strike"]),
         "gamma_flip": float(gamma_flip) if gamma_flip else None
     }
+    levels["summary"] = explain_market_structure(levels)
+    return levels
 
 def get_options_structure_for_api():
     now = time.time()
-    if _CACHE["data"] and (now - _CACHE["ts"]) < CACHE_TTL: return _CACHE["data"]
+    # Retornar caché si es válido
+    if _CACHE["data"] and (now - _CACHE["ts"]) < CACHE_TTL:
+        return _CACHE["data"]
 
-    data = {}
+    data_map = {}
     for symbol in UNIVERSE:
         try:
             df, spot, expiry = get_options_chain(symbol)
-            data[symbol] = build_levels(df, spot, expiry)
+            data_map[symbol] = build_levels(df, spot, expiry)
         except Exception as e:
-            data[symbol] = {"error": str(e)}
+            # Si un ticker falla, guardamos el error para que el front no rompa
+            data_map[symbol] = {"error": str(e)}
 
-    _CACHE["data"] = {"updated_at": dt.datetime.now(timezone.utc).isoformat(), "data": data}
+    output = {
+        "updated_at": dt.datetime.now(timezone.utc).isoformat() + "Z",
+        "universe": UNIVERSE,
+        "data": data_map
+    }
+
+    _CACHE["data"] = output
     _CACHE["ts"] = now
-    return _CACHE["data"]
+    return output
