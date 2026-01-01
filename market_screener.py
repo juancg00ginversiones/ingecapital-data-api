@@ -1,22 +1,26 @@
 from datetime import datetime
 from indicators import analyze_ticker
+from tickers import TICKERS_BY_SECTOR
 
 
 def get_market_screener_for_api() -> dict:
     result = {
         "as_of": datetime.utcnow().isoformat(),
-        "sectors": {
-            "test": []
-        }
+        "sectors": {}
     }
 
-    test_tickers = ["AAPL", "NVDA", "AVGO"]
+    for sector_name, tickers in TICKERS_BY_SECTOR.items():
+        sector_data = []
 
-    for ticker in test_tickers:
-        try:
-            data = analyze_ticker(ticker)
-            result["sectors"]["test"].append(data)
-        except Exception as e:
-            print(f"[TEST ERROR] {ticker}: {e}")
+        for ticker in tickers:
+            try:
+                data = analyze_ticker(ticker)
+                sector_data.append(data)
+            except Exception as e:
+                # Log liviano, no rompe el flujo
+                print(f"[SCREENER] {ticker} skipped: {e}")
+                continue
+
+        result["sectors"][sector_name] = sector_data
 
     return result
