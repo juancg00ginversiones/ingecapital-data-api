@@ -70,5 +70,22 @@ def ons():
 def dolares():
     return with_cache("dolares", get_dolares_for_api, history_days=365)
 
-@app.get("/not
+@app.get("/noticias")
+def noticias():
+    return with_cache("noticias", get_financial_news_for_api)
+
+@app.get("/forecastcuantitativo")
+def forecast():
+    return with_cache("forecast", get_forecast_cuantitativo_for_api)
+
+@app.get("/market/screener")
+def market_screener():
+    return with_cache("market_screener", get_market_screener_for_api)
+
+# ============================================================
+# START
+# ============================================================
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
