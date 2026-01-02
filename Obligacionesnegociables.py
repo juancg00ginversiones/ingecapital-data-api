@@ -1,7 +1,7 @@
 import requests
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from scipy.optimize import newton
 
 # ================= CONFIG =================
