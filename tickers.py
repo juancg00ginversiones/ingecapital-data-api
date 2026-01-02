@@ -2,7 +2,7 @@ TICKERS_BY_SECTOR = {
 
     # 🇺🇸 ETFs de Mercado (Estados Unidos)
     "etfs_mercado_usa": [
-        "SPY", "QQQ", "IWM", "DIA", "EEM", "EWJ", "FXI", "EWZ"
+        "SPY", "QQQ","DIA", "IWM"
     ],
 
     # ⭐ Magníficas / Mega Tecnología
@@ -12,7 +12,7 @@ TICKERS_BY_SECTOR = {
 
     # 🇦🇷 ADRs Argentina
     "adrs_argentina": [
-        "YPF", "GGAL", "BMA", "SUPV", "PAM", "CEPU", "EDN", "TGS"
+        "YPF", "GGAL", "BMA", "SUPV", "PAM", "CEPU", "EDN", "TGS", "LOMA", "IRS"
     ],
 
     # ₿ Cripto y relacionados
