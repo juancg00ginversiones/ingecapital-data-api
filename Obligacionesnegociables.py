@@ -5,96 +5,93 @@ import numpy as np
 from datetime import datetime
 from scipy.optimize import newton
 
-# CONFIGURACIÓN
+# --- CONFIGURACIÓN ---
 URL_PRECIOS_ONS = "https://data912.com/live/arg_corp"
-# Aquí asumo que ya tenés una función o endpoint para el MEP
-URL_API_DOLAR = "https://tu-api-datosargentina.com/api/dolar" 
+CASHFLOW_ONS_FILE = "cashflow_ons.json"
 
-def obtener_dolar_mep():
-    try:
-        # Usamos tu lógica de la API de datosargentina
-        r = requests.get(URL_API_DOLAR)
-        data = r.json()
-        # Ajustar según la estructura de tu JSON de dólar
-        return float(data['blue']['value_sell']) # Ejemplo: si usas blue o mep
-    except Exception as e:
-        print(f"Error obteniendo dólar: {e}")
-        return 1300.0  # Valor de respaldo (fallback)
-
-def calcular_tir_on(precio_usd, flujos):
-    fecha_hoy = datetime.now()
-    flujos_futuros = []
+def get_ons_for_api():
+    """
+    Función principal que procesa el panel de Obligaciones Negociables.
+    Sigue el mismo formato de nombres que bonos.py
+    """
     
-    for f in flujos:
-        fecha_pago = datetime.strptime(f['fecha'], '%Y-%m-%d')
-        # Solo tomamos flujos que no vencieron
-        if fecha_pago > fecha_hoy:
-            dias = (fecha_pago - fecha_hoy).days
-            flujos_futuros.append([dias / 365.25, f['flujo_calc']])
-    
-    if not flujos_futuros or precio_usd <= 0:
-        return 0.0
-
-    # Función de Valor Presente Neto
-    def npv(rate):
-        return sum(f[1] / (1 + rate)**f[0] for f in flujos_futuros) - precio_usd
-
+    # 1. Obtener el Dólar MEP (importamos la función de tu bonos.py)
     try:
-        # Buscamos la tasa que hace el NPV = 0
-        return newton(npv, 0.1) * 100
-    except:
-        return 0.0
-
-def procesar_panel_ons():
-    # 1. Cargamos el cashflow completo que generamos en Colab
-    try:
-        with open('cashflow_ons.json', 'r') as f:
-            cash_data = json.load(f)
-            cashflows = cash_data['ons']
-    except FileNotFoundError:
-        print("Error: No se encontró cashflow_ons.json")
-        return []
-
-    # 2. Obtenemos precios de data912 y el dólar actual
-    try:
-        res = requests.get(URL_PRECIOS_ONS)
-        precios_data = res.json()
-        mep = obtener_dolar_mep()
-        print(f"Cotización Dólar utilizada: ${mep}")
+        from bonos import get_dolares_for_api
+        data_dolar = get_dolares_for_api()
+        # Buscamos el valor del MEP (ajustar según tu estructura de retorno)
+        # Típicamente: data_dolar['mep']['value'] o similar
+        mep = float(data_dolar.get('mep', {}).get('value', 1300.0))
     except Exception as e:
-        print(f"Error de conexión: {e}")
-        return []
+        print(f"⚠️ No se pudo obtener MEP de bonos.py, usando fallback: {e}")
+        mep = 1300.0 # Valor de respaldo
+
+    # 2. Cargar el Cashflow de ONs
+    try:
+        with open(CASHFLOW_ONS_FILE, "r", encoding="utf-8") as f:
+            cashflows = json.load(f)["ons"]
+    except Exception as e:
+        return {"error": f"No se pudo cargar {CASHFLOW_ONS_FILE}: {e}"}
+
+    # 3. Obtener Precios en vivo
+    try:
+        response = requests.get(URL_PRECIOS_ONS, timeout=10)
+        precios_data = response.json()
+    except Exception as e:
+        return {"error": f"Error al conectar con data912: {e}"}
 
     resultados = []
+    fecha_hoy = datetime.now()
 
-    # 3. Mapeo y Cálculo
+    # 4. Procesar y Calcular TIR
     for item in precios_data:
-        ticker = item['symbol']
+        ticker = item.get("symbol")
         
-        # Filtramos: Solo si el ticker existe en nuestro JSON de flujos
         if ticker in cashflows:
-            # SIEMPRE dividimos por dólar como pediste
-            precio_pesos = float(item['c']) 
+            # Tomamos el precio de cierre "c" y dividimos siempre por dólar
+            precio_pesos = float(item.get("c", 0))
+            if precio_pesos <= 0: continue
+            
             precio_usd = precio_pesos / mep
             
-            # Calculamos TIR con el precio ya convertido
-            tir = calcular_tir_on(precio_usd, cashflows[ticker])
+            # Filtrar flujos futuros
+            flujos_ticker = cashflows[ticker]
+            flujos_futuros = []
             
-            # Calculamos la duración (opcional, similar a DM en bonos)
-            # tir_decimal = tir / 100
+            for f in flujos_ticker:
+                f_pago = datetime.strptime(f["fecha"], "%Y-%m-%d")
+                if f_pago > fecha_hoy:
+                    # Calculamos fracción de año (Yearfrac)
+                    t = (f_pago - fecha_hoy).days / 365.0
+                    flujos_futuros.append((t, f["flujo_calc"]))
             
+            if not flujos_futuros:
+                tir = 0.0
+            else:
+                # Calcular TIR (Newton-Raphson)
+                def npv(rate):
+                    return sum(val / (1 + rate)**t for t, val in flujos_futuros) - precio_usd
+                
+                try:
+                    tir = newton(npv, 0.1, maxiter=100) * 100
+                except:
+                    tir = 0.0
+
+            # Armar objeto de respuesta para la API
             resultados.append({
                 "ticker": ticker,
-                "precio_pesos": precio_pesos,
+                "tipo": "ON",
+                "precio_pesos": round(precio_pesos, 2),
                 "precio_usd": round(precio_usd, 2),
                 "tir": round(tir, 2),
-                "variacion": item['pct_change'],
-                "actualizado": datetime.now().strftime("%H:%M:%S")
+                "variacion": item.get("pct_change", 0),
+                "volumen": item.get("v", 0),
+                "ultimo_pago": flujos_ticker[-1]["fecha"] if flujos_ticker else "N/A"
             })
 
-    return resultados
+    # Ordenar por TIR de mayor a menor
+    return sorted(resultados, key=lambda x: x['tir'], reverse=True)
 
 if __name__ == "__main__":
-    panel_final = procesar_panel_ons()
-    # Esto es lo que devolvería tu API para el frontend
-    print(json.dumps(panel_final, indent=2))
+    # Prueba local
+    print(json.dumps(get_ons_for_api()[:5], indent=2))
