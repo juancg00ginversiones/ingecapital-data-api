@@ -1,18 +1,24 @@
 import os
-import time
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 # ============================================================
-# IMPORTS CORRECTOS
+# IMPORTS (UNO POR UNO, CLAROS)
 # ============================================================
 from bonos import get_all_bonds_for_api
 from dolares import get_dolares_for_api
 from noticias import get_financial_news_for_api
 from forecast_cuantitativo import get_forecast_cuantitativo_for_api
 from market_screener import get_market_screener_for_api
-from Obligacionesnegociables import get_ons_for_api
+
+# Si existe este archivo en tu repo, dejalo
+try:
+    from Obligacionesnegociables import get_ons_for_api
+    HAS_ONS = True
+except Exception as e:
+    print("[WARN] Obligacionesnegociables no cargado:", e)
+    HAS_ONS = False
 
 # ============================================================
 # APP
@@ -31,56 +37,71 @@ app.add_middleware(
 )
 
 # ============================================================
-# CACHE SIMPLE EN MEMORIA
+# HEALTH
 # ============================================================
-cache_store = {}
-TTL = 300  # 5 minutos
-
-def with_cache(key, func, *args, **kwargs):
-    now = time.time()
-    if key in cache_store:
-        entry = cache_store[key]
-        if now - entry["ts"] < TTL:
-            return entry["data"]
-
-    data = func(*args, **kwargs)
-    cache_store[key] = {"ts": now, "data": data}
-    return data
-
-# ============================================================
-# ROUTES
-# ============================================================
-
 @app.get("/")
-def health():
+def root():
     return {
         "status": "online",
-        "cached_endpoints": list(cache_store.keys())
+        "message": "API funcionando sin cache"
     }
 
+# ============================================================
+# ENDPOINTS
+# ============================================================
 @app.get("/bonos")
 def bonos():
-    return with_cache("bonos", get_all_bonds_for_api)
+    try:
+        return get_all_bonds_for_api()
+    except Exception as e:
+        print("[ERROR /bonos]", e)
+        raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/ons")
-def ons():
-    return with_cache("ons", get_ons_for_api)
 
 @app.get("/dolares")
 def dolares():
-    return with_cache("dolares", get_dolares_for_api, history_days=365)
+    try:
+        return get_dolares_for_api(history_days=365)
+    except Exception as e:
+        print("[ERROR /dolares]", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/noticias")
 def noticias():
-    return with_cache("noticias", get_financial_news_for_api)
+    try:
+        return get_financial_news_for_api()
+    except Exception as e:
+        print("[ERROR /noticias]", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/forecastcuantitativo")
-def forecast():
-    return with_cache("forecast", get_forecast_cuantitativo_for_api)
+def forecast_cuantitativo():
+    try:
+        return get_forecast_cuantitativo_for_api()
+    except Exception as e:
+        print("[ERROR /forecastcuantitativo]", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/market/screener")
 def market_screener():
-    return with_cache("market_screener", get_market_screener_for_api)
+    try:
+        return get_market_screener_for_api()
+    except Exception as e:
+        print("[ERROR /market/screener]", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+if HAS_ONS:
+    @app.get("/ons")
+    def ons():
+        try:
+            return get_ons_for_api()
+        except Exception as e:
+            print("[ERROR /ons]", e)
+            raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================
 # START
@@ -88,4 +109,3 @@ def market_screener():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-
