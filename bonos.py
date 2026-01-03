@@ -1,5 +1,5 @@
 # ============================================================
-# BONOS SOBERANOS – API OPTIMIZADA PARA RENDER
+# BONOS SOBERANOS – API OPTIMIZADA PARA RENDER (STABLE)
 # ============================================================
 
 import datetime as dt
@@ -8,6 +8,7 @@ import math
 import time
 import requests
 import pandas as pd
+import threading
 
 # ============================================================
 # CONFIG
@@ -20,10 +21,16 @@ CACHE_TTL = 30          # cache general (segundos)
 HIST_CACHE_TTL = 600    # histórico (10 minutos)
 
 # ============================================================
-# CACHES
+# THREAD-SAFE CACHES
 # ============================================================
-_CACHE = {"ts": 0, "data": None}
-_HIST_CACHE = {}  # ticker -> {ts, data}
+_CACHE = {"ts": 0.0, "data": None}
+_CACHE_LOCK = threading.Lock()
+_INFLIGHT = False
+_INFLIGHT_EVENT = threading.Event()
+
+_HIST_CACHE = {}              # symbol -> {ts, data}
+_HIST_LOCKS = {}              # symbol -> Lock
+_HIST_LOCKS_GUARD = threading.Lock()
 
 # ============================================================
 # HELPERS
@@ -55,7 +62,7 @@ def future_cashflows(ticker, as_of):
     return [f for f in CASHFLOWS[ticker] if f["date"] > as_of]
 
 # ============================================================
-# FINANCE
+# FINANCE (NO TOCADO)
 # ============================================================
 def pv_from_yield(cfs, y, as_of):
     pv = 0.0
@@ -86,7 +93,7 @@ def duration_mod(cfs, y, price, as_of):
     return macaulay / (1 + y)
 
 # ============================================================
-# DATA912
+# DATA912 (PROTEGIDO)
 # ============================================================
 def fetch_live():
     r = requests.get(LIVE_URL, timeout=15)
@@ -95,84 +102,126 @@ def fetch_live():
 
 def fetch_history_cached(symbol):
     now = time.time()
-    if symbol in _HIST_CACHE and now - _HIST_CACHE[symbol]["ts"] < HIST_CACHE_TTL:
-        return _HIST_CACHE[symbol]["data"]
 
-    r = requests.get(HIST_URL.format(ticker=symbol), timeout=20)
-    r.raise_for_status()
-    df = pd.DataFrame(r.json())
-    df["date"] = pd.to_datetime(df["date"]).dt.date
-    df = df.sort_values("date").tail(90)
+    with _HIST_LOCKS_GUARD:
+        if symbol not in _HIST_LOCKS:
+            _HIST_LOCKS[symbol] = threading.Lock()
+        lock = _HIST_LOCKS[symbol]
 
-    _HIST_CACHE[symbol] = {"ts": now, "data": df}
-    return df
+    with lock:
+        entry = _HIST_CACHE.get(symbol)
+        if entry and now - entry["ts"] < HIST_CACHE_TTL:
+            return entry["data"]
+
+        try:
+            r = requests.get(HIST_URL.format(ticker=symbol), timeout=20)
+            r.raise_for_status()
+            df = pd.DataFrame(r.json())
+            df["date"] = pd.to_datetime(df["date"]).dt.date
+            df = df.sort_values("date").tail(90)
+
+            _HIST_CACHE[symbol] = {"ts": now, "data": df}
+            return df
+
+        except Exception:
+            if entry:
+                return entry["data"]
+            raise
 
 # ============================================================
-# API FUNCTION
+# API FUNCTION (THREAD-SAFE + SINGLE-FLIGHT)
 # ============================================================
 def get_all_bonds_for_api():
+    global _INFLIGHT
+
     now = time.time()
-    if _CACHE["data"] is not None and now - _CACHE["ts"] < CACHE_TTL:
-        return _CACHE["data"]
 
-    as_of = dt.date.today()
-    live = fetch_live()
+    # ---------- Cache fresh ----------
+    with _CACHE_LOCK:
+        if _CACHE["data"] is not None and now - _CACHE["ts"] < CACHE_TTL:
+            return _CACHE["data"]
 
-    output = []
+        if _INFLIGHT:
+            event = _INFLIGHT_EVENT
+        else:
+            _INFLIGHT = True
+            _INFLIGHT_EVENT.clear()
+            event = None
 
-    for row in live:
-        symbol = row["symbol"]
-        if not symbol.endswith("D"):
-            continue
+    # ---------- Follower ----------
+    if event is not None:
+        event.wait(timeout=30)
+        with _CACHE_LOCK:
+            if _CACHE["data"] is not None:
+                return _CACHE["data"]
+            raise RuntimeError("Bond cache: fallo concurrente sin datos previos")
 
-        ticker = symbol[:-1]
-        if ticker not in CASHFLOWS:
-            continue
+    # ---------- Líder ----------
+    try:
+        as_of = dt.date.today()
+        live = fetch_live()
 
-        price = float(row["c"])
-        cfs = future_cashflows(ticker, as_of)
-        if not cfs:
-            continue
+        output = []
 
-        ytm = solve_ytm(cfs, price, as_of)
-        dur = duration_mod(cfs, ytm, price, as_of)
-
-        # Sensibilidad (simple)
-        sens = []
-        for pct in (-0.05, 0.05):
-            px = price * (1 + pct)
-            y = solve_ytm(cfs, px, as_of)
-            sens.append({"shock": f"price {pct:+.0%}", "ytm": y})
-
-        # Histórico TIR (cacheado)
-        hist_df = fetch_history_cached(symbol)
-        hist = []
-        for _, r in hist_df.iterrows():
-            d = r["date"]
-            px = float(r["c"])
-            fcf = future_cashflows(ticker, d)
-            if not fcf:
+        for row in live:
+            symbol = row["symbol"]
+            if not symbol.endswith("D"):
                 continue
-            try:
-                y = solve_ytm(fcf, px, d)
-                hist.append({"date": d.isoformat(), "ytm": y})
-            except:
-                pass
 
-        output.append({
-            "ticker": ticker,
-            "price": price,
-            "ytm": ytm,
-            "duration": dur,
-            "parity": price,
-            "cashflows": [
-                {"date": cf["date"].isoformat(), "flow": cf["flow"]}
-                for cf in cfs
-            ],
-            "sensitivity": sens,
-            "ytm_history": hist
-        })
+            ticker = symbol[:-1]
+            if ticker not in CASHFLOWS:
+                continue
 
-    _CACHE["data"] = output
-    _CACHE["ts"] = now
-    return output
+            price = float(row["c"])
+            cfs = future_cashflows(ticker, as_of)
+            if not cfs:
+                continue
+
+            ytm = solve_ytm(cfs, price, as_of)
+            dur = duration_mod(cfs, ytm, price, as_of)
+
+            sens = []
+            for pct in (-0.05, 0.05):
+                px = price * (1 + pct)
+                y = solve_ytm(cfs, px, as_of)
+                sens.append({"shock": f"price {pct:+.0%}", "ytm": y})
+
+            hist_df = fetch_history_cached(symbol)
+            hist = []
+            for _, r in hist_df.iterrows():
+                d = r["date"]
+                px = float(r["c"])
+                fcf = future_cashflows(ticker, d)
+                if not fcf:
+                    continue
+                try:
+                    y = solve_ytm(fcf, px, d)
+                    hist.append({"date": d.isoformat(), "ytm": y})
+                except:
+                    pass
+
+            output.append({
+                "ticker": ticker,
+                "price": price,
+                "ytm": ytm,
+                "duration": dur,
+                "parity": price,
+                "cashflows": [
+                    {"date": cf["date"].isoformat(), "flow": cf["flow"]}
+                    for cf in cfs
+                ],
+                "sensitivity": sens,
+                "ytm_history": hist
+            })
+
+        with _CACHE_LOCK:
+            if output:
+                _CACHE["data"] = output
+                _CACHE["ts"] = time.time()
+
+        return output
+
+    finally:
+        with _CACHE_LOCK:
+            _INFLIGHT = False
+            _INFLIGHT_EVENT.set()
