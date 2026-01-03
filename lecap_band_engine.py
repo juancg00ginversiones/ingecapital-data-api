@@ -1,6 +1,8 @@
 import requests
 from datetime import date, datetime
 from typing import Dict, Any, List
+import threading
+import time
 
 
 # ============================================================
@@ -9,8 +11,10 @@ from typing import Dict, Any, List
 URL_NOTES = "https://data912.com/live/arg_notes"
 URL_MEP = "https://data912.com/live/mep"
 
-# Escenarios de dólar (en pesos) alrededor del dólar actual
 DOLAR_OFFSETS = [-200, -100, 0, 100, 200]
+
+# Cache (infra)
+CACHE_TTL = 300  # 5 minutos
 
 
 # ============================================================
@@ -26,7 +30,16 @@ LECAPS = {
 
 
 # ============================================================
-# HELPERS
+# CACHE / CONCURRENCIA
+# ============================================================
+_CACHE = {"ts": 0.0, "data": None}
+_CACHE_LOCK = threading.Lock()
+_INFLIGHT = False
+_INFLIGHT_EVENT = threading.Event()
+
+
+# ============================================================
+# HELPERS (NO TOCAR)
 # ============================================================
 def parse_date(s: str) -> date:
     y, m, d = s.split("-")
@@ -48,17 +61,6 @@ def fetch_json(url: str):
 
 
 def fetch_dolar_al30_from_mep() -> float:
-    """
-    Dólar actual = AL30 ask tomado desde https://data912.com/live/mep
-
-    Ejemplo de item:
-    {
-      "ticker": "AL30",
-      "bid": ...,
-      "ask": 1481.1083,
-      ...
-    }
-    """
     mep = fetch_json(URL_MEP)
 
     if not isinstance(mep, list):
@@ -75,72 +77,111 @@ def fetch_dolar_al30_from_mep() -> float:
 
 
 # ============================================================
-# CORE
+# API (THREAD-SAFE + CACHE)
 # ============================================================
 def get_lecap_band_for_api() -> Dict[str, Any]:
-    now = datetime.now().isoformat()
+    global _INFLIGHT
 
-    # --- precios LECAPs ---
-    notes = fetch_json(URL_NOTES)
-    prices = {
-        i["symbol"]: float(i["px_ask"])
-        for i in notes
-        if i.get("symbol") in LECAPS and i.get("px_ask")
-    }
+    now_ts = time.time()
 
-    # --- dólar actual (AL30 ask desde /live/mep) ---
-    dolar_hoy = fetch_dolar_al30_from_mep()
+    # ---------- 1) Cache fresh ----------
+    with _CACHE_LOCK:
+        if _CACHE["data"] is not None and (now_ts - _CACHE["ts"]) < CACHE_TTL:
+            return _CACHE["data"]
 
-    escenarios_dolar = [round(dolar_hoy + x, 2) for x in DOLAR_OFFSETS]
+        if _INFLIGHT:
+            event = _INFLIGHT_EVENT
+        else:
+            _INFLIGHT = True
+            _INFLIGHT_EVENT.clear()
+            event = None
 
-    lecaps_out = []
+    # ---------- 2) Follower ----------
+    if event is not None:
+        event.wait(timeout=30)
+        with _CACHE_LOCK:
+            if _CACHE["data"] is not None:
+                return _CACHE["data"]
+            return {
+                "ok": False,
+                "error": "Datos no disponibles"
+            }
 
-    for sym, cfg in LECAPS.items():
-        price = prices.get(sym)
-        if not price or price <= 0:
-            continue
+    # ---------- 3) Líder (lógica ORIGINAL intacta) ----------
+    try:
+        now = datetime.now().isoformat()
 
-        expiry = parse_date(cfg["expiry"])
-        days = days_to_expiry(expiry)
-        if days <= 0:
-            continue
+        notes = fetch_json(URL_NOTES)
+        prices = {
+            i["symbol"]: float(i["px_ask"])
+            for i in notes
+            if i.get("symbol") in LECAPS and i.get("px_ask")
+        }
 
-        vpv = float(cfg["vpv"])
+        dolar_hoy = fetch_dolar_al30_from_mep()
+        escenarios_dolar = [round(dolar_hoy + x, 2) for x in DOLAR_OFFSETS]
 
-        # Rendimiento en pesos
-        rendimiento = (vpv / price) - 1.0
+        lecaps_out = []
 
-        # Breakeven USD = 0
-        # D_BE = D_hoy * (VPV / Precio)
-        break_even = dolar_hoy * (vpv / price)
+        for sym, cfg in LECAPS.items():
+            price = prices.get(sym)
+            if not price or price <= 0:
+                continue
 
-        # Escenarios: retorno USD (%) = (D_BE / D_scenario) - 1
-        escenarios = {}
-        for d in escenarios_dolar:
-            escenarios[str(d)] = round((break_even / d - 1.0) * 100.0, 2)
+            expiry = parse_date(cfg["expiry"])
+            days = days_to_expiry(expiry)
+            if days <= 0:
+                continue
 
-        lecaps_out.append({
-            "symbol": sym,
-            "expiry": cfg["expiry"],
-            "days_remaining": days,
-            "price": round(price, 6),
-            "vpv": round(vpv, 6),
-            "rendimiento_directo": round(rendimiento, 6),
-            "break_even": round(break_even, 2),
-            "chart_point": {
-                "x": to_timestamp(expiry),
-                "y": round(break_even, 2)
-            },
-            "escenarios": escenarios
-        })
+            vpv = float(cfg["vpv"])
 
-    lecaps_out.sort(key=lambda x: x["days_remaining"])
+            rendimiento = (vpv / price) - 1.0
+            break_even = dolar_hoy * (vpv / price)
 
-    return {
-        "ok": True,
-        "as_of": now,
-        "dolar_hoy": round(dolar_hoy, 2),
-        "dolar_source": "AL30 ask (data912 /live/mep)",
-        "escenarios_dolar": escenarios_dolar,
-        "lecaps": lecaps_out
-    }
+            escenarios = {}
+            for d in escenarios_dolar:
+                escenarios[str(d)] = round((break_even / d - 1.0) * 100.0, 2)
+
+            lecaps_out.append({
+                "symbol": sym,
+                "expiry": cfg["expiry"],
+                "days_remaining": days,
+                "price": round(price, 6),
+                "vpv": round(vpv, 6),
+                "rendimiento_directo": round(rendimiento, 6),
+                "break_even": round(break_even, 2),
+                "chart_point": {
+                    "x": to_timestamp(expiry),
+                    "y": round(break_even, 2)
+                },
+                "escenarios": escenarios
+            })
+
+        lecaps_out.sort(key=lambda x: x["days_remaining"])
+
+        output = {
+            "ok": True,
+            "as_of": now,
+            "dolar_hoy": round(dolar_hoy, 2),
+            "dolar_source": "AL30 ask (data912 /live/mep)",
+            "escenarios_dolar": escenarios_dolar,
+            "lecaps": lecaps_out
+        }
+
+        # Guardar cache SOLO si es válido
+        with _CACHE_LOCK:
+            _CACHE["data"] = output
+            _CACHE["ts"] = time.time()
+
+        return output
+
+    except Exception:
+        with _CACHE_LOCK:
+            if _CACHE["data"] is not None:
+                return _CACHE["data"]
+        raise
+
+    finally:
+        with _CACHE_LOCK:
+            _INFLIGHT = False
+            _INFLIGHT_EVENT.set()
