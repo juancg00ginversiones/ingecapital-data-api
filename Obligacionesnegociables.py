@@ -12,23 +12,24 @@ CASHFLOW_FILE = "cashflow_ons.json"
 
 def get_mep():
     """
-    Obtiene dólar MEP. Si mercado cerrado, usa último valor histórico.
+    Obtiene el dólar MEP desde dolarapi.com
+    Usa SIEMPRE el valor 'venta' de la casa 'bolsa'
     """
+    url = "https://dolarapi.com/v1/dolares"
+
     try:
-        data = requests.get(URL_DOLAR, timeout=10).json()
-        mep = next(d for d in data if d["casa"] == "Bolsa")
+        data = requests.get(url, timeout=10).json()
+
+        mep = next(
+            d for d in data
+            if d.get("casa") == "bolsa" and d.get("venta") is not None
+        )
+
         return float(mep["venta"])
-    except:
-        raise RuntimeError("No se pudo obtener dólar MEP")
 
+    except Exception as e:
+        raise RuntimeError(f"No se pudo obtener dólar MEP desde dolarapi: {e}")
 
-def parse_fecha(fecha):
-    """
-    Acepta fecha ISO o número Excel
-    """
-    if isinstance(fecha, int):
-        return datetime(1899, 12, 30) + timedelta(days=fecha)
-    return datetime.strptime(fecha, "%Y-%m-%d")
 
 
 # ------------------ FUNCIÓN PRINCIPAL ------------------
