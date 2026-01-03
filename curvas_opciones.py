@@ -9,6 +9,9 @@ import requests
 import pandas as pd
 import yfinance as yf
 
+import threading
+import time
+
 
 # ============================================================
 # CONFIG
@@ -22,6 +25,30 @@ LISTA_TICKERS = [
     "TLT", "IEF",
     "BTC", "ETH"
 ]
+
+# Cache TTL (infra solamente)
+ANALYZE_CACHE_TTL = 300  # 5 minutos (suficiente para estabilidad y render)
+_SINGLEFLIGHT_TIMEOUT = 45  # seg: evita espera infinita en concurrencia
+
+
+# ============================================================
+# THREAD-SAFE CACHE (por ticker)
+# ============================================================
+_ANALYZE_CACHE = {}          # ticker -> {"ts": float, "data": dict}
+_ANALYZE_LOCKS = {}          # ticker -> Lock
+_ANALYZE_EVENTS = {}         # ticker -> Event (single-flight)
+_ANALYZE_INFLIGHT = set()    # tickers inflight
+_ANALYZE_GUARD = threading.Lock()
+
+
+def _get_lock_and_event(ticker: str):
+    with _ANALYZE_GUARD:
+        if ticker not in _ANALYZE_LOCKS:
+            _ANALYZE_LOCKS[ticker] = threading.Lock()
+        if ticker not in _ANALYZE_EVENTS:
+            _ANALYZE_EVENTS[ticker] = threading.Event()
+            _ANALYZE_EVENTS[ticker].set()  # inicialmente "no inflight"
+        return _ANALYZE_LOCKS[ticker], _ANALYZE_EVENTS[ticker]
 
 
 # ============================================================
@@ -64,7 +91,8 @@ def pick_monthly_expiries(expiries, n=MESES_HORIZONTE):
 # ============================================================
 def fetch_deribit_btc():
     url = f"{DERIBIT_BASE}/public/get_book_summary_by_currency"
-    r = requests.get(url, params={"currency": "BTC", "kind": "option"})
+    # agregado: timeout para evitar cuelgues
+    r = requests.get(url, params={"currency": "BTC", "kind": "option"}, timeout=15)
     r.raise_for_status()
     data = r.json()["result"]
 
@@ -301,31 +329,85 @@ def analyze_forward(df):
 
 
 # ============================================================
-# API MAIN
+# API MAIN (CON CACHE + SINGLE-FLIGHT + STALE FALLBACK)
 # ============================================================
 def analyze_ticker_for_api(ticker: str):
     ticker = ticker.upper()
 
-    if ticker == "BTC":
-        raw = fetch_deribit_btc()
-        chain, summary = summarize_deribit(raw)
-    else:
-        calls, puts, expiries, spot = yfin_get_raw_chains(ticker)
-        if calls is None:
-            raise ValueError("Ticker sin datos")
-        chain = fuse_calls_puts(calls, puts, spot, expiries)
-        summary = summarize_yfin(chain, expiries, spot)
+    now = time.time()
 
-    forward = build_forward_table(chain, summary)
-    trend, total_change, vol = analyze_forward(forward)
+    # 1) Cache fresh
+    entry = _ANALYZE_CACHE.get(ticker)
+    if entry is not None and (now - entry["ts"]) <= ANALYZE_CACHE_TTL:
+        return entry["data"]
 
-    return {
-        "ticker": ticker,
-        "spot": float(chain["spot"].dropna().iloc[0]),
-        "forward_curve": forward.to_dict(orient="records"),
-        "analysis": {
-            "trend": trend,
-            "total_change_pct": total_change,
-            "volatility": vol
+    lock, ev = _get_lock_and_event(ticker)
+
+    # 2) Single-flight: si ya hay uno calculando, espero y devuelvo cache
+    with lock:
+        # re-check dentro del lock (evita doble cálculo)
+        now2 = time.time()
+        entry2 = _ANALYZE_CACHE.get(ticker)
+        if entry2 is not None and (now2 - entry2["ts"]) <= ANALYZE_CACHE_TTL:
+            return entry2["data"]
+
+        if ticker in _ANALYZE_INFLIGHT:
+            follower_event = ev
+        else:
+            _ANALYZE_INFLIGHT.add(ticker)
+            ev.clear()
+            follower_event = None
+
+    if follower_event is not None:
+        follower_event.wait(timeout=_SINGLEFLIGHT_TIMEOUT)
+        entry3 = _ANALYZE_CACHE.get(ticker)
+        if entry3 is not None:
+            return entry3["data"]
+        # si no hay cache (primer request) mantenemos comportamiento de error
+        raise RuntimeError("Ticker sin datos (concurrencia)")
+
+    # 3) Líder: ejecuta lógica ORIGINAL (sin tocar cálculos)
+    try:
+        if ticker == "BTC":
+            raw = fetch_deribit_btc()
+            chain, summary = summarize_deribit(raw)
+        else:
+            calls, puts, expiries, spot = yfin_get_raw_chains(ticker)
+            if calls is None:
+                raise ValueError("Ticker sin datos")
+            chain = fuse_calls_puts(calls, puts, spot, expiries)
+            summary = summarize_yfin(chain, expiries, spot)
+
+        forward = build_forward_table(chain, summary)
+        trend, total_change, vol = analyze_forward(forward)
+
+        result = {
+            "ticker": ticker,
+            "spot": float(chain["spot"].dropna().iloc[0]),
+            "forward_curve": forward.to_dict(orient="records"),
+            "analysis": {
+                "trend": trend,
+                "total_change_pct": total_change,
+                "volatility": vol
+            }
         }
-    }
+
+        # Guardar cache SOLO si es válido (no contaminar)
+        if isinstance(result, dict) and result.get("forward_curve") is not None:
+            _ANALYZE_CACHE[ticker] = {"ts": time.time(), "data": result}
+
+        return result
+
+    except Exception:
+        # Stale fallback si existe (mantiene plataforma estable)
+        entry_stale = _ANALYZE_CACHE.get(ticker)
+        if entry_stale is not None:
+            return entry_stale["data"]
+        raise
+
+    finally:
+        # liberar followers
+        with lock:
+            if ticker in _ANALYZE_INFLIGHT:
+                _ANALYZE_INFLIGHT.remove(ticker)
+            ev.set()
