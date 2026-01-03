@@ -3,6 +3,8 @@ import os
 import requests
 from datetime import datetime, timedelta
 from scipy.optimize import newton
+import threading
+import time
 
 # =========================================================
 # CONFIG
@@ -14,6 +16,14 @@ CASHFLOW_FILE = "cashflow_ons.json"
 # filtros anti-delirio
 TIR_MIN_PCT = -5.0
 TIR_MAX_PCT = 150.0
+
+# CACHE CONFIG (solo infraestructura)
+ONS_CACHE_TTL = 20 * 60  # 20 minutos
+_CACHE_LOCK = threading.Lock()
+_CACHE_DATA = None
+_CACHE_TS = 0.0
+_INFLIGHT = False
+_INFLIGHT_EVENT = threading.Event()
 
 
 # =========================================================
@@ -67,7 +77,7 @@ def cargar_cashflows():
 
 
 # =========================================================
-# API PRINCIPAL
+# API PRINCIPAL (CON CACHE + CONCURRENCIA)
 # =========================================================
 def get_ons_for_api():
     """
@@ -80,110 +90,135 @@ def get_ons_for_api():
       - cashflows: [{date:'YYYY-MM-DD', flow: number}]
     """
 
-    hoy = datetime.now()
-    mep = get_mep_bolsa()
-    cashflows = cargar_cashflows()
+    global _CACHE_DATA, _CACHE_TS, _INFLIGHT
 
-    precios = requests.get(URL_PRECIOS_ONS, timeout=10).json()
-    if not isinstance(precios, list):
-        raise RuntimeError("data912 arg_corp no devolvió una lista válida")
+    now_ts = time.time()
 
-    out = []
+    # ---------- 1) Cache fresh ----------
+    with _CACHE_LOCK:
+        if _CACHE_DATA is not None and (now_ts - _CACHE_TS) <= ONS_CACHE_TTL:
+            return _CACHE_DATA
 
-    for item in precios:
-        ticker = item.get("symbol")
-        if not ticker or ticker not in cashflows:
-            continue
+        # ---------- 2) Single-flight ----------
+        if _INFLIGHT:
+            event = _INFLIGHT_EVENT
+        else:
+            _INFLIGHT = True
+            _INFLIGHT_EVENT.clear()
+            event = None
 
-        px_pesos = float(item.get("c") or 0)
-        if px_pesos <= 0:
-            continue
+    # ---------- 3) Follower espera ----------
+    if event is not None:
+        event.wait(timeout=30)
+        with _CACHE_LOCK:
+            if _CACHE_DATA is not None:
+                return _CACHE_DATA
+            raise RuntimeError("ONS cache: fallo concurrente sin datos previos")
 
-        # precio en USD usando MEP (Bolsa, venta)
-        price_usd = px_pesos / mep
+    # ---------- 4) Líder ejecuta lógica ORIGINAL ----------
+    try:
+        hoy = datetime.now()
+        mep = get_mep_bolsa()
+        cashflows = cargar_cashflows()
 
-        flujos_raw = cashflows[ticker]
+        precios = requests.get(URL_PRECIOS_ONS, timeout=10).json()
+        if not isinstance(precios, list):
+            raise RuntimeError("data912 arg_corp no devolvió una lista válida")
 
-        # cashflows futuros (para cálculo) + VN residual
-        futuros = []
-        vn_residual = None
+        out = []
 
-        for f in flujos_raw:
-            if "fecha" not in f:
+        for item in precios:
+            ticker = item.get("symbol")
+            if not ticker or ticker not in cashflows:
                 continue
 
-            fecha_dt = parse_fecha(f["fecha"])
-            if fecha_dt <= hoy:
+            px_pesos = float(item.get("c") or 0)
+            if px_pesos <= 0:
                 continue
 
-            flow = f.get("flujo_calc")
-            if flow is None:
+            price_usd = px_pesos / mep
+            flujos_raw = cashflows[ticker]
+
+            futuros = []
+            vn_residual = None
+
+            for f in flujos_raw:
+                if "fecha" not in f:
+                    continue
+
+                fecha_dt = parse_fecha(f["fecha"])
+                if fecha_dt <= hoy:
+                    continue
+
+                flow = f.get("flujo_calc")
+                if flow is None:
+                    continue
+
+                t = (fecha_dt - hoy).days / 365.25
+                futuros.append({
+                    "t": float(t),
+                    "date": fecha_dt.strftime("%Y-%m-%d"),
+                    "flow": float(flow)
+                })
+
+                if vn_residual is None and float(f.get("capital", 0) or 0) > 0:
+                    vn_residual = float(f["capital"])
+
+            futuros.sort(key=lambda x: x["t"])
+
+            if len(futuros) < 2:
                 continue
 
-            t = (fecha_dt - hoy).days / 365.25
-            futuros.append({
-                "t": float(t),
-                "date": fecha_dt.strftime("%Y-%m-%d"),
-                "flow": float(flow)
+            if vn_residual is None or vn_residual <= 0:
+                vn_residual = 100.0
+
+            try:
+                def npv(r):
+                    return sum(cf["flow"] / ((1 + r) ** cf["t"]) for cf in futuros) - price_usd
+
+                tir_dec = newton(npv, 0.15, maxiter=100)
+                tir_pct = tir_dec * 100.0
+                if tir_pct < TIR_MIN_PCT or tir_pct > TIR_MAX_PCT:
+                    continue
+
+                pv_total = sum(cf["flow"] / ((1 + tir_dec) ** cf["t"]) for cf in futuros)
+                if pv_total <= 0:
+                    continue
+
+                macaulay = sum(
+                    cf["t"] * cf["flow"] / ((1 + tir_dec) ** cf["t"])
+                    for cf in futuros
+                ) / pv_total
+
+                md = macaulay / (1 + tir_dec)
+                parity = (price_usd / vn_residual) * 100.0
+
+            except Exception:
+                continue
+
+            out.append({
+                "ticker": ticker,
+                "price": round(price_usd, 2),
+                "tir": round(float(tir_dec), 8),
+                "md": round(float(md), 2),
+                "parity": round(float(parity), 2),
+                "cashflows": [
+                    {"date": cf["date"], "flow": round(float(cf["flow"]), 2)}
+                    for cf in futuros
+                ]
             })
 
-            # VN residual: tomamos el primer capital > 0 que aparezca en los futuros.
-            # (si tu json trae capital siempre, esto funciona perfecto)
-            if vn_residual is None and float(f.get("capital", 0) or 0) > 0:
-                vn_residual = float(f["capital"])
+        out.sort(key=lambda x: x["md"])
 
-        futuros.sort(key=lambda x: x["t"])
+        # ---------- 5) Guardar cache SOLO si es válido ----------
+        if out:
+            with _CACHE_LOCK:
+                _CACHE_DATA = out
+                _CACHE_TS = time.time()
 
-        # necesitamos al menos 2 flujos para que TIR tenga sentido
-        if len(futuros) < 2:
-            continue
+        return out
 
-        # si no hay VN residual, asumimos 100 (estándar) para poder computar paridad
-        if vn_residual is None or vn_residual <= 0:
-            vn_residual = 100.0
-
-        # ------------------ TIR (decimal) ------------------
-        try:
-            def npv(r):
-                return sum(cf["flow"] / ((1 + r) ** cf["t"]) for cf in futuros) - price_usd
-
-            tir_dec = newton(npv, 0.15, maxiter=100)  # decimal
-
-            tir_pct = tir_dec * 100.0
-            if tir_pct < TIR_MIN_PCT or tir_pct > TIR_MAX_PCT:
-                continue
-
-            # ------------------ MD ------------------
-            pv_total = sum(cf["flow"] / ((1 + tir_dec) ** cf["t"]) for cf in futuros)
-            if pv_total <= 0:
-                continue
-
-            macaulay = sum(
-                cf["t"] * cf["flow"] / ((1 + tir_dec) ** cf["t"])
-                for cf in futuros
-            ) / pv_total
-
-            md = macaulay / (1 + tir_dec)
-
-            # ------------------ Parity (%) ------------------
-            parity = (price_usd / vn_residual) * 100.0
-
-        except Exception:
-            continue
-
-        out.append({
-            "ticker": ticker,
-            "price": round(price_usd, 2),
-            "tir": round(float(tir_dec), 8),   # DECIMAL (Horizons *100)
-            "md": round(float(md), 2),
-            "parity": round(float(parity), 2),
-            "cashflows": [
-                {"date": cf["date"], "flow": round(float(cf["flow"]), 2)}
-                for cf in futuros
-            ]
-        })
-
-    # Orden por MD (menor a mayor) como pediste
-    out.sort(key=lambda x: x["md"])
-    return out
-
+    finally:
+        with _CACHE_LOCK:
+            _INFLIGHT = False
+            _INFLIGHT_EVENT.set()
