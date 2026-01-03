@@ -2,6 +2,8 @@ import requests
 import math
 from datetime import date, datetime
 from typing import Dict, Any, List
+import threading
+import time
 
 
 # ============================================================
@@ -10,20 +12,19 @@ from typing import Dict, Any, List
 URL_NOTES = "https://data912.com/live/arg_notes"
 URL_BONDS = "https://data912.com/live/arg_bonds"
 
+CACHE_TTL = 300  # 5 minutos
+
 
 # ============================================================
 # LISTA CURADA DE INSTRUMENTOS
-# source: "notes" | "bonds"
 # ============================================================
 INSTRUMENTS = {
-    # LECAP
     "S16E6": {"expiry": "2026-01-16", "vpv": 119.625, "source": "notes"},
     "S27F6": {"expiry": "2026-02-27", "vpv": 125.842, "source": "notes"},
     "S30A6": {"expiry": "2026-04-30", "vpv": 127.486, "source": "notes"},
     "S29Y6": {"expiry": "2026-05-29", "vpv": 130.661, "source": "notes"},
     "S30O6": {"expiry": "2026-10-30", "vpv": 135.278, "source": "notes"},
 
-    # BONCAP
     "T15D5": {"expiry": "2025-12-15", "vpv": 170.838, "source": "bonds"},
     "T30E6": {"expiry": "2026-01-30", "vpv": 142.222, "source": "bonds"},
     "T13F6": {"expiry": "2026-02-13", "vpv": 144.966, "source": "bonds"},
@@ -33,7 +34,16 @@ INSTRUMENTS = {
 
 
 # ============================================================
-# HELPERS
+# CACHE / CONCURRENCIA
+# ============================================================
+_CACHE = {"ts": 0.0, "data": None}
+_CACHE_LOCK = threading.Lock()
+_INFLIGHT = False
+_INFLIGHT_EVENT = threading.Event()
+
+
+# ============================================================
+# HELPERS (NO TOCAR)
 # ============================================================
 def parse_date(s: str) -> date:
     y, m, d = s.split("-")
@@ -58,69 +68,111 @@ def compute_metrics(price: float, vpv: float, days: int):
 
 
 # ============================================================
-# CORE ENGINE
+# API (THREAD-SAFE + CACHE)
 # ============================================================
 def get_letras_bonos_for_api() -> Dict[str, Any]:
-    today = date.today()
-    now = datetime.now().isoformat()
+    global _INFLIGHT
 
-    notes_data = fetch_json(URL_NOTES)
-    bonds_data = fetch_json(URL_BONDS)
+    now_ts = time.time()
 
-    price_map: Dict[str, float] = {}
+    # ---------- 1) Cache fresh ----------
+    with _CACHE_LOCK:
+        if _CACHE["data"] is not None and (now_ts - _CACHE["ts"]) < CACHE_TTL:
+            return _CACHE["data"]
 
-    for item in notes_data:
-        sym = item.get("symbol")
-        if sym in INSTRUMENTS and INSTRUMENTS[sym]["source"] == "notes":
-            px = item.get("px_ask")
-            if px:
-                price_map[sym] = float(px)
+        if _INFLIGHT:
+            event = _INFLIGHT_EVENT
+        else:
+            _INFLIGHT = True
+            _INFLIGHT_EVENT.clear()
+            event = None
 
-    for item in bonds_data:
-        sym = item.get("symbol")
-        if sym in INSTRUMENTS and INSTRUMENTS[sym]["source"] == "bonds":
-            px = item.get("px_ask")
-            if px:
-                price_map[sym] = float(px)
+    # ---------- 2) Follower ----------
+    if event is not None:
+        event.wait(timeout=30)
+        with _CACHE_LOCK:
+            if _CACHE["data"] is not None:
+                return _CACHE["data"]
+            return {"ok": False, "error": "Datos no disponibles"}
 
-    rows = []
+    # ---------- 3) Líder (lógica ORIGINAL intacta) ----------
+    try:
+        today = date.today()
+        now = datetime.now().isoformat()
 
-    for sym, cfg in INSTRUMENTS.items():
-        expiry = parse_date(cfg["expiry"])
-        days = days_to_expiry(expiry)
+        notes_data = fetch_json(URL_NOTES)
+        bonds_data = fetch_json(URL_BONDS)
 
-        # 🔴 Vencido → se ignora
-        if days <= 0:
-            continue
+        price_map: Dict[str, float] = {}
 
-        price = price_map.get(sym)
+        for item in notes_data:
+            sym = item.get("symbol")
+            if sym in INSTRUMENTS and INSTRUMENTS[sym]["source"] == "notes":
+                px = item.get("px_ask")
+                if px:
+                    price_map[sym] = float(px)
 
-        # 🔴 Sin precio → se ignora
-        if not price or price <= 0:
-            continue
+        for item in bonds_data:
+            sym = item.get("symbol")
+            if sym in INSTRUMENTS and INSTRUMENTS[sym]["source"] == "bonds":
+                px = item.get("px_ask")
+                if px:
+                    price_map[sym] = float(px)
 
-        rendimiento, tna, tem = compute_metrics(
-            price=price,
-            vpv=cfg["vpv"],
-            days=days
-        )
+        rows = []
 
-        rows.append({
-            "symbol": sym,
-            "expiry": cfg["expiry"],
-            "days_remaining": days,
-            "price": round(price, 6),
-            "vpv": round(cfg["vpv"], 6),
-            "rendimiento_directo": round(rendimiento, 8),
-            "tna": round(tna, 8),
-            "tem": round(tem, 8),
-        })
+        for sym, cfg in INSTRUMENTS.items():
+            expiry = parse_date(cfg["expiry"])
+            days = days_to_expiry(expiry)
 
-    rows.sort(key=lambda x: x["days_remaining"])
+            if days <= 0:
+                continue
 
-    return {
-        "ok": True,
-        "as_of": now,
-        "total": len(rows),
-        "items": rows,
-    }
+            price = price_map.get(sym)
+            if not price or price <= 0:
+                continue
+
+            rendimiento, tna, tem = compute_metrics(
+                price=price,
+                vpv=cfg["vpv"],
+                days=days
+            )
+
+            rows.append({
+                "symbol": sym,
+                "expiry": cfg["expiry"],
+                "days_remaining": days,
+                "price": round(price, 6),
+                "vpv": round(cfg["vpv"], 6),
+                "rendimiento_directo": round(rendimiento, 8),
+                "tna": round(tna, 8),
+                "tem": round(tem, 8),
+            })
+
+        rows.sort(key=lambda x: x["days_remaining"])
+
+        output = {
+            "ok": True,
+            "as_of": now,
+            "total": len(rows),
+            "items": rows,
+        }
+
+        # Guardar cache SOLO si es válido
+        with _CACHE_LOCK:
+            _CACHE["data"] = output
+            _CACHE["ts"] = time.time()
+
+        return output
+
+    except Exception:
+        with _CACHE_LOCK:
+            if _CACHE["data"] is not None:
+                return _CACHE["data"]
+        raise
+
+    finally:
+        with _CACHE_LOCK:
+            _INFLIGHT = False
+            _INFLIGHT_EVENT.set()
+}
