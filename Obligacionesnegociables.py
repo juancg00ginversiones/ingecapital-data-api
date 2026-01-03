@@ -1,118 +1,189 @@
-import requests
 import json
+import os
+import requests
 from datetime import datetime, timedelta
 from scipy.optimize import newton
 
+# =========================================================
+# CONFIG
+# =========================================================
 URL_PRECIOS_ONS = "https://data912.com/live/arg_corp"
-URL_DOLAR = "https://api.argentinadatos.com/v1/cotizaciones/dolares"
+URL_DOLARAPI = "https://dolarapi.com/v1/dolares"
 CASHFLOW_FILE = "cashflow_ons.json"
 
+# filtros anti-delirio
+TIR_MIN_PCT = -5.0
+TIR_MAX_PCT = 150.0
 
-# ------------------ UTILIDADES ------------------
 
-def get_mep():
+# =========================================================
+# HELPERS
+# =========================================================
+def parse_fecha(value):
     """
-    Obtiene el dólar MEP desde dolarapi.com
-    Usa SIEMPRE el valor 'venta' de la casa 'bolsa'
+    Acepta:
+    - 'YYYY-MM-DD'
+    - Excel serial: 45831
+    - Excel serial como string: '45831'
     """
-    url = "https://dolarapi.com/v1/dolares"
+    if isinstance(value, (int, float)):
+        return datetime(1899, 12, 30) + timedelta(days=int(value))
 
-    try:
-        data = requests.get(url, timeout=10).json()
+    if isinstance(value, str):
+        s = value.strip()
+        if s.isdigit():
+            return datetime(1899, 12, 30) + timedelta(days=int(s))
+        return datetime.strptime(s, "%Y-%m-%d")
 
-        mep = next(
-            d for d in data
-            if d.get("casa") == "bolsa" and d.get("venta") is not None
-        )
-
-        return float(mep["venta"])
-
-    except Exception as e:
-        raise RuntimeError(f"No se pudo obtener dólar MEP desde dolarapi: {e}")
+    raise ValueError(f"Fecha inválida: {value}")
 
 
+def get_mep_bolsa():
+    """
+    MEP desde DolarAPI (casa='bolsa', usar 'venta')
+    """
+    data = requests.get(URL_DOLARAPI, timeout=10).json()
+    mep = next(
+        d for d in data
+        if d.get("casa") == "bolsa" and d.get("venta") is not None
+    )
+    return float(mep["venta"])
 
-# ------------------ FUNCIÓN PRINCIPAL ------------------
 
+def cargar_cashflows():
+    """
+    Soporta:
+    { "ons": { "TICKER": [ ... ] } }
+    o
+    { "TICKER": [ ... ] }
+    """
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base_dir, CASHFLOW_FILE)
+
+    with open(path, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+
+    return raw.get("ons", raw)
+
+
+# =========================================================
+# API PRINCIPAL
+# =========================================================
 def get_ons_for_api():
-    hoy = datetime.now()
-    mep = get_mep()
+    """
+    Formato EXACTO para Horizons (clave):
+      - ticker
+      - price (USD)
+      - tir (decimal)
+      - md
+      - parity (%)
+      - cashflows: [{date:'YYYY-MM-DD', flow: number}]
+    """
 
-    with open(CASHFLOW_FILE, "r", encoding="utf-8") as f:
-        cashflows_data = json.load(f)["ons"]
+    hoy = datetime.now()
+    mep = get_mep_bolsa()
+    cashflows = cargar_cashflows()
 
     precios = requests.get(URL_PRECIOS_ONS, timeout=10).json()
+    if not isinstance(precios, list):
+        raise RuntimeError("data912 arg_corp no devolvió una lista válida")
 
-    resultado = []
+    out = []
 
     for item in precios:
         ticker = item.get("symbol")
-        if ticker not in cashflows_data:
+        if not ticker or ticker not in cashflows:
             continue
 
-        precio_pesos = float(item.get("c", 0))
-        if precio_pesos <= 0:
+        px_pesos = float(item.get("c") or 0)
+        if px_pesos <= 0:
             continue
 
-        precio_usd = precio_pesos / mep
+        # precio en USD usando MEP (Bolsa, venta)
+        price_usd = px_pesos / mep
 
-        flujos = []
-        nominal = None
+        flujos_raw = cashflows[ticker]
 
-        for f in cashflows_data[ticker]:
-            fecha_pago = parse_fecha(f["fecha"])
-            if fecha_pago <= hoy:
+        # cashflows futuros (para cálculo) + VN residual
+        futuros = []
+        vn_residual = None
+
+        for f in flujos_raw:
+            if "fecha" not in f:
                 continue
 
-            t = (fecha_pago - hoy).days / 365.25
-            flujo = float(f["flujo_calc"])
+            fecha_dt = parse_fecha(f["fecha"])
+            if fecha_dt <= hoy:
+                continue
 
-            flujos.append({
-                "t": t,
-                "date": fecha_pago.strftime("%Y-%m-%d"),
-                "flow": flujo
+            flow = f.get("flujo_calc")
+            if flow is None:
+                continue
+
+            t = (fecha_dt - hoy).days / 365.25
+            futuros.append({
+                "t": float(t),
+                "date": fecha_dt.strftime("%Y-%m-%d"),
+                "flow": float(flow)
             })
 
-            if nominal is None:
-                nominal = float(f.get("capital", 100))
+            # VN residual: tomamos el primer capital > 0 que aparezca en los futuros.
+            # (si tu json trae capital siempre, esto funciona perfecto)
+            if vn_residual is None and float(f.get("capital", 0) or 0) > 0:
+                vn_residual = float(f["capital"])
 
-        if not flujos:
+        futuros.sort(key=lambda x: x["t"])
+
+        # necesitamos al menos 2 flujos para que TIR tenga sentido
+        if len(futuros) < 2:
             continue
 
-        # -------- TIR --------
-        def npv(r):
-            return sum(cf["flow"] / ((1 + r) ** cf["t"]) for cf in flujos) - precio_usd
+        # si no hay VN residual, asumimos 100 (estándar) para poder computar paridad
+        if vn_residual is None or vn_residual <= 0:
+            vn_residual = 100.0
 
+        # ------------------ TIR (decimal) ------------------
         try:
-            tir = newton(npv, 0.15)
-        except:
+            def npv(r):
+                return sum(cf["flow"] / ((1 + r) ** cf["t"]) for cf in futuros) - price_usd
+
+            tir_dec = newton(npv, 0.15, maxiter=100)  # decimal
+
+            tir_pct = tir_dec * 100.0
+            if tir_pct < TIR_MIN_PCT or tir_pct > TIR_MAX_PCT:
+                continue
+
+            # ------------------ MD ------------------
+            pv_total = sum(cf["flow"] / ((1 + tir_dec) ** cf["t"]) for cf in futuros)
+            if pv_total <= 0:
+                continue
+
+            macaulay = sum(
+                cf["t"] * cf["flow"] / ((1 + tir_dec) ** cf["t"])
+                for cf in futuros
+            ) / pv_total
+
+            md = macaulay / (1 + tir_dec)
+
+            # ------------------ Parity (%) ------------------
+            parity = (price_usd / vn_residual) * 100.0
+
+        except Exception:
             continue
 
-        if tir < -0.2 or tir > 1.5:
-            continue  # limpia TIR absurdas
-
-        # -------- MD --------
-        pv_total = sum(cf["flow"] / ((1 + tir) ** cf["t"]) for cf in flujos)
-        duration = sum(
-            cf["t"] * cf["flow"] / ((1 + tir) ** cf["t"])
-            for cf in flujos
-        ) / pv_total
-
-        md = duration / (1 + tir)
-
-        # -------- PARIDAD --------
-        parity = (precio_usd / nominal) * 100 if nominal else None
-
-        resultado.append({
+        out.append({
             "ticker": ticker,
-            "price": round(precio_usd, 2),
-            "tir": round(tir, 6),           # DECIMAL
-            "md": round(md, 2),
-            "parity": round(parity, 2) if parity else None,
+            "price": round(price_usd, 2),
+            "tir": round(float(tir_dec), 8),   # DECIMAL (Horizons *100)
+            "md": round(float(md), 2),
+            "parity": round(float(parity), 2),
             "cashflows": [
-                {"date": cf["date"], "flow": round(cf["flow"], 2)}
-                for cf in flujos
+                {"date": cf["date"], "flow": round(float(cf["flow"]), 2)}
+                for cf in futuros
             ]
         })
 
-    return sorted(resultado, key=lambda x: x["md"])
+    # Orden por MD (menor a mayor) como pediste
+    out.sort(key=lambda x: x["md"])
+    return out
+
