@@ -1,59 +1,52 @@
 import requests
 import json
-import os
 from datetime import datetime, timedelta
 from scipy.optimize import newton
 
-# ================= CONFIG =================
-
 URL_PRECIOS_ONS = "https://data912.com/live/arg_corp"
+URL_DOLAR = "https://api.argentinadatos.com/v1/cotizaciones/dolares"
 CASHFLOW_FILE = "cashflow_ons.json"
 
-# =========================================
 
+# ------------------ UTILIDADES ------------------
 
-def cargar_cashflows():
-    with open(CASHFLOW_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)["ons"]
-
-
-def get_mep_usd():
+def get_mep():
     """
-    Dólar MEP robusto:
-    - Intenta data912
-    - Fallback ArgentinaDatos histórico
+    Obtiene dólar MEP. Si mercado cerrado, usa último valor histórico.
     """
     try:
-        r = requests.get("https://data912.com/live/mep", timeout=10)
-        data = r.json()
-        for item in data:
-            if item.get("ticker") == "AL30":
-                return float(item["ask"])
+        data = requests.get(URL_DOLAR, timeout=10).json()
+        mep = next(d for d in data if d["casa"] == "Bolsa")
+        return float(mep["venta"])
     except:
-        pass
+        raise RuntimeError("No se pudo obtener dólar MEP")
 
-    # Fallback histórico
-    r = requests.get("https://api.argentinadatos.com/v1/cotizaciones/dolares", timeout=10)
-    data = r.json()
-    bolsa = next(d for d in data if d["casa"] == "Bolsa")
-    return float(bolsa["venta"])
 
+def parse_fecha(fecha):
+    """
+    Acepta fecha ISO o número Excel
+    """
+    if isinstance(fecha, int):
+        return datetime(1899, 12, 30) + timedelta(days=fecha)
+    return datetime.strptime(fecha, "%Y-%m-%d")
+
+
+# ------------------ FUNCIÓN PRINCIPAL ------------------
 
 def get_ons_for_api():
     hoy = datetime.now()
-    mep = get_mep_usd()
-    cashflows = cargar_cashflows()
+    mep = get_mep()
 
-    try:
-        precios = requests.get(URL_PRECIOS_ONS, timeout=10).json()
-    except Exception as e:
-        return {"error": f"Error data912: {e}"}
+    with open(CASHFLOW_FILE, "r", encoding="utf-8") as f:
+        cashflows_data = json.load(f)["ons"]
 
-    resultados = []
+    precios = requests.get(URL_PRECIOS_ONS, timeout=10).json()
+
+    resultado = []
 
     for item in precios:
         ticker = item.get("symbol")
-        if ticker not in cashflows:
+        if ticker not in cashflows_data:
             continue
 
         precio_pesos = float(item.get("c", 0))
@@ -63,63 +56,62 @@ def get_ons_for_api():
         precio_usd = precio_pesos / mep
 
         flujos = []
-        cashflow_ui = []
-        valor_nominal_residual = None
+        nominal = None
 
-        for f in cashflows[ticker]:
-            fecha_raw = f["fecha"]
-
-            # Soporte fechas Excel
-            if isinstance(fecha_raw, int) or fecha_raw.isdigit():
-                fecha = datetime(1899, 12, 30) + timedelta(days=int(fecha_raw))
-            else:
-                fecha = datetime.strptime(fecha_raw, "%Y-%m-%d")
-
-            if fecha <= hoy:
+        for f in cashflows_data[ticker]:
+            fecha_pago = parse_fecha(f["fecha"])
+            if fecha_pago <= hoy:
                 continue
 
-            t = (fecha - hoy).days / 365.25
-            monto = float(f["flujo_calc"])
+            t = (fecha_pago - hoy).days / 365.25
+            flujo = float(f["flujo_calc"])
 
-            flujos.append((t, monto))
-            cashflow_ui.append({
-                "fecha": fecha.strftime("%d/%m/%Y"),
-                "flujo_usd": round(monto, 2)
+            flujos.append({
+                "t": t,
+                "date": fecha_pago.strftime("%Y-%m-%d"),
+                "flow": flujo
             })
 
-            if valor_nominal_residual is None and f.get("capital", 0) > 0:
-                valor_nominal_residual = float(f["capital"])
+            if nominal is None:
+                nominal = float(f.get("capital", 100))
 
-        if not flujos or valor_nominal_residual is None:
+        if not flujos:
             continue
 
-        # ================= FINANZAS =================
+        # -------- TIR --------
+        def npv(r):
+            return sum(cf["flow"] / ((1 + r) ** cf["t"]) for cf in flujos) - precio_usd
 
         try:
-            def npv(r):
-                return sum(m / (1 + r) ** t for t, m in flujos) - precio_usd
-
-            tir_dec = newton(npv, 0.10, maxiter=100)
-            tir = round(tir_dec * 100, 2)
-
-            pv_total = sum(m / (1 + tir_dec) ** t for t, m in flujos)
-            md = sum(t * m / (1 + tir_dec) ** t for t, m in flujos) / pv_total
-            md = round(md / (1 + tir_dec), 2)
-
-            paridad = round((precio_usd / valor_nominal_residual) * 100, 2)
-
-        except Exception:
+            tir = newton(npv, 0.15)
+        except:
             continue
 
-        resultados.append({
+        if tir < -0.2 or tir > 1.5:
+            continue  # limpia TIR absurdas
+
+        # -------- MD --------
+        pv_total = sum(cf["flow"] / ((1 + tir) ** cf["t"]) for cf in flujos)
+        duration = sum(
+            cf["t"] * cf["flow"] / ((1 + tir) ** cf["t"])
+            for cf in flujos
+        ) / pv_total
+
+        md = duration / (1 + tir)
+
+        # -------- PARIDAD --------
+        parity = (precio_usd / nominal) * 100 if nominal else None
+
+        resultado.append({
             "ticker": ticker,
-            "precio_usd": round(precio_usd, 2),
-            "tir": tir,
-            "md": md,
-            "paridad": paridad,
-            "valor_nominal_residual": valor_nominal_residual,
-            "cashflow": cashflow_ui
+            "price": round(precio_usd, 2),
+            "tir": round(tir, 6),           # DECIMAL
+            "md": round(md, 2),
+            "parity": round(parity, 2) if parity else None,
+            "cashflows": [
+                {"date": cf["date"], "flow": round(cf["flow"], 2)}
+                for cf in flujos
+            ]
         })
 
-    # Ordenar por Duration (menor a mayor)
-    return sorted(resultados, key=lambda x: x["md"])
+    return sorted(resultado, key=lambda x: x["md"])
