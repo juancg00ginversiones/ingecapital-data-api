@@ -175,4 +175,3 @@ def get_letras_bonos_for_api() -> Dict[str, Any]:
         with _CACHE_LOCK:
             _INFLIGHT = False
             _INFLIGHT_EVENT.set()
-}
