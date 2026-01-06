@@ -42,7 +42,7 @@ def to_symbol_d(ticker):
     return ticker.upper() + "D"
 
 # ============================================================
-# LOAD CASHFLOWS (solo una vez)
+# LOAD CASHFLOWS (AJUSTADO A TU JSON)
 # ============================================================
 with open(CASHFLOW_FILE, "r", encoding="utf-8") as f:
     RAW_CF = json.load(f)["bonos"]
@@ -51,9 +51,14 @@ CASHFLOWS = {}
 for t, flows in RAW_CF.items():
     lst = []
     for r in flows:
+        # Extraemos amort_monto manejando el null
+        am = r.get("amort_monto")
+        amort_val = float(am) if am is not None else 0.0
+        
         lst.append({
             "date": dt.date.fromisoformat(r["fecha"]),
-            "flow": float(r["flujo_calc"])
+            "flow": float(r["flujo_calc"]),
+            "amort": amort_val  # <--- Mapeo exacto a tu JSON
         })
     lst.sort(key=lambda x: x["date"])
     CASHFLOWS[t.upper()] = lst
@@ -177,6 +182,19 @@ def get_all_bonds_for_api():
             if not cfs:
                 continue
 
+            # --- MODIFICACIÓN: CÁLCULO DE VALOR RESIDUAL Y PARIDAD ---
+            # Sumamos las amortizaciones futuras (amort_monto en tu JSON)
+            residual_value = sum(f["amort"] for f in cfs)
+            
+            # Si el bono no ha amortizado nada o es bullet, el residual es 100
+            if residual_value == 0:
+                residual_value = 100.0
+            
+            # Paridad = (Precio / Valor Residual) * 100
+            # Ejemplo: Si el precio es 40 y el residual es 84, paridad = 47.61%
+            parity = (price / residual_value) * 100
+            # --------------------------------------------------------
+
             ytm = solve_ytm(cfs, price, as_of)
             dur = duration_mod(cfs, ytm, price, as_of)
 
@@ -205,7 +223,8 @@ def get_all_bonds_for_api():
                 "price": price,
                 "ytm": ytm,
                 "duration": dur,
-                "parity": price,
+                "parity": parity,
+                "residual_value": residual_value,
                 "cashflows": [
                     {"date": cf["date"].isoformat(), "flow": cf["flow"]}
                     for cf in cfs
