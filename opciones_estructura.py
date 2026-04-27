@@ -1,196 +1,205 @@
-import math
-import time
-import datetime as dt
-from datetime import timezone
-import yfinance as yf
+# ============================================================
+# OPCIONES ESTRUCTURA — INGECAPITAL
+# Lógica idéntica al dashboard JCG que funciona correctamente
+# Tickers: SPY, QQQ, IWM, IBIT
+# ============================================================
+
 import pandas as pd
+import yfinance as yf
+import datetime as dt
 import numpy as np
+import time
 import threading
+import warnings
+warnings.filterwarnings('ignore')
+from scipy.stats import norm
 
 # ============================================================
-# CONFIGURACIÓN
+# CONFIG
 # ============================================================
-RISK_FREE = 0.05
 CONTRACT_MULT = 100
-CACHE_TTL = 60 * 15  # 15 minutos
+RISK_FREE     = 0.04
+STRIKE_RANGE  = 0.12
+CACHE_TTL     = 60 * 20  # 20 minutos
 
-UNIVERSE = ["SPY", "QQQ", "DIA", "NVDA", "AAPL", "MSFT", "AMZN", "META", "TSLA", "GLD", "SLV", "IBIT"]
+UNIVERSE = [
+    {"symbol": "SPY",  "nombre": "S&P 500",     "color": "#4f8ef7"},
+    {"symbol": "QQQ",  "nombre": "Nasdaq 100",   "color": "#00ff88"},
+    {"symbol": "IWM",  "nombre": "Russell 2000", "color": "#ffab00"},
+    {"symbol": "IBIT", "nombre": "Bitcoin ETF",  "color": "#f7931a"},
+]
 
-_CACHE = {"ts": 0.0, "data": None}
-
-# Infra concurrencia
-_CACHE_LOCK = threading.Lock()
-_INFLIGHT = False
+# ============================================================
+# CACHE THREAD-SAFE
+# ============================================================
+_CACHE       = {"ts": 0.0, "data": None}
+_CACHE_LOCK  = threading.Lock()
+_INFLIGHT    = False
 _INFLIGHT_EVENT = threading.Event()
 
-
 # ============================================================
-# UTILIDADES MATEMÁTICAS (NO TOCAR)
+# MATEMÁTICAS BLACK-SCHOLES (igual al dashboard JCG)
 # ============================================================
-def clean_iv(iv):
-    if iv is None or pd.isna(iv):
-        return None
-    if iv > 3:
-        iv /= 100
-    return float(iv) if 0.01 <= iv <= 3 else None
-
-
-def norm_pdf(x):
-    return math.exp(-0.5 * x * x) / math.sqrt(2 * math.pi)
-
-
 def bs_gamma(S, K, T, r, sigma):
-    if T <= 0 or not sigma or sigma <= 0:
-        return 0.0
+    if T <= 0 or sigma <= 0: return 0.0
     try:
-        d1 = (math.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * math.sqrt(T))
-        return norm_pdf(d1) / (S * sigma * math.sqrt(T))
-    except:
-        return 0.0
+        d1 = (np.log(S/K) + (r + 0.5*sigma**2)*T) / (sigma*np.sqrt(T))
+        return norm.pdf(d1) / (S * sigma * np.sqrt(T))
+    except: return 0.0
 
+def bs_delta(S, K, T, r, sigma, opt='call'):
+    if T <= 0 or sigma <= 0: return 0.0
+    try:
+        d1 = (np.log(S/K) + (r + 0.5*sigma**2)*T) / (sigma*np.sqrt(T))
+        return norm.cdf(d1) if opt == 'call' else norm.cdf(d1) - 1
+    except: return 0.0
+
+def days_to_expiry(expiry_str):
+    exp   = dt.datetime.strptime(expiry_str, "%Y-%m-%d")
+    delta = (exp - dt.datetime.now()).days
+    return max(delta, 1) / 365.0
+
+def get_monthly_expiry(options_list):
+    for opt in options_list:
+        d = dt.datetime.strptime(opt, "%Y-%m-%d")
+        if d.weekday() == 4 and 15 <= d.day <= 21:
+            return opt
+    return options_list[min(2, len(options_list)-1)]
 
 # ============================================================
-# MOTOR DE EXTRACCIÓN (NO TOCAR)
+# FETCH Y CÁLCULO (igual al dashboard JCG)
 # ============================================================
-def get_best_options_chain(symbol):
-    ticker = yf.Ticker(symbol)
-    hist = ticker.history(period="2d", auto_adjust=True)
-    if hist.empty:
-        raise ValueError("Spot no disponible")
+def get_options_data(ticker_obj, expiry, spot):
+    chain = ticker_obj.option_chain(expiry)
+    T     = days_to_expiry(expiry)
 
-    if isinstance(hist.columns, pd.MultiIndex):
-        hist.columns = hist.columns.get_level_values(0)
+    calls = chain.calls[['strike','openInterest','impliedVolatility','volume']].copy()
+    puts  = chain.puts [['strike','openInterest','impliedVolatility','volume']].copy()
+    calls.columns = ['strike','oi_call','iv_call','vol_call']
+    puts.columns  = ['strike','oi_put', 'iv_put', 'vol_put']
 
-    spot = float(hist["Close"].iloc[-1])
-    options_dates = ticker.options
-    if not options_dates:
-        raise ValueError("Sin cadenas de opciones")
-
-    best_chain = None
-    best_expiry = None
-    max_total_oi = -1
-
-    for date in options_dates[:5]:
-        try:
-            temp_chain = ticker.option_chain(date)
-            calls_oi = temp_chain.calls["openInterest"].sum() if temp_chain.calls is not None else 0
-            puts_oi = temp_chain.puts["openInterest"].sum() if temp_chain.puts is not None else 0
-            total_oi = calls_oi + puts_oi
-
-            if total_oi > max_total_oi:
-                max_total_oi = total_oi
-                best_chain = temp_chain
-                best_expiry = date
-        except:
-            continue
-
-    if not best_chain:
-        raise ValueError("No se encontró cadena con liquidez")
+    df = pd.merge(calls, puts, on='strike', how='outer').fillna(0).sort_values('strike').reset_index(drop=True)
 
     rows = []
-    if best_chain.calls is not None:
-        for _, r in best_chain.calls.iterrows():
-            rows.append({
-                "strike": float(r["strike"]),
-                "oi_call": int(r.get("openInterest", 0) or 0),
-                "oi_put": 0,
-                "iv": clean_iv(r.get("impliedVolatility"))
-            })
+    for _, row in df.iterrows():
+        K    = row['strike']
+        iv_c = max(row['iv_call'], 0.05)
+        iv_p = max(row['iv_put'],  0.05)
+        rows.append({
+            'gamma_call': bs_gamma(spot, K, T, RISK_FREE, iv_c),
+            'gamma_put':  bs_gamma(spot, K, T, RISK_FREE, iv_p),
+            'delta_call': bs_delta(spot, K, T, RISK_FREE, iv_c, 'call'),
+            'delta_put':  bs_delta(spot, K, T, RISK_FREE, iv_p, 'put'),
+        })
 
-    if best_chain.puts is not None:
-        for _, r in best_chain.puts.iterrows():
-            rows.append({
-                "strike": float(r["strike"]),
-                "oi_call": 0,
-                "oi_put": int(r.get("openInterest", 0) or 0),
-                "iv": clean_iv(r.get("impliedVolatility"))
-            })
+    greeks = pd.DataFrame(rows)
+    df = pd.concat([df, greeks], axis=1)
+    df['gex_call'] =  df['oi_call'] * df['gamma_call'] * spot * CONTRACT_MULT
+    df['gex_put']  = -df['oi_put']  * df['gamma_put']  * spot * CONTRACT_MULT
+    df['gex_net']  =  df['gex_call'] + df['gex_put']
+    return df
 
-    df = pd.DataFrame(rows).groupby("strike").agg({
-        "oi_call": "sum",
-        "oi_put": "sum",
-        "iv": "mean"
-    }).reset_index()
+def find_levels(df, spot):
+    above = df[df['strike'] > spot]
+    below = df[df['strike'] < spot]
 
-    return df, spot, dt.datetime.strptime(best_expiry, "%Y-%m-%d").date()
+    call_wall = above.loc[above['oi_call'].idxmax(),'strike'] if not above.empty else df.loc[df['oi_call'].idxmax(),'strike']
+    put_wall  = below.loc[below['oi_put'].idxmax(), 'strike'] if not below.empty else df.loc[df['oi_put'].idxmax(), 'strike']
 
-
-# ============================================================
-# LÓGICA DE NIVELES (NO TOCAR)
-# ============================================================
-def explain_market_structure(levels):
-    spot, pw, cw, gp, gf = (
-        levels["spot"],
-        levels["put_wall"],
-        levels["call_wall"],
-        levels["gamma_peak"],
-        levels["gamma_flip"],
-    )
-    lines = ["Análisis basado en el vencimiento con mayor liquidez detectado."]
-
-    if abs(spot - gp) / spot < 0.01:
-        lines.append("El precio gravita en el Gamma Peak; zona de equilibrio y baja volatilidad.")
-    elif spot < pw:
-        lines.append("Alerta: Precio bajo el Put Wall. Riesgo de capitulación o soporte extremo.")
-    elif spot > cw:
-        lines.append("Precio sobre el Call Wall: Posible 'overshoot' o zona de toma de ganancias.")
-    else:
-        lines.append("Mercado fluyendo entre niveles clave de liquidez.")
-
-    if gf:
-        status = "bajista/volátil" if spot < gf else "alcista/estable"
-        lines.append(f"El Gamma Flip está en {gf}. El sesgo actual es {status}.")
-
-    return " ".join(lines)
-
-
-def build_levels(df, spot, expiry):
-    dte = (expiry - dt.date.today()).days
-    T = max(dte, 0.5) / 365
-    use_gamma = dte > 0
-
-    df["gex_net"] = 0.0
-    for i, r in df.iterrows():
-        if use_gamma and r["iv"]:
-            g = bs_gamma(spot, r["strike"], T, RISK_FREE, r["iv"])
-            df.at[i, "gex_net"] = (r["oi_call"] - r["oi_put"]) * g * CONTRACT_MULT
-        else:
-            df.at[i, "gex_net"] = r["oi_call"] - r["oi_put"]
-
+    # Gamma Flip
+    ds      = df.sort_values('strike')
+    cum_gex = ds['gex_net'].cumsum()
     gamma_flip = None
-    df_s = df.sort_values("strike")
-    for i in range(1, len(df_s)):
-        if (df_s.iloc[i - 1]["gex_net"] * df_s.iloc[i]["gex_net"]) < 0:
-            gamma_flip = df_s.iloc[i]["strike"]
+    for i in range(len(cum_gex)-1):
+        if cum_gex.iloc[i] * cum_gex.iloc[i+1] < 0:
+            s1, s2 = ds['strike'].iloc[i], ds['strike'].iloc[i+1]
+            g1, g2 = cum_gex.iloc[i], cum_gex.iloc[i+1]
+            gamma_flip = s1 + (s2-s1)*(-g1)/(g2-g1)
             break
+    if gamma_flip is None:
+        gamma_flip = float(ds.loc[ds['gex_net'].abs().idxmin(),'strike'])
 
-    levels = {
-        "spot": round(float(spot), 2),
-        "expiry": expiry.isoformat(),
-        "dte": int(dte),
-        "analysis_type": "gamma_exposure" if use_gamma else "open_interest",
-        "put_wall": float(df.loc[df["oi_put"].idxmax(), "strike"]),
-        "call_wall": float(df.loc[df["oi_call"].idxmax(), "strike"]),
-        "gamma_peak": float(df.loc[df["gex_net"].abs().idxmax(), "strike"]),
-        "gamma_flip": float(gamma_flip) if gamma_flip else None,
-    }
-    levels["summary"] = explain_market_structure(levels)
-    return levels
+    # Max Pain
+    strikes    = df['strike'].values
+    total_loss = [
+        (df['oi_call']*np.maximum(S-df['strike'],0)*CONTRACT_MULT +
+         df['oi_put'] *np.maximum(df['strike']-S,0)*CONTRACT_MULT).sum()
+        for S in strikes
+    ]
+    max_pain = float(strikes[np.argmin(total_loss)])
 
+    return float(call_wall), float(put_wall), float(gamma_flip), float(max_pain)
+
+def procesar_ticker(cfg):
+    symbol = cfg["symbol"]
+    try:
+        tk   = yf.Ticker(symbol)
+        hist = tk.history(period="2d")
+        if hist.empty: return None
+        spot = float(hist["Close"].iloc[-1])
+
+        all_exp = tk.options
+        if not all_exp: return None
+
+        near    = all_exp[0]
+        monthly = get_monthly_expiry(all_exp)
+
+        resultado = {
+            "symbol":  symbol,
+            "nombre":  cfg["nombre"],
+            "color":   cfg["color"],
+            "spot":    round(spot, 2),
+            "expiries": {}
+        }
+
+        for label, exp in [("Corto Plazo", near), ("OPEX Mensual", monthly)]:
+            if exp in resultado["expiries"]:
+                continue
+            df = get_options_data(tk, exp, spot)
+            mask = (
+                (df['strike'] > spot*(1-STRIKE_RANGE)) &
+                (df['strike'] < spot*(1+STRIKE_RANGE))
+            )
+            df_f = df[mask].copy()
+            if df_f.empty:
+                continue
+
+            cw, pw, gf, mp = find_levels(df_f, spot)
+            dte = int(days_to_expiry(exp) * 365)
+
+            resultado["expiries"][label] = {
+                "expiry":     exp,
+                "dte":        dte,
+                "call_wall":  round(cw, 1),
+                "put_wall":   round(pw, 1),
+                "gamma_flip": round(gf, 1),
+                "max_pain":   round(mp, 1),
+                "regime":     "POSITIVO" if spot > gf else "NEGATIVO",
+                "total_gex":  round(df_f['gex_net'].sum()/1e9, 3),
+                # Arrays para gráfico de palitos (OI en miles)
+                "strikes":    df_f['strike'].tolist(),
+                "oi_calls":   (df_f['oi_call']/1000).round(2).tolist(),
+                "oi_puts":    (df_f['oi_put']/1000).round(2).tolist(),
+                "gex_net":    (df_f['gex_net']/1e6).round(3).tolist(),
+            }
+
+        return resultado
+
+    except Exception as e:
+        print(f"[opciones_estructura] {symbol}: {e}")
+        return None
 
 # ============================================================
-# API (THREAD-SAFE + CACHE)
+# API PRINCIPAL CON CACHE
 # ============================================================
 def get_options_structure_for_api():
     global _INFLIGHT
 
     now = time.time()
 
-    # ---------- Cache fresh ----------
     with _CACHE_LOCK:
         if _CACHE["data"] is not None and (now - _CACHE["ts"]) < CACHE_TTL:
             return _CACHE["data"]
-
         if _INFLIGHT:
             event = _INFLIGHT_EVENT
         else:
@@ -198,37 +207,38 @@ def get_options_structure_for_api():
             _INFLIGHT_EVENT.clear()
             event = None
 
-    # ---------- Follower ----------
+    # Follower espera al leader
     if event is not None:
         event.wait(timeout=60)
         with _CACHE_LOCK:
             if _CACHE["data"] is not None:
                 return _CACHE["data"]
-            return {"error": "Datos no disponibles"}
+        return {"error": "Datos no disponibles"}
 
-    # ---------- Líder ----------
+    # Leader hace el fetch
     try:
-        results = {}
-        for symbol in UNIVERSE:
-            try:
-                df, spot, expiry = get_best_options_chain(symbol)
-                results[symbol] = build_levels(df, spot, expiry)
-            except Exception as e:
-                results[symbol] = {"error": f"Error en {symbol}: {str(e)}"}
+        results  = {}
+        universe = []
+
+        for cfg in UNIVERSE:
+            res = procesar_ticker(cfg)
+            if res:
+                results[cfg["symbol"]] = res
+                universe.append(cfg["symbol"])
 
         output = {
-            "updated_at": dt.datetime.now(timezone.utc).isoformat() + "Z",
-            "universe": UNIVERSE,
-            "data": results,
+            "updated_at": dt.datetime.utcnow().isoformat() + "Z",
+            "universe":   universe,
+            "data":       results,
         }
 
         with _CACHE_LOCK:
             _CACHE["data"] = output
-            _CACHE["ts"] = time.time()
+            _CACHE["ts"]   = time.time()
 
         return output
 
-    except Exception:
+    except Exception as e:
         with _CACHE_LOCK:
             if _CACHE["data"] is not None:
                 return _CACHE["data"]
@@ -237,4 +247,4 @@ def get_options_structure_for_api():
     finally:
         with _CACHE_LOCK:
             _INFLIGHT = False
-            _INFLIGHT_EVENT.set()
+        _INFLIGHT_EVENT.set()
