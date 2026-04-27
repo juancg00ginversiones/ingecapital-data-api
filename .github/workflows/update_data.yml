@@ -1,0 +1,74 @@
+name: Actualizar Datos IngeCapital
+
+on:
+  schedule:
+    # Cada hora en días de semana, en horario de mercado AR (12:00 - 23:00 UTC = 09:00 - 20:00 AR)
+    - cron: '0 12 * * 1-5'
+    - cron: '0 13 * * 1-5'
+    - cron: '0 14 * * 1-5'
+    - cron: '0 15 * * 1-5'
+    - cron: '0 16 * * 1-5'
+    - cron: '0 17 * * 1-5'
+    - cron: '0 18 * * 1-5'
+    - cron: '0 19 * * 1-5'
+    - cron: '0 20 * * 1-5'
+    - cron: '0 21 * * 1-5'
+    - cron: '0 22 * * 1-5'
+    - cron: '0 23 * * 1-5'
+    # Opciones también antes de apertura y al cierre
+    - cron: '30 11 * * 1-5'
+    - cron: '30 23 * * 1-5'
+  workflow_dispatch:  # Permite correrlo manualmente desde GitHub
+
+jobs:
+  update-all:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: |
+          pip install yfinance pandas numpy scipy requests beautifulsoup4 lxml python-dateutil
+
+      # ── OPCIONES ────────────────────────────────────────────
+      - name: Generar opciones_data.json
+        run: python generate_opciones.py
+        continue-on-error: true
+
+      # ── MARKET SCREENER ─────────────────────────────────────
+      - name: Generar screener_data.json
+        run: python generate_screener.py
+        continue-on-error: true
+
+      # ── DÓLARES ─────────────────────────────────────────────
+      - name: Generar dolares_data.json
+        run: python generate_dolares.py
+        continue-on-error: true
+
+      # ── NOTICIAS ────────────────────────────────────────────
+      - name: Generar noticias_data.json
+        run: python generate_noticias.py
+        continue-on-error: true
+
+      # ── FORECAST CUANTITATIVO ───────────────────────────────
+      - name: Generar forecast_data.json
+        run: python generate_forecast.py
+        continue-on-error: true
+
+      # ── COMMIT Y PUSH ───────────────────────────────────────
+      - name: Commit y push JSONs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add *.json
+          git diff --staged --quiet || git commit -m "Update data JSONs - $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
