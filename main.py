@@ -195,10 +195,28 @@ def lecap_band(
         print("[ERROR /lecap-band]", repr(e))
         raise HTTPException(status_code=500, detail=f"Error interno en lecap-band: {str(e)}")
 
+
+# ============================================================
+# COTIZACIONES (acciones, cedears, letras, ons_live, usa)
+# ============================================================
+@app.get("/cotizaciones/{categoria}")
+def cotizaciones(categoria: str):
+    """
+    Categorías válidas: acciones | cedears | letras | ons | usa
+    Caché de 5 min por categoría. Sin proxy, sin CORS issues.
+    """
+    try:
+        from cotizaciones import get_cotizaciones
+        return get_cotizaciones(categoria)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        print(f"[ERROR /cotizaciones/{categoria}]", repr(e))
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
 # ============================================================
 # START
 # ============================================================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
-
