@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-05-01T00:13:41.403457",
+  "as_of": "2026-05-01T12:12:18.212514",
   "sectors": {
     "etfs_mercado_usa": [
       {
@@ -561,11 +561,11 @@
       },
       {
         "ticker": "BITF",
-        "price": 2.73,
-        "daily_change_pct": -5.36,
+        "price": 3.03,
+        "daily_change_pct": 10.58,
         "indicators": {
           "rsi14": {
-            "value": 53.3
+            "value": 60.35
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1121,13 +1121,13 @@
       {
         "ticker": "MS",
         "price": 190.59,
-        "daily_change_pct": 1.88,
+        "daily_change_pct": 2.42,
         "indicators": {
           "rsi14": {
-            "value": 64.89
+            "value": 65.92
           },
           "macd": {
-            "diagnostic": "MACD: sesgo bajista"
+            "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
             "status": "above"
@@ -1949,5 +1949,5 @@
       }
     ]
   },
-  "updated_at": "2026-05-01T00:14:18Z"
+  "updated_at": "2026-05-01T12:12:54Z"
 }
