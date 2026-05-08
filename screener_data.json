@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-05-08T12:52:54.551508",
+  "as_of": "2026-05-08T13:27:24.435246",
   "sectors": {
     "etfs_mercado_usa": [
       {
@@ -663,25 +663,6 @@
         "indicators": {
           "rsi14": {
             "value": 46.27
-          },
-          "macd": {
-            "diagnostic": "MACD: sesgo bajista"
-          },
-          "sma21": {
-            "status": "below"
-          },
-          "sma200": {
-            "status": "above"
-          }
-        }
-      },
-      {
-        "ticker": "PBR",
-        "price": 20.37,
-        "daily_change_pct": -2.58,
-        "indicators": {
-          "rsi14": {
-            "value": 46.06
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1949,5 +1930,5 @@
       }
     ]
   },
-  "updated_at": "2026-05-08T12:53:32Z"
+  "updated_at": "2026-05-08T13:27:48Z"
 }
