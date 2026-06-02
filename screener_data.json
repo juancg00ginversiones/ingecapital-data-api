@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-06-02T00:21:03.326177",
+  "as_of": "2026-06-02T01:59:07.870419",
   "sectors": {
     "etfs_mercado_usa": [
       {
@@ -1102,10 +1102,10 @@
       {
         "ticker": "GS",
         "price": 1048.58,
-        "daily_change_pct": 2.24,
+        "daily_change_pct": 2.7,
         "indicators": {
           "rsi14": {
-            "value": 74.95
+            "value": 75.55
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1313,10 +1313,10 @@
       {
         "ticker": "NKE",
         "price": 45.93,
-        "daily_change_pct": -0.65,
+        "daily_change_pct": 0.24,
         "indicators": {
           "rsi14": {
-            "value": 55.71
+            "value": 58.13
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1775,16 +1775,16 @@
       {
         "ticker": "FDX",
         "price": 338.49,
-        "daily_change_pct": -17.79,
+        "daily_change_pct": 2.02,
         "indicators": {
           "rsi14": {
-            "value": 33.9
+            "value": 69.77
           },
           "macd": {
-            "diagnostic": "MACD: sesgo bajista"
+            "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
-            "status": "below"
+            "status": "above"
           },
           "sma200": {
             "status": "above"
@@ -1794,10 +1794,10 @@
       {
         "ticker": "LMT",
         "price": 516.5,
-        "daily_change_pct": -2.63,
+        "daily_change_pct": -1.99,
         "indicators": {
           "rsi14": {
-            "value": 38.55
+            "value": 40.12
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1949,5 +1949,5 @@
       }
     ]
   },
-  "updated_at": "2026-06-02T00:21:41Z"
+  "updated_at": "2026-06-02T01:59:32Z"
 }
