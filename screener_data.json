@@ -1,14 +1,14 @@
 {
-  "as_of": "2026-06-03T20:17:34.750041",
+  "as_of": "2026-06-03T20:55:54.129326",
   "sectors": {
     "etfs_mercado_usa": [
       {
         "ticker": "SPY",
-        "price": 754.13,
-        "daily_change_pct": -0.72,
+        "price": 754.24,
+        "daily_change_pct": -0.7,
         "indicators": {
           "rsi14": {
-            "value": 67.82
+            "value": 67.97
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -42,11 +42,11 @@
       },
       {
         "ticker": "DIA",
-        "price": 508.22,
+        "price": 508.26,
         "daily_change_pct": -1.13,
         "indicators": {
           "rsi14": {
-            "value": 61.19
+            "value": 61.25
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -61,14 +61,14 @@
       },
       {
         "ticker": "IWM",
-        "price": 287.61,
-        "daily_change_pct": -1.39,
+        "price": 287.67,
+        "daily_change_pct": -1.37,
         "indicators": {
           "rsi14": {
-            "value": 57.6
+            "value": 57.69
           },
           "macd": {
-            "diagnostic": "MACD: sesgo bajista"
+            "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
             "status": "above"
@@ -755,11 +755,11 @@
       },
       {
         "ticker": "BABA",
-        "price": 127.29,
-        "daily_change_pct": -2.69,
+        "price": 127.21,
+        "daily_change_pct": -2.76,
         "indicators": {
           "rsi14": {
-            "value": 43.95
+            "value": 43.86
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -909,11 +909,11 @@
       },
       {
         "ticker": "ORCL",
-        "price": 230.51,
-        "daily_change_pct": -5.75,
+        "price": 230.33,
+        "daily_change_pct": -5.83,
         "indicators": {
           "rsi14": {
-            "value": 67.11
+            "value": 66.99
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1352,11 +1352,11 @@
     "energia": [
       {
         "ticker": "XOM",
-        "price": 152.71,
-        "daily_change_pct": 2.11,
+        "price": 152.53,
+        "daily_change_pct": 1.99,
         "indicators": {
           "rsi14": {
-            "value": 51.95
+            "value": 51.69
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1371,11 +1371,11 @@
       },
       {
         "ticker": "CVX",
-        "price": 189.82,
-        "daily_change_pct": 1.21,
+        "price": 189.71,
+        "daily_change_pct": 1.15,
         "indicators": {
           "rsi14": {
-            "value": 53.8
+            "value": 53.65
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1601,11 +1601,11 @@
       },
       {
         "ticker": "PFE",
-        "price": 25.35,
-        "daily_change_pct": -0.76,
+        "price": 25.34,
+        "daily_change_pct": -0.82,
         "indicators": {
           "rsi14": {
-            "value": 38.6
+            "value": 38.4
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1949,5 +1949,5 @@
       }
     ]
   },
-  "updated_at": "2026-06-03T20:18:13Z"
+  "updated_at": "2026-06-03T20:56:20Z"
 }
