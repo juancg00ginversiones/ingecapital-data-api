@@ -174,122 +174,225 @@ def cotizaciones(categoria: str):
 # ============================================================
 
 GLOSARIO = """
-GLOSARIO FINANCIERO COMPLETO:
-- Acción: Parte del capital de una empresa. Al comprarla, sos dueño de una porción de la compañía.
-- ADR: Certificado que permite comprar acciones de empresas extranjeras en bolsas de EE.UU.
-- Análisis Técnico: Estudia gráficos de precios para predecir movimientos del mercado.
-- Análisis Fundamental: Evalúa la salud financiera de una empresa para determinar si está cara o barata.
-- Apalancamiento: Usar deuda para financiar inversiones, amplificando ganancias y pérdidas.
-- Bear Market: Período de caída sostenida de precios (más del 20%). Pesimismo en el mercado.
-- BONCAP: Bono del Tesoro capitalizable en pesos, similar a la LECAP pero de mayor plazo.
-- Bono: Instrumento de deuda. Al comprarlo le prestás dinero al emisor a cambio de intereses.
-- Bono Bullet: Paga intereses periódicamente y devuelve todo el capital al vencimiento.
-- Bull Market: Período de suba sostenida de precios. Optimismo en el mercado.
-- Cartera: Conjunto de inversiones de una persona. Diversificarla reduce el riesgo.
-- Cauciones: Préstamos a muy corto plazo (1-7 días) garantizados con títulos. Muy seguras.
-- CEDEAR: Certificado que permite invertir en acciones extranjeras (Apple, Google, Tesla) desde Argentina en pesos.
-- CER: Índice que ajusta instrumentos según la inflación. Protege el poder adquisitivo.
-- Cuenta Comitente: Cuenta de inversión necesaria para operar en el mercado de capitales.
-- Diversificar: Distribuir el dinero en diferentes activos para reducir el riesgo.
-- Dividendos: Parte de las ganancias que una empresa reparte entre sus accionistas.
-- Dólar Blue: Tipo de cambio informal, no oficial.
-- Dólar MEP (Bolsa): Compra un bono en pesos y lo vendés en dólares. 100% legal.
-- Dólar CCL (Cable): Permite transferir dólares al exterior mediante compra/venta de bonos. Legal.
-- Dólar Linked: Instrumentos en pesos atados al tipo de cambio oficial. Cobertura ante devaluación.
-- Duration: Medida de sensibilidad de un bono a cambios en las tasas de interés. A mayor duration, mayor riesgo de tasa.
-- EBITDA: Ganancia antes de intereses, impuestos, depreciaciones y amortizaciones.
-- ETF: Fondo que cotiza en bolsa como una acción y replica un índice como el S&P 500.
-- Futuros: Contrato para comprar/vender un activo a precio y fecha futuros. Cobertura o especulación.
-- Gamma Flip: Nivel de precio donde cambia el régimen de volatilidad del mercado de opciones.
-- Inflación: Aumento generalizado de precios. Erosiona el poder adquisitivo del dinero.
-- Interés Compuesto: Interés sobre el capital más intereses acumulados. Efecto 'bola de nieve'.
-- IPC: Índice de Precios al Consumidor. Principal medida de la inflación.
-- LECAP: Letra del Tesoro capitalizable en pesos. Instrumento de corto plazo, tasa fija.
-- Liquidez: Facilidad para convertir un activo en efectivo sin perder valor.
-- Merval: Principal índice bursátil de Argentina.
-- Obligaciones Negociables (ONs): Bonos emitidos por empresas privadas. Le prestás a una empresa.
-- Opciones: Contratos que dan el derecho (no obligación) de comprar/vender un activo a cierto precio.
-- Paridad: Relación entre precio de mercado de un bono y su valor técnico. Bajo 100% = bajo la par.
-- Put Wall: Nivel con mayor concentración de puts. Actúa como soporte fuerte del mercado.
-- Call Wall: Nivel con mayor concentración de calls. Actúa como resistencia fuerte del mercado.
-- Renta Fija: Inversión con flujos conocidos de antemano (bonos, plazos fijos).
-- Renta Variable: Inversión con rentabilidad incierta (acciones). Mayor riesgo, mayor potencial.
-- RSI: Indicador técnico de 0 a 100. Por encima de 70 sobrecomprado, por debajo de 30 sobrevendido.
+GLOSARIO FINANCIERO ARGENTINO:
+- LECAP: Letra del Tesoro capitalizable en pesos. Tasa fija, corto plazo. El interés se cobra al vencimiento junto al capital.
+- BONCAP: Bono del Tesoro capitalizable en pesos. Similar a LECAP pero de mayor plazo (más de 1 año).
+- Bono CER: Ajusta por inflación (índice CER). TIR negativa = rinde por debajo de la inflación esperada. Cobertura inflacionaria.
+- TAMAR: Tasa variable referenciada al promedio de tasas de plazos fijos bancarios. Rinde más si sube la tasa.
+- Bono Dual: Paga el mayor entre tasa fija y TAMAR. Mejor de dos mundos.
+- TEM: Tasa Efectiva Mensual. Rendimiento real por mes.
+- TEA: Tasa Efectiva Anual. Rendimiento real por año incluyendo capitalización.
+- TNA: Tasa Nominal Anual. Sin capitalización, solo referencial.
+- TIR: Tasa Interna de Retorno. Rendimiento esperado si se mantiene el bono al vencimiento.
+- Duration (DM): Sensibilidad del precio del bono a cambios en tasas. A mayor duration, mayor riesgo de tasa.
+- Dólar MEP (Bolsa): Compra bono en pesos, lo vendés en dólares dentro del mercado local. 100% legal, sin límite.
+- Dólar CCL (Cable): Igual que MEP pero los dólares quedan en cuenta del exterior.
+- Dólar Blue: Mercado informal. Ilegal pero muy usado como referencia.
+- Carry Trade: Estrategia de invertir en pesos (LECAPs) apostando a que el dólar no sube más que el rendimiento en $.
+- Caución: Préstamo a cortísimo plazo (1-7 días) garantizado con títulos. Muy seguro y líquido.
+- CEDEAR: Certificado que permite invertir en acciones extranjeras (NVDA, AAPL) desde Argentina en pesos.
+- Acción AR: Acción de empresa argentina que cotiza en BYMA (Bolsa argentina).
+- ADR: Certificado de empresa argentina que cotiza en bolsas de EE.UU. (GGAL, YPF, etc.)
+- ON (Obligación Negociable): Bono emitido por empresa privada argentina. Le prestás a una empresa.
+- FCI: Fondo Común de Inversión. Patrimonio administrado por profesionales. Ideal para principiantes.
+- Merval: Principal índice bursátil argentino.
+- S&P 500: Índice de las 500 empresas más grandes de EE.UU.
+- Gamma Flip: Nivel de precio del SPY donde cambia el régimen de volatilidad. Por encima = mercado calmo. Por debajo = caos.
+- Call Wall: Nivel con mayor concentración de calls. Actúa como resistencia fuerte.
+- Put Wall: Nivel con mayor concentración de puts. Actúa como soporte fuerte.
+- RSI: Indicador técnico 0-100. Encima de 70 = sobrecomprado. Debajo de 30 = sobrevendido.
 - MACD: Indicador de momentum. Cruce de medias móviles para detectar cambios de tendencia.
-- S&P 500: Índice de las 500 empresas más grandes de EE.UU. Termómetro del mercado global.
-- Spread: Diferencia entre precio de compra y venta. También diferencial de tasas entre bonos.
-- TAMAR: Tasa de referencia variable argentina, promedio de tasas de plazos fijos bancarios.
-- TEA: Tasa Efectiva Anual. Mide el rendimiento real en un año incluyendo capitalización.
-- TEM: Tasa Efectiva Mensual.
-- TIR (YTM): Tasa Interna de Retorno. Rentabilidad esperada de un bono si se mantiene al vencimiento.
-- TNA: Tasa Nominal Anual. No incluye capitalización.
-- Títulos Públicos: Deuda emitida por el gobierno nacional, provincial o municipal.
-- UVA: Unidad ajustada por inflación (CER). Usada en créditos y depósitos.
-- VAN: Valor Actual Neto. Si es positivo, la inversión es rentable.
-- Valor Técnico: Para un bono, es el valor residual más intereses corridos.
+- Riesgo País: Spread en puntos básicos sobre bonos del Tesoro USA. Mide riesgo de default soberano.
+- IPC: Índice de Precios al Consumidor. Mide la inflación mensual.
+- BCRA: Banco Central de la República Argentina.
+- YTD: Year to Date. Rendimiento desde el 1 de enero hasta hoy.
+- Paridad: Para bonos, relación entre precio de mercado y valor nominal. Bajo 100% = cotiza bajo la par.
+- Valor Técnico: Capital residual + intereses corridos de un bono. Su valor contable.
+- Interés Compuesto: Interés sobre capital + intereses acumulados. Efecto bola de nieve.
+- Diversificación: Distribuir el capital en distintos activos para reducir el riesgo.
+- Volatilidad: Variación del precio de un activo. Mayor volatilidad = mayor riesgo y oportunidad.
+- Liquidez: Facilidad para convertir un activo en efectivo sin perder valor.
 """
 
-FUNCIONALIDADES_PLATAFORMA = """
+FUNCIONALIDADES = """
 FUNCIONALIDADES DE INGECAPITAL:
 
 VERSIÓN GRATUITA (para todos):
-- Cotizaciones en Detalle: Precios en tiempo real de acciones AR, CEDEARs, bonos, ONs, letras y acciones USA
-- Calculadora de Cauciones: Calcula resultados de operar cauciones
-- Renta Fija en Pesos: LECAPs, BONCAPs, Bonos CER, TAMAR - rendimientos y tasas actualizadas
-- Curva de LECAPs: Visualización de tasas vs vencimientos y proyección de banda cambiaria
-- Tasas de Plazo Fijo: Comparativa de TNA de principales bancos argentinos
-- Variables Macro: Inflación, Riesgo País, datos macroeconómicos de Argentina y USA
-- Dólar y Mercado Cambiario: Cotizaciones en tiempo real del Blue, MEP, CCL, Oficial con histórico
-- Cartera de Retiro: Proyección de jubilación e interés compuesto
+1. Cotizaciones en Detalle: Precios en tiempo real de acciones AR, CEDEARs, bonos, ONs, letras y acciones USA
+2. Calculadora de Cauciones: Calcula resultados de cauciones a distintos plazos
+3. Renta Fija en Pesos: LECAPs, BONCAPs, CER, TAMAR — rendimientos, tasas y ganancia proyectada
+4. Carry Trade LECAPs: Tabla con rendimiento en USD para distintos escenarios de tipo de cambio
+5. Tasas de Plazo Fijo: Comparativa TNA de principales bancos argentinos
+6. Variables Macro: Inflación, Riesgo País, datos macro Argentina y USA
+7. Dólar y Mercado Cambiario: Blue/MEP/CCL/Oficial con histórico de 365 días
+8. Cartera de Retiro: Proyección de jubilación con interés compuesto
+9. Chat de IA: Asistente con datos del mercado en tiempo real
 
-VERSIÓN PRO (exclusiva para clientes JCG):
-- Forecast Cuantitativo: Modelos predictivos con fan charts para SPY, QQQ, BTC, acciones y más
-- Mapa de Mercado Global: Heat map de sectores y rendimientos por categoría
-- Market Screener Técnico: Scanner con RSI, SMAs y variaciones por sector en tiempo real
-- Fondos de Inversión: Explorador de FCI clasificados por objetivo, riesgo y horizonte
-- Portafolios Sugeridos: Carteras temáticas por perfil de riesgo
-- Niveles de Opciones: Put/Call Walls, Gamma Flip, Max Pain para SPY, QQQ, IWM, IBIT
-- Calculadora de Bonos Pro: TIR histórica, flujo de fondos, análisis de sensibilidad
-- Calculadora de ONs: TIR, Duration y Paridad de Obligaciones Negociables
-- Calculadora de Opciones: Black-Scholes y análisis de griegas
-- Análisis de Futuros: Curvas forward y proyecciones macro USA
-- Mi Cartera: Portfolio personal con seguimiento de posiciones y rendimientos
-- Dashboard JCG Inversiones: Plataforma de análisis con liquidez global, indicadores técnicos y señales
+VERSIÓN PRO (gratis para clientes JCG):
+1. Forecast Cuantitativo: Modelos predictivos con fan charts para SPY, QQQ, BTC y más
+2. Mapa de Mercado Global: Heat map de sectores y rendimientos
+3. Market Screener Técnico: Scanner con RSI, MACD, SMAs por sector en tiempo real
+4. Fondos de Inversión: Explorador de FCI argentinos
+5. Portafolios Sugeridos: Carteras temáticas por perfil de riesgo
+6. Niveles de Opciones: Put/Call Walls, Gamma Flip, Max Pain para SPY, QQQ, IWM, IBIT
+7. Calculadora de Bonos Pro: TIR, flujo de fondos, sensibilidad
+8. Calculadora de ONs: TIR, Duration y Paridad
+9. Mi Cartera: Portfolio personal con precios actuales y rendimiento
+10. Dashboard JCG: Plataforma avanzada con liquidez global e indicadores técnicos
+
+CÓMO ACCEDER A PRO: Siendo cliente de JCG Inversiones (sin costo adicional)
+DASHBOARD JCG: $10/mes o $100/año — incluye revisión mensual de cartera con asesor
 """
 
-SYSTEM_PROMPT = f"""Sos el asistente virtual de IngeCapital, la plataforma financiera de JCG Inversiones.
+SYSTEM_PROMPT_BASE = f"""Sos el asistente virtual de IngeCapital, la plataforma financiera de JCG Inversiones.
 
-TU PERSONALIDAD:
-- Hablás en español argentino casual pero profesional (usá "vos", "tenés", "andás")
-- Sos copado, directo y claro — nada de respuestas aburridas o robóticas
-- Usás emojis con criterio para hacer las respuestas más amigables
-- Sos educativo: explicás conceptos de forma simple antes del detalle técnico
-- NUNCA das recomendaciones de inversión específicas — eso es trabajo del equipo de JCG
-- Siempre terminás con un gancho hacia el asesoramiento personalizado de JCG
+PERSONALIDAD:
+- Hablás en español argentino casual y directo (vos, tenés, andás)
+- Sos copado, claro y didáctico — explicás sin tecnicismos innecesarios
+- Usás emojis con criterio, no en exceso
+- Cuando no sabés algo, lo decís honestamente
+- Siempre terminás con un gancho hacia el asesoramiento de JCG
+- Hacés preguntas de seguimiento cuando la consulta es vaga
 
-TU MISIÓN:
-1. Dar un panorama actual del mercado usando los datos disponibles
-2. Explicar conceptos financieros de forma clara y didáctica
-3. Orientar sobre las herramientas de la plataforma
-4. Derivar al equipo de JCG para decisiones de inversión
-
-CONTACTO JCG INVERSIONES:
-- Web: jcginversiones.com
-- Instagram: @jcg_strategic (https://www.instagram.com/jcg_strategic/)
-- WhatsApp: +54 11 6978-7999 (https://wa.me/5491169787999)
-- Para asesoramiento personalizado: https://wa.me/5491169787999?text=Hola%2C%20quiero%20asesoramiento%20de%20inversión
+MISIÓN:
+1. Explicar conceptos financieros de forma simple con ejemplos argentinos concretos
+2. Dar panorama del mercado usando los datos reales disponibles en el contexto
+3. Orientar sobre las herramientas de la plataforma IngeCapital
+4. Derivar a JCG para decisiones de inversión personalizadas
 
 REGLAS IMPORTANTES:
-- Máximo 3 párrafos por respuesta, sé conciso
-- Si te preguntan qué instrumento comprar: explicá las opciones, sus características, y derivá a JCG
-- Si te preguntan sobre la plataforma: explicá la funcionalidad y cómo acceder
-- Si te preguntan un concepto: explicalo con un ejemplo concreto argentino
-- Si no sabés algo: decilo honestamente y sugerí consultar con JCG
+- NUNCA recomendés comprar o vender un instrumento específico
+- Si te preguntan qué comprar → explicá las opciones y sus características, luego derivá a JCG
+- Si hay datos de mercado en el contexto → úsalos en la respuesta con los valores reales
+- Si no tenés el dato exacto → decilo honestamente y sugerí consultar con JCG
+- Máximo 3 párrafos por respuesta — sé conciso y directo
+- Cuando alguien pregunta algo vago → primero dá el panorama con los datos disponibles, luego preguntá si quieren profundizar
+
+CONTACTO JCG INVERSIONES:
+- WhatsApp: https://wa.me/5491169787999
+- Instagram: @jcg_strategic  
+- Web: jcginversiones.com
 
 {GLOSARIO}
 
-{FUNCIONALIDADES_PLATAFORMA}
-"""
+{FUNCIONALIDADES}"""
+
+
+def armar_contexto(context: dict) -> str:
+    if not context:
+        return ""
+
+    lines = ["\n📊 DATOS DEL MERCADO EN TIEMPO REAL:\n"]
+
+    # Dólares
+    if context.get("dolar"):
+        d = context["dolar"]
+        lines.append("💵 Tipos de cambio:")
+        if d.get("mep"):     lines.append(f"  • Dólar MEP:     ${float(d['mep']):,.0f}")
+        if d.get("blue"):    lines.append(f"  • Dólar Blue:    ${float(d['blue']):,.0f}")
+        if d.get("ccl"):     lines.append(f"  • Dólar CCL:     ${float(d['ccl']):,.0f}")
+        if d.get("oficial"): lines.append(f"  • Dólar Oficial: ${float(d['oficial']):,.0f}")
+
+    # LECAPs
+    if context.get("lecaps"):
+        lines.append("\n📋 LECAPs vigentes:")
+        for l in context["lecaps"]:
+            lines.append(
+                f"  • {l.get('especie','?')} | "
+                f"Precio: ${l.get('precio','?')} | "
+                f"TEM: {l.get('tem','?')}% | "
+                f"TEA: {l.get('tea','?')}% | "
+                f"Vence: {l.get('fecha_pago','?')} | "
+                f"Días: {l.get('dm','?')}"
+            )
+
+    # BONCAPs
+    if context.get("boncaps"):
+        lines.append("\n📋 BONCAPs vigentes:")
+        for b in context["boncaps"]:
+            lines.append(
+                f"  • {b.get('especie','?')} | "
+                f"Precio: ${b.get('precio','?')} | "
+                f"TEM: {b.get('tem','?')}% | "
+                f"Vence: {b.get('fecha_pago','?')}"
+            )
+
+    # CER
+    if context.get("cer"):
+        lines.append("\n📋 Bonos CER vigentes:")
+        for c in context["cer"]:
+            tir = c.get('tir', '?')
+            try:
+                signo = "+" if float(tir) > 0 else ""
+            except:
+                signo = ""
+            lines.append(
+                f"  • {c.get('especie','?')} | "
+                f"Precio: ${c.get('precio','?')} | "
+                f"TIR: {signo}{tir}% | "
+                f"Vence: {c.get('fecha_pago','?')}"
+            )
+
+    # TAMAR
+    if context.get("tamar"):
+        lines.append("\n📋 Bonos TAMAR:")
+        for t in context["tamar"]:
+            lines.append(
+                f"  • {t.get('especie','?')} | "
+                f"Precio: ${t.get('precio','?')} | "
+                f"Spread: {t.get('spread','?')}% | "
+                f"Vence: {t.get('fecha_pago','?')}"
+            )
+
+    # Screener
+    if context.get("screener") and isinstance(context["screener"], dict):
+        s = context["screener"]
+
+        if s.get("adrs_arg"):
+            lines.append("\n📈 ADRs argentinos (USD):")
+            for x in s["adrs_arg"][:8]:
+                chg = x.get('change', 0)
+                try:
+                    signo = "+" if float(chg) >= 0 else ""
+                    lines.append(f"  • {x['ticker']}: ${x['price']} ({signo}{chg}%)")
+                except:
+                    lines.append(f"  • {x.get('ticker','?')}: ${x.get('price','?')}")
+
+        if s.get("mega_tech"):
+            lines.append("\n📈 Mega tecnología USA (USD):")
+            for x in s["mega_tech"][:8]:
+                chg = x.get('change', 0)
+                try:
+                    signo = "+" if float(chg) >= 0 else ""
+                    lines.append(f"  • {x['ticker']}: ${x['price']} ({signo}{chg}%)")
+                except:
+                    lines.append(f"  • {x.get('ticker','?')}: ${x.get('price','?')}")
+
+        if s.get("etfs_usa"):
+            lines.append("\n📈 ETFs USA:")
+            for x in s["etfs_usa"]:
+                chg = x.get('change', 0)
+                try:
+                    signo = "+" if float(chg) >= 0 else ""
+                    lines.append(f"  • {x['ticker']}: ${x['price']} ({signo}{chg}%)")
+                except:
+                    lines.append(f"  • {x.get('ticker','?')}: ${x.get('price','?')}")
+
+    # Opciones
+    if context.get("opciones") and isinstance(context["opciones"], dict):
+        lines.append("\n⚡ Niveles de opciones:")
+        for ticker, data in context["opciones"].items():
+            if data and isinstance(data, dict):
+                lines.append(
+                    f"  • {ticker}: Spot ${data.get('spot','?')} | "
+                    f"Call Wall: ${data.get('call_wall','?')} | "
+                    f"Put Wall: ${data.get('put_wall','?')} | "
+                    f"Gamma Flip: ${data.get('gamma_flip','?')} | "
+                    f"Régimen: {data.get('regime','?')}"
+                )
+
+    return "\n".join(lines)
+
 
 class ChatMessage(BaseModel):
     role: str
@@ -298,6 +401,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
     context: Optional[dict] = None
+
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
@@ -308,35 +412,20 @@ async def chat(request: ChatRequest):
         if not groq_api_key:
             raise HTTPException(status_code=500, detail="GROQ_API_KEY no configurada")
 
-        # Armar contexto de mercado
-        context_text = ""
-        if request.context:
-            d = request.context
-            if d.get("dolar"):
-                mep  = d["dolar"].get("mep", "N/D")
-                blue = d["dolar"].get("blue", "N/D")
-                context_text += f"\n📊 DATOS DEL MERCADO HOY:\n- Dólar MEP: ${mep}\n- Dólar Blue: ${blue}\n"
-            if d.get("lecaps"):
-                context_text += "\n📋 LECAPs vigentes:\n"
-                for l in d["lecaps"]:
-                    context_text += f"  • {l.get('especie','?')} — Precio: ${l.get('precio','?')} | TEM: {l.get('tem','?')}% | TEA: {l.get('tea','?')}% | Vence: {l.get('fecha_pago','?')}\n"
-            if d.get("boncaps"):
-                context_text += "\n📋 BONCAPs vigentes:\n"
-                for b in d["boncaps"]:
-                    context_text += f"  • {b.get('especie','?')} — Precio: ${b.get('precio','?')} | TEM: {b.get('tem','?')}% | Vence: {b.get('fecha_pago','?')}\n"
-            if d.get("screener"):
-                context_text += f"\n📈 Screener de mercado disponible con datos técnicos de múltiples sectores.\n"
-            if d.get("opciones"):
-                context_text += f"\n⚡ Datos de opciones disponibles: Put Wall, Call Wall, Gamma Flip para índices USA.\n"
+        # Armar contexto
+        context_text = armar_contexto(request.context or {})
 
-        system_with_context = SYSTEM_PROMPT
+        system_with_context = SYSTEM_PROMPT_BASE
         if context_text:
-            system_with_context += f"\n\nDATA EN TIEMPO REAL DISPONIBLE PARA ESTA CONSULTA:{context_text}"
+            system_with_context += f"\n\n{context_text}"
 
-        # Armar mensajes
+        # Armar mensajes para Groq
         groq_messages = [{"role": "system", "content": system_with_context}]
         for msg in request.messages[-10:]:
-            groq_messages.append({"role": msg.role, "content": msg.content})
+            groq_messages.append({
+                "role":    msg.role,
+                "content": msg.content
+            })
 
         # Llamar a Groq
         async with httpx.AsyncClient(timeout=30.0) as client:
@@ -344,20 +433,23 @@ async def chat(request: ChatRequest):
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={
                     "Authorization": f"Bearer {groq_api_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type":  "application/json"
                 },
                 json={
-                    "model": "llama-3.3-70b-versatile",
-                    "messages": groq_messages,
-                    "max_tokens": 600,
+                    "model":       "llama-3.3-70b-versatile",
+                    "messages":    groq_messages,
+                    "max_tokens":  600,
                     "temperature": 0.7,
                 }
             )
 
         if response.status_code != 200:
-            raise HTTPException(status_code=500, detail=f"Error de Groq: {response.text}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error de Groq: {response.text}"
+            )
 
-        data = response.json()
+        data  = response.json()
         reply = data["choices"][0]["message"]["content"]
 
         return {"reply": reply, "model": "llama-3.3-70b"}
@@ -367,6 +459,7 @@ async def chat(request: ChatRequest):
     except Exception as e:
         print("[ERROR /chat]", repr(e))
         raise HTTPException(status_code=500, detail=f"Error en chat: {str(e)}")
+
 
 # ============================================================
 # START
