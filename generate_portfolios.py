@@ -630,7 +630,7 @@ def main():
         def fmt(v, suffix="%"):
             return f"{v:+.1f}{suffix}" if v is not None else "N/D"
 
-        p50 = proyeccion["p50"] if proyeccion else None
+        p50 = proyeccion["base"] if proyeccion else None
         print(
             f"       YTD: {fmt(portfolio_data['rendimientos']['ytd'])} | "
             f"1Y: {fmt(portfolio_data['rendimientos']['1y'])} | "
