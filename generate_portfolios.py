@@ -559,11 +559,9 @@ def gbm_mean_reversion_projection(
         ret_t = (np.exp(log_inc[:, :t].cumsum(axis=1)[:, -1]) - 1.0) * 100
         fan_data.append({
             "mes":  mes,
-            "p5":   round(float(np.percentile(ret_t, 5)), 2),
-            "p25":  round(float(np.percentile(ret_t, 25)), 2),
-            "p50":  round(float(np.percentile(ret_t, 50)), 2),
-            "p75":  round(float(np.percentile(ret_t, 75)), 2),
-            "p95":  round(float(np.percentile(ret_t, 95)), 2),
+            "pesimista": round(float(np.percentile(ret_t, 25)), 2),
+            "base":     round(float(np.percentile(ret_t, 50)), 2),
+            "optimista": round(float(np.percentile(ret_t, 75)), 2),
         })
 
     return {
@@ -572,11 +570,9 @@ def gbm_mean_reversion_projection(
         "mu_historico":   round(mu_historico * 100, 2),
         "mu_largo_plazo": round(mu_largo_plazo * 100, 2),
         "mu_final":       round(mu_final * 100, 2),
-        "p5":             round(float(np.percentile(terminal, 5)), 2),
-        "p25":            round(float(np.percentile(terminal, 25)), 2),
-        "p50":            round(float(np.percentile(terminal, 50)), 2),
-        "p75":            round(float(np.percentile(terminal, 75)), 2),
-        "p95":            round(float(np.percentile(terminal, 95)), 2),
+        "pesimista": round(float(np.percentile(terminal, 25)), 2),
+        "base":     round(float(np.percentile(terminal, 50)), 2),
+        "optimista": round(float(np.percentile(terminal, 75)), 2),
         "fan":            fan_data,
     }
 
