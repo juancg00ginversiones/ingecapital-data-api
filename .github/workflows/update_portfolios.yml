@@ -5,12 +5,17 @@ on:
     - cron: '0 8 * * 0'  # Todos los domingos a las 8am UTC
   workflow_dispatch:       # También se puede correr manualmente
 
+permissions:
+  contents: write
+
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v4
