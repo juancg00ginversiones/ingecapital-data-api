@@ -13,9 +13,6 @@ import yfinance as yf
 import warnings
 warnings.filterwarnings("ignore")
 
-# ============================================================
-# CARTERAS — mismas que SuggestedPortfolios.jsx
-# ============================================================
 PORTFOLIOS = [
     {
         "id": 1,
@@ -103,14 +100,12 @@ PORTFOLIOS = [
         "title": "Argentina Blue Chips",
         "risk": "Agresivo",
         "assets": [
-            {"name": "YPFD", "value": 15},
-            {"name": "GGAL", "value": 15},
-            {"name": "BMA",  "value": 12},
-            {"name": "PAMP", "value": 12},
-            {"name": "IRSA", "value": 10},
-            {"name": "EDN",  "value": 10},
-            {"name": "CEPU", "value": 14},
-            {"name": "LOMA", "value": 12},
+            {"name": "GGAL", "value": 20},
+            {"name": "BMA",  "value": 15},
+            {"name": "EDN",  "value": 15},
+            {"name": "CEPU", "value": 20},
+            {"name": "LOMA", "value": 15},
+            {"name": "VALE", "value": 15},
         ]
     },
     {
@@ -153,6 +148,29 @@ PORTFOLIOS = [
 # ============================================================
 # HELPERS
 # ============================================================
+
+def to_scalar(x):
+    """Convierte cualquier tipo a float escalar de forma segura"""
+    if x is None:
+        return None
+    if isinstance(x, pd.Series):
+        return float(x.iloc[0]) if len(x) > 0 else None
+    if isinstance(x, (np.ndarray,)):
+        return float(x.ravel()[0]) if x.size > 0 else None
+    return float(x)
+
+def flatten_series(series):
+    """
+    Asegura que la serie sea 1D con valores escalares.
+    Resuelve el MultiIndex que genera yfinance a veces.
+    """
+    if isinstance(series, pd.DataFrame):
+        series = series.iloc[:, 0]
+    if isinstance(series.index, pd.MultiIndex):
+        series = series.droplevel(level=1)
+    series = series.squeeze()
+    return series.dropna()
+
 def get_all_tickers(portfolios):
     tickers = set()
     for p in portfolios:
@@ -160,18 +178,21 @@ def get_all_tickers(portfolios):
             tickers.add(a["name"])
     return list(tickers)
 
+# ============================================================
+# DESCARGA DE PRECIOS
+# ============================================================
+
 def download_prices(tickers, years=4):
-    """Descarga precios ajustados para todos los tickers"""
     print(f"📥 Descargando precios para {len(tickers)} tickers...")
-    end = datetime.date.today()
+    end   = datetime.date.today()
     start = end - datetime.timedelta(days=years * 365)
-    
+
     prices = {}
     failed = []
-    
+
     for ticker in tickers:
         try:
-            df = yf.download(
+            raw = yf.download(
                 ticker,
                 start=start,
                 end=end,
@@ -179,279 +200,253 @@ def download_prices(tickers, years=4):
                 auto_adjust=True,
                 progress=False
             )
-            if df is not None and not df.empty and len(df) > 100:
-                prices[ticker] = df["Close"].dropna()
-                print(f"  ✅ {ticker}: {len(prices[ticker])} días")
-            else:
+            if raw is None or raw.empty:
                 failed.append(ticker)
-                print(f"  ⚠️  {ticker}: datos insuficientes")
+                print(f"  ⚠️  {ticker}: sin datos")
+                continue
+
+            # Extraer Close de forma robusta
+            if isinstance(raw.columns, pd.MultiIndex):
+                close = raw["Close"][ticker]
+            else:
+                close = raw["Close"]
+
+            close = flatten_series(close)
+
+            if len(close) < 100:
+                failed.append(ticker)
+                print(f"  ⚠️  {ticker}: datos insuficientes ({len(close)} días)")
+                continue
+
+            prices[ticker] = close
+            print(f"  ✅ {ticker}: {len(close)} días")
+
         except Exception as e:
             failed.append(ticker)
             print(f"  ❌ {ticker}: {e}")
-    
+
     if failed:
-        print(f"\n⚠️  Tickers fallidos: {failed}")
-    
+        print(f"\n⚠️  Tickers no disponibles: {failed}")
+
     return prices
 
-def calc_portfolio_returns(assets, prices, period_days):
-    """
-    Calcula el rendimiento de una cartera ponderada
-    en un período específico (en días de trading)
-    """
-    today = None
-    for a in assets:
-        ticker = a["name"]
-        if ticker in prices and len(prices[ticker]) > 0:
-            today = prices[ticker].index[-1]
-            break
-    
-    if today is None:
-        return None
-    
-    weighted_return = 0.0
-    total_weight = 0.0
-    
-    for a in assets:
-        ticker = a["name"]
-        weight = a["value"] / 100.0
-        
-        if ticker not in prices:
-            continue
-        
-        series = prices[ticker]
-        
-        if len(series) < period_days:
-            continue
-        
-        price_now  = float(series.iloc[-1])
-        price_then = float(series.iloc[-period_days])
-        
-        if price_then <= 0:
-            continue
-        
-        ret = (price_now / price_then) - 1.0
-        weighted_return += ret * weight
-        total_weight    += weight
-    
-    if total_weight < 0.5:
-        return None
-    
-    return weighted_return / total_weight * total_weight
+# ============================================================
+# CÁLCULO DE RENDIMIENTOS
+# ============================================================
 
 def calc_ytd_return(assets, prices):
-    """Calcula rendimiento YTD (desde 1 enero del año actual)"""
+    """Rendimiento YTD (desde 1 de enero del año actual)"""
     year_start = datetime.date(datetime.date.today().year, 1, 1)
-    
+
     weighted_return = 0.0
     total_weight    = 0.0
-    
+
     for a in assets:
         ticker = a["name"]
         weight = a["value"] / 100.0
-        
+
         if ticker not in prices:
             continue
-        
-        series = prices[ticker]
+
+        series = flatten_series(prices[ticker])
         series.index = pd.to_datetime(series.index)
-        
-        # Buscar precio más cercano al 1 de enero
+
         past = series[series.index.date <= year_start]
         if past.empty:
             continue
-        
-        price_start = float(past.iloc[-1])
-        price_now   = float(series.iloc[-1])
-        
-        if price_start <= 0:
+
+        price_start = to_scalar(past.iloc[-1])
+        price_now   = to_scalar(series.iloc[-1])
+
+        if price_start is None or price_now is None or price_start <= 0:
             continue
-        
+
         ret = (price_now / price_start) - 1.0
         weighted_return += ret * weight
         total_weight    += weight
-    
+
     if total_weight < 0.5:
         return None
-    
+    return weighted_return
+
+def calc_portfolio_returns(assets, prices, period_days):
+    """Rendimiento de la cartera en los últimos period_days días hábiles"""
+    weighted_return = 0.0
+    total_weight    = 0.0
+
+    for a in assets:
+        ticker = a["name"]
+        weight = a["value"] / 100.0
+
+        if ticker not in prices:
+            continue
+
+        series = flatten_series(prices[ticker])
+
+        if len(series) < period_days:
+            continue
+
+        price_now  = to_scalar(series.iloc[-1])
+        price_then = to_scalar(series.iloc[-period_days])
+
+        if price_now is None or price_then is None or price_then <= 0:
+            continue
+
+        ret = (price_now / price_then) - 1.0
+        weighted_return += ret * weight
+        total_weight    += weight
+
+    if total_weight < 0.5:
+        return None
     return weighted_return
 
 def calc_portfolio_metrics(assets, prices, window_days=750):
-    """
-    Calcula volatilidad anualizada y Sharpe ratio
-    usando los últimos window_days días
-    """
-    # Construir serie de retornos del portafolio
+    """Volatilidad anualizada y Sharpe ratio"""
     all_series = {}
     for a in assets:
         ticker = a["name"]
         if ticker in prices and len(prices[ticker]) > window_days // 2:
-            all_series[ticker] = prices[ticker]
-    
+            all_series[ticker] = flatten_series(prices[ticker])
+
     if not all_series:
         return None, None
-    
-    # Alinear fechas
+
     df = pd.DataFrame(all_series).dropna()
     if len(df) < 100:
         return None, None
-    
+
     df = df.iloc[-window_days:]
-    
-    # Retornos diarios
     daily_returns = df.pct_change().dropna()
-    
-    # Retorno ponderado del portafolio
-    weights = []
+
+    weights      = []
     tickers_used = []
     for a in assets:
         if a["name"] in daily_returns.columns:
             weights.append(a["value"] / 100.0)
             tickers_used.append(a["name"])
-    
+
     if not weights:
         return None, None
-    
-    # Normalizar pesos
+
     total_w = sum(weights)
     weights = [w / total_w for w in weights]
-    
+
     portfolio_returns = daily_returns[tickers_used].dot(weights)
-    
-    # Métricas anualizadas
-    vol_anual  = float(portfolio_returns.std() * np.sqrt(252) * 100)  # en %
-    ret_anual  = float(portfolio_returns.mean() * 252 * 100)           # en %
-    rf         = 4.5  # tasa libre de riesgo ~4.5% (T-Bills USA)
-    sharpe     = (ret_anual - rf) / vol_anual if vol_anual > 0 else 0.0
-    
+
+    vol_anual = float(portfolio_returns.std() * np.sqrt(252) * 100)
+    ret_anual = float(portfolio_returns.mean() * 252 * 100)
+    rf        = 4.5
+    sharpe    = (ret_anual - rf) / vol_anual if vol_anual > 0 else 0.0
+
     return round(vol_anual, 2), round(sharpe, 2)
 
 def gbm_projection(assets, prices, horizon_days=252, n_sims=5000, window_days=750):
-    """
-    Proyección GBM (Geometric Brownian Motion) a 1 año
-    Retorna percentiles P5, P50, P95 del rendimiento del portafolio
-    """
-    # Construir serie de retornos del portafolio
+    """Proyección GBM a 1 año — retorna percentiles y fan chart mensual"""
     all_series = {}
     for a in assets:
         ticker = a["name"]
         if ticker in prices and len(prices[ticker]) > window_days // 2:
-            all_series[ticker] = prices[ticker]
-    
+            all_series[ticker] = flatten_series(prices[ticker])
+
     if not all_series:
         return None
-    
+
     df = pd.DataFrame(all_series).dropna()
     if len(df) < 200:
         return None
-    
+
     df = df.iloc[-window_days:]
     daily_returns = df.pct_change().dropna()
-    
-    # Pesos
-    weights = []
+
+    weights      = []
     tickers_used = []
     for a in assets:
         if a["name"] in daily_returns.columns:
             weights.append(a["value"] / 100.0)
             tickers_used.append(a["name"])
-    
+
     if not weights:
         return None
-    
-    total_w = sum(weights)
+
+    total_w     = sum(weights)
     weights_arr = np.array([w / total_w for w in weights])
-    
+
     portfolio_returns = daily_returns[tickers_used].dot(weights_arr)
-    
+
     mu    = float(portfolio_returns.mean())
     sigma = float(portfolio_returns.std())
-    
+
     if sigma <= 0 or not np.isfinite(mu) or not np.isfinite(sigma):
         return None
-    
-    # Simular GBM
+
     np.random.seed(42)
-    Z         = np.random.normal(size=(n_sims, horizon_days))
-    log_inc   = (mu - 0.5 * sigma**2) + sigma * Z
-    cum_ret   = np.exp(log_inc.cumsum(axis=1)) - 1.0
-    terminal  = cum_ret[:, -1] * 100.0  # en %
-    
-    p5  = float(np.percentile(terminal, 5))
-    p25 = float(np.percentile(terminal, 25))
-    p50 = float(np.percentile(terminal, 50))
-    p75 = float(np.percentile(terminal, 75))
-    p95 = float(np.percentile(terminal, 95))
-    
-    # Fan chart mensual (puntos cada 21 días)
-    monthly_points = list(range(21, horizon_days + 1, 21))
+    Z       = np.random.normal(size=(n_sims, horizon_days))
+    log_inc = (mu - 0.5 * sigma**2) + sigma * Z
+
+    terminal = (np.exp(log_inc.cumsum(axis=1)[:, -1]) - 1.0) * 100
+
+    # Fan chart mensual
     fan_data = []
-    for t in monthly_points:
+    for mes in range(1, 13):
+        t = min(mes * 21, horizon_days)
         ret_t = (np.exp(log_inc[:, :t].cumsum(axis=1)[:, -1]) - 1.0) * 100
         fan_data.append({
-            "dia": t,
-            "mes": round(t / 21),
-            "p5":  round(float(np.percentile(ret_t, 5)), 2),
-            "p25": round(float(np.percentile(ret_t, 25)), 2),
-            "p50": round(float(np.percentile(ret_t, 50)), 2),
-            "p75": round(float(np.percentile(ret_t, 75)), 2),
-            "p95": round(float(np.percentile(ret_t, 95)), 2),
+            "mes":  mes,
+            "p5":   round(float(np.percentile(ret_t, 5)), 2),
+            "p25":  round(float(np.percentile(ret_t, 25)), 2),
+            "p50":  round(float(np.percentile(ret_t, 50)), 2),
+            "p75":  round(float(np.percentile(ret_t, 75)), 2),
+            "p95":  round(float(np.percentile(ret_t, 95)), 2),
         })
-    
+
     return {
-        "horizonte": "1 año",
-        "metodologia": "GBM — ventana 750 días",
-        "p5":  round(p5, 2),
-        "p25": round(p25, 2),
-        "p50": round(p50, 2),
-        "p75": round(p75, 2),
-        "p95": round(p95, 2),
-        "fan": fan_data,
+        "horizonte":    "1 año",
+        "metodologia":  "GBM — ventana 750 días (~3 años)",
+        "p5":           round(float(np.percentile(terminal, 5)), 2),
+        "p25":          round(float(np.percentile(terminal, 25)), 2),
+        "p50":          round(float(np.percentile(terminal, 50)), 2),
+        "p75":          round(float(np.percentile(terminal, 75)), 2),
+        "p95":          round(float(np.percentile(terminal, 95)), 2),
+        "fan":          fan_data,
     }
 
 # ============================================================
 # MAIN
 # ============================================================
+
 def main():
     print("🚀 Iniciando generación de portfolios_data.json...\n")
-    
-    # 1. Obtener todos los tickers únicos
+
     all_tickers = get_all_tickers(PORTFOLIOS)
     print(f"📊 Total tickers únicos: {len(all_tickers)}\n")
-    
-    # 2. Descargar precios (4 años de historia)
+
     prices = download_prices(all_tickers, years=4)
     print(f"\n✅ Precios descargados: {len(prices)}/{len(all_tickers)} tickers\n")
-    
-    # 3. Calcular métricas por portafolio
+
     print("📈 Calculando métricas por portafolio...\n")
-    
+
     portfolios_output = []
-    
+
     for p in PORTFOLIOS:
         print(f"  Procesando: {p['title']}...")
-        
+
         assets = p["assets"]
-        
-        # Rendimientos históricos
+
         ytd = calc_ytd_return(assets, prices)
         r1y = calc_portfolio_returns(assets, prices, period_days=252)
         r3y = calc_portfolio_returns(assets, prices, period_days=756)
-        
-        # Volatilidad y Sharpe
-        vol, sharpe = calc_portfolio_metrics(assets, prices, window_days=750)
-        
-        # Proyección GBM
-        proyeccion = gbm_projection(assets, prices, horizon_days=252, n_sims=5000, window_days=750)
-        
+        vol, sharpe   = calc_portfolio_metrics(assets, prices, window_days=750)
+        proyeccion    = gbm_projection(assets, prices, horizon_days=252,
+                                       n_sims=5000, window_days=750)
+
         portfolio_data = {
             "id":    p["id"],
             "title": p["title"],
             "risk":  p["risk"],
             "rendimientos": {
-                "ytd":       round(ytd  * 100, 2) if ytd  is not None else None,
-                "1y":        round(r1y  * 100, 2) if r1y  is not None else None,
-                "3y":        round(r3y  * 100, 2) if r3y  is not None else None,
+                "ytd": round(ytd * 100, 2) if ytd is not None else None,
+                "1y":  round(r1y * 100, 2) if r1y is not None else None,
+                "3y":  round(r3y * 100, 2) if r3y is not None else None,
             },
             "metricas": {
                 "volatilidad_anual": vol,
@@ -459,31 +454,40 @@ def main():
             },
             "proyeccion_1y": proyeccion,
         }
-        
-        # Log
-        ytd_str    = f"{portfolio_data['rendimientos']['ytd']:+.1f}%"  if portfolio_data['rendimientos']['ytd']  is not None else "N/D"
-        r1y_str    = f"{portfolio_data['rendimientos']['1y']:+.1f}%"   if portfolio_data['rendimientos']['1y']   is not None else "N/D"
-        r3y_str    = f"{portfolio_data['rendimientos']['3y']:+.1f}%"   if portfolio_data['rendimientos']['3y']   is not None else "N/D"
-        vol_str    = f"{vol:.1f}%"    if vol    is not None else "N/D"
-        sharpe_str = f"{sharpe:.2f}" if sharpe  is not None else "N/D"
-        p50_str    = f"{proyeccion['p50']:+.1f}%" if proyeccion else "N/D"
-        
-        print(f"    YTD: {ytd_str} | 1Y: {r1y_str} | 3Y: {r3y_str} | Vol: {vol_str} | Sharpe: {sharpe_str} | P50 proj: {p50_str}")
-        
+
+        def fmt(v, suffix="%"):
+            return f"{v:+.1f}{suffix}" if v is not None else "N/D"
+
+        print(
+            f"    YTD: {fmt(portfolio_data['rendimientos']['ytd'])} | "
+            f"1Y: {fmt(portfolio_data['rendimientos']['1y'])} | "
+            f"3Y: {fmt(portfolio_data['rendimientos']['3y'])} | "
+            f"Vol: {fmt(vol)} | "
+            f"Sharpe: {fmt(sharpe, '')} | "
+            f"P50: {fmt(proyeccion['p50'] if proyeccion else None)}"
+        )
+
         portfolios_output.append(portfolio_data)
-    
-    # 4. Generar JSON final
+
     output = {
-        "updated_at":   datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "fecha":        datetime.date.today().isoformat(),
-        "metodologia":  "Rendimientos históricos reales via yfinance. Proyección GBM con ventana de 750 días de trading (~3 años). Sharpe ratio calculado con tasa libre de riesgo 4.5% (T-Bills USA). Los rendimientos son en USD.",
-        "disclaimer":   "Rendimientos pasados no garantizan resultados futuros. Esto es información educativa, no asesoramiento de inversión.",
-        "portfolios":   portfolios_output,
+        "updated_at":  datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "fecha":       datetime.date.today().isoformat(),
+        "metodologia": (
+            "Rendimientos históricos reales via yfinance. "
+            "Proyección GBM con ventana de 750 días de trading (~3 años). "
+            "Sharpe ratio calculado con tasa libre de riesgo 4.5% (T-Bills USA). "
+            "Los rendimientos son en USD."
+        ),
+        "disclaimer": (
+            "Rendimientos pasados no garantizan resultados futuros. "
+            "Esto es información educativa, no asesoramiento de inversión."
+        ),
+        "portfolios": portfolios_output,
     }
-    
+
     with open("portfolios_data.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
-    
+
     print(f"\n✅ portfolios_data.json generado con {len(portfolios_output)} portafolios")
     print(f"📅 Fecha: {output['fecha']}")
 
