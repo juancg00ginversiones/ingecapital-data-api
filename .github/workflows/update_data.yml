@@ -1,5 +1,4 @@
 name: Actualizar Datos IngeCapital
-
 on:
   schedule:
     # Cada hora en días de semana, en horario de mercado AR (12:00 - 23:00 UTC = 09:00 - 20:00 AR)
@@ -25,7 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -38,6 +36,11 @@ jobs:
       - name: Instalar dependencias
         run: |
           pip install yfinance pandas numpy scipy requests beautifulsoup4 lxml python-dateutil
+
+      # ── CASHFLOWS BONOS + ONs ────────────────────────────────
+      - name: Generar cashflow_bonos.json y cashflow_ons.json
+        run: python update_cashflows.py
+        continue-on-error: true
 
       # ── OPCIONES ────────────────────────────────────────────
       - name: Generar opciones_data.json
