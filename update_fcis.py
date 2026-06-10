@@ -13,8 +13,12 @@ import requests
 # ─── FUENTES ─────────────────────────────────────────────────────────────────
 URL_MM_HOY   = "https://api.argentinadatos.com/v1/finanzas/fci/mercadoDinero/ultimo"
 URL_MIX_HOY  = "https://api.argentinadatos.com/v1/finanzas/fci/rentaMixta/ultimo"
+URL_RF_HOY   = "https://api.argentinadatos.com/v1/finanzas/fci/rentaFija/ultimo"
+URL_RV_HOY   = "https://api.argentinadatos.com/v1/finanzas/fci/rentaVariable/ultimo"
 URL_MM_AYER  = "https://api.argentinadatos.com/v1/finanzas/fci/mercadoDinero/penultimo"
 URL_MIX_AYER = "https://api.argentinadatos.com/v1/finanzas/fci/rentaMixta/penultimo"
+URL_RF_AYER  = "https://api.argentinadatos.com/v1/finanzas/fci/rentaFija/penultimo"
+URL_RV_AYER  = "https://api.argentinadatos.com/v1/finanzas/fci/rentaVariable/penultimo"
 
 # ─── CATÁLOGO CURADO ─────────────────────────────────────────────────────────
 # api_match: substring a buscar en el nombre de la API
@@ -132,11 +136,15 @@ def main():
     print("→ Descargando datos de argentinadatos.com...")
     mm_hoy   = fetch_api(URL_MM_HOY)
     mix_hoy  = fetch_api(URL_MIX_HOY)
+    rf_hoy   = fetch_api(URL_RF_HOY)
+    rv_hoy   = fetch_api(URL_RV_HOY)
     mm_ayer  = fetch_api(URL_MM_AYER)
     mix_ayer = fetch_api(URL_MIX_AYER)
+    rf_ayer  = fetch_api(URL_RF_AYER)
+    rv_ayer  = fetch_api(URL_RV_AYER)
 
-    datos_hoy  = mm_hoy  + mix_hoy
-    datos_ayer = mm_ayer + mix_ayer
+    datos_hoy  = mm_hoy  + mix_hoy  + rf_hoy  + rv_hoy
+    datos_ayer = mm_ayer + mix_ayer + rf_ayer + rv_ayer
     print(f"   Fondos disponibles hoy:  {len(datos_hoy)}")
     print(f"   Fondos disponibles ayer: {len(datos_ayer)}")
 
