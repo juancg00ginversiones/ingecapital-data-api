@@ -94,7 +94,26 @@ def match_fondo(catalogo, datos_hoy, datos_ayer):
 
     tna = None
     if vcp_hoy and vcp_ayer and vcp_ayer > 0:
-        tna = round(((vcp_hoy / vcp_ayer) - 1) * 365 * 100, 2)
+        # Calcular días reales entre las dos fechas para no distorsionar la TNA
+        fecha_hoy  = elegido.get("fecha")
+        fecha_ayer = ayer_match.get("fecha") if ayer_match else None
+        if fecha_hoy and fecha_ayer:
+            try:
+                d_hoy  = dt.date.fromisoformat(fecha_hoy)
+                d_ayer = dt.date.fromisoformat(fecha_ayer)
+                dias   = (d_hoy - d_ayer).days
+            except Exception:
+                dias = 1
+        else:
+            dias = 1
+
+        # Solo calcular TNA si las fechas son consecutivas o muy cercanas (máx 5 días)
+        # Si son muy lejanas (fin de semana largo, feriados seguidos) no tiene sentido
+        if 1 <= dias <= 5:
+            tna_raw = ((vcp_hoy / vcp_ayer) - 1) / dias * 365 * 100
+            # Filtrar valores absurdos: TNA válida entre -50% y 500%
+            if -50 <= tna_raw <= 500:
+                tna = round(tna_raw, 2)
 
     return {
         "nombre_api": elegido["fondo"],
