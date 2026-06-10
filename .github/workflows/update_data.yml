@@ -1,7 +1,6 @@
 name: Actualizar Datos IngeCapital
 on:
   schedule:
-    # Cada hora en días de semana, en horario de mercado AR (12:00 - 23:00 UTC = 09:00 - 20:00 AR)
     - cron: '0 12 * * 1-5'
     - cron: '0 13 * * 1-5'
     - cron: '0 14 * * 1-5'
@@ -14,10 +13,9 @@ on:
     - cron: '0 21 * * 1-5'
     - cron: '0 22 * * 1-5'
     - cron: '0 23 * * 1-5'
-    # Opciones también antes de apertura y al cierre
     - cron: '30 11 * * 1-5'
     - cron: '30 23 * * 1-5'
-  workflow_dispatch:  # Permite correrlo manualmente desde GitHub
+  workflow_dispatch:
 
 jobs:
   update-all:
@@ -40,6 +38,11 @@ jobs:
       # ── CASHFLOWS BONOS + ONs ────────────────────────────────
       - name: Generar cashflow_bonos.json y cashflow_ons.json
         run: python update_cashflows.py
+        continue-on-error: true
+
+      # ── FCIs ─────────────────────────────────────────────────
+      - name: Generar fcis_data.json
+        run: python update_fcis.py
         continue-on-error: true
 
       # ── OPCIONES ────────────────────────────────────────────
