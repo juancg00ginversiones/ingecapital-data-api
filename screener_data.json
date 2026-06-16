@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-06-15T23:28:20.744157",
+  "as_of": "2026-06-16T01:43:28.664331",
   "sectors": {
     "etfs_mercado_usa": [
       {
@@ -62,13 +62,13 @@
       {
         "ticker": "IWM",
         "price": 294.64,
-        "daily_change_pct": 0.58,
+        "daily_change_pct": 0.82,
         "indicators": {
           "rsi14": {
-            "value": 61.26
+            "value": 61.83
           },
           "macd": {
-            "diagnostic": "MACD: sesgo bajista"
+            "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
             "status": "above"
@@ -159,10 +159,10 @@
       {
         "ticker": "META",
         "price": 593.48,
-        "daily_change_pct": 4.67,
+        "daily_change_pct": 4.77,
         "indicators": {
           "rsi14": {
-            "value": 46.31
+            "value": 46.51
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -564,10 +564,10 @@
       {
         "ticker": "EWZ",
         "price": 34.64,
-        "daily_change_pct": -1.31,
+        "daily_change_pct": -0.37,
         "indicators": {
           "rsi14": {
-            "value": 39.42
+            "value": 41.55
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -718,10 +718,10 @@
       {
         "ticker": "FXI",
         "price": 35.11,
-        "daily_change_pct": -0.51,
+        "daily_change_pct": 0.24,
         "indicators": {
           "rsi14": {
-            "value": 43.74
+            "value": 46.64
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1199,10 +1199,10 @@
       {
         "ticker": "KO",
         "price": 80.91,
-        "daily_change_pct": -2.07,
+        "daily_change_pct": -1.44,
         "indicators": {
           "rsi14": {
-            "value": 53.19
+            "value": 55.31
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1526,10 +1526,10 @@
       {
         "ticker": "UNH",
         "price": 411.04,
-        "daily_change_pct": 0.62,
+        "daily_change_pct": 1.19,
         "indicators": {
           "rsi14": {
-            "value": 69.18
+            "value": 70.24
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1564,10 +1564,10 @@
       {
         "ticker": "MRK",
         "price": 114.9,
-        "daily_change_pct": -3.49,
+        "daily_change_pct": -2.79,
         "indicators": {
           "rsi14": {
-            "value": 45.04
+            "value": 46.61
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1602,10 +1602,10 @@
       {
         "ticker": "TMO",
         "price": 473.72,
-        "daily_change_pct": 0.93,
+        "daily_change_pct": 1.03,
         "indicators": {
           "rsi14": {
-            "value": 50.12
+            "value": 50.32
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1930,5 +1930,5 @@
       }
     ]
   },
-  "updated_at": "2026-06-15T23:28:45Z"
+  "updated_at": "2026-06-16T01:43:51Z"
 }
