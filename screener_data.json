@@ -1,14 +1,14 @@
 {
-  "as_of": "2026-06-17T19:23:48.982648",
+  "as_of": "2026-06-17T20:12:10.698527",
   "sectors": {
     "etfs_mercado_usa": [
       {
         "ticker": "SPY",
-        "price": 742.52,
-        "daily_change_pct": -1.04,
+        "price": 741.04,
+        "daily_change_pct": -1.24,
         "indicators": {
           "rsi14": {
-            "value": 51.71
+            "value": 50.8
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -23,17 +23,17 @@
       },
       {
         "ticker": "QQQ",
-        "price": 725.92,
-        "daily_change_pct": -0.54,
+        "price": 722.51,
+        "daily_change_pct": -1.01,
         "indicators": {
           "rsi14": {
-            "value": 54.72
+            "value": 53.38
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
           },
           "sma21": {
-            "status": "above"
+            "status": "below"
           },
           "sma200": {
             "status": "above"
@@ -42,11 +42,11 @@
       },
       {
         "ticker": "DIA",
-        "price": 517.47,
-        "daily_change_pct": -0.76,
+        "price": 516.4,
+        "daily_change_pct": -0.97,
         "indicators": {
           "rsi14": {
-            "value": 60.32
+            "value": 59.18
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -61,11 +61,11 @@
       },
       {
         "ticker": "IWM",
-        "price": 290.24,
-        "daily_change_pct": -0.63,
+        "price": 289.84,
+        "daily_change_pct": -0.77,
         "indicators": {
           "rsi14": {
-            "value": 56.01
+            "value": 55.51
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -82,11 +82,11 @@
     "mega_tecnologia": [
       {
         "ticker": "AAPL",
-        "price": 295.29,
-        "daily_change_pct": -1.32,
+        "price": 295.95,
+        "daily_change_pct": -1.1,
         "indicators": {
           "rsi14": {
-            "value": 48.32
+            "value": 48.92
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -101,11 +101,11 @@
       },
       {
         "ticker": "MSFT",
-        "price": 379.87,
-        "daily_change_pct": -3.54,
+        "price": 378.91,
+        "daily_change_pct": -3.79,
         "indicators": {
           "rsi14": {
-            "value": 34.98
+            "value": 34.66
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -120,11 +120,11 @@
       },
       {
         "ticker": "GOOGL",
-        "price": 363.15,
-        "daily_change_pct": -2.7,
+        "price": 363.79,
+        "daily_change_pct": -2.53,
         "indicators": {
           "rsi14": {
-            "value": 45.8
+            "value": 46.18
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -139,11 +139,11 @@
       },
       {
         "ticker": "AMZN",
-        "price": 237.75,
-        "daily_change_pct": -3.35,
+        "price": 237.5,
+        "daily_change_pct": -3.46,
         "indicators": {
           "rsi14": {
-            "value": 37.05
+            "value": 36.89
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -158,11 +158,11 @@
       },
       {
         "ticker": "META",
-        "price": 570.99,
-        "daily_change_pct": -4.87,
+        "price": 567.58,
+        "daily_change_pct": -5.44,
         "indicators": {
           "rsi14": {
-            "value": 40.26
+            "value": 39.44
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -177,11 +177,11 @@
       },
       {
         "ticker": "NVDA",
-        "price": 204.68,
-        "daily_change_pct": -1.32,
+        "price": 204.65,
+        "daily_change_pct": -1.33,
         "indicators": {
           "rsi14": {
-            "value": 45.46
+            "value": 45.44
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -196,11 +196,11 @@
       },
       {
         "ticker": "TSLA",
-        "price": 398.13,
-        "daily_change_pct": -1.61,
+        "price": 396.38,
+        "daily_change_pct": -2.05,
         "indicators": {
           "rsi14": {
-            "value": 45.92
+            "value": 45.34
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -215,11 +215,11 @@
       },
       {
         "ticker": "NFLX",
-        "price": 77.1,
-        "daily_change_pct": -2.06,
+        "price": 76.96,
+        "daily_change_pct": -2.24,
         "indicators": {
           "rsi14": {
-            "value": 26.27
+            "value": 26.05
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -236,11 +236,11 @@
     "adrs_argentina": [
       {
         "ticker": "YPF",
-        "price": 51.1,
-        "daily_change_pct": -0.27,
+        "price": 50.84,
+        "daily_change_pct": -0.78,
         "indicators": {
           "rsi14": {
-            "value": 50.6
+            "value": 49.68
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -255,11 +255,11 @@
       },
       {
         "ticker": "GGAL",
-        "price": 56.59,
-        "daily_change_pct": 3.95,
+        "price": 55.55,
+        "daily_change_pct": 2.04,
         "indicators": {
           "rsi14": {
-            "value": 70.25
+            "value": 68.57
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -274,11 +274,11 @@
       },
       {
         "ticker": "BMA",
-        "price": 99.0,
-        "daily_change_pct": 2.3,
+        "price": 98.45,
+        "daily_change_pct": 1.74,
         "indicators": {
           "rsi14": {
-            "value": 68.66
+            "value": 68.17
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -293,11 +293,11 @@
       },
       {
         "ticker": "SUPV",
-        "price": 11.44,
-        "daily_change_pct": 3.67,
+        "price": 11.23,
+        "daily_change_pct": 1.77,
         "indicators": {
           "rsi14": {
-            "value": 69.28
+            "value": 67.9
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -312,11 +312,11 @@
       },
       {
         "ticker": "PAM",
-        "price": 86.45,
-        "daily_change_pct": 0.85,
+        "price": 86.02,
+        "daily_change_pct": 0.35,
         "indicators": {
           "rsi14": {
-            "value": 55.89
+            "value": 54.94
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -331,11 +331,11 @@
       },
       {
         "ticker": "CEPU",
-        "price": 15.96,
-        "daily_change_pct": 0.69,
+        "price": 15.8,
+        "daily_change_pct": -0.32,
         "indicators": {
           "rsi14": {
-            "value": 59.84
+            "value": 58.05
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -350,11 +350,11 @@
       },
       {
         "ticker": "EDN",
-        "price": 27.68,
-        "daily_change_pct": 0.99,
+        "price": 27.67,
+        "daily_change_pct": 0.95,
         "indicators": {
           "rsi14": {
-            "value": 55.64
+            "value": 55.6
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -369,11 +369,11 @@
       },
       {
         "ticker": "TGS",
-        "price": 31.96,
-        "daily_change_pct": 1.52,
+        "price": 31.59,
+        "daily_change_pct": 0.37,
         "indicators": {
           "rsi14": {
-            "value": 55.18
+            "value": 53.5
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -388,11 +388,11 @@
       },
       {
         "ticker": "LOMA",
-        "price": 12.06,
-        "daily_change_pct": 0.0,
+        "price": 11.84,
+        "daily_change_pct": -1.82,
         "indicators": {
           "rsi14": {
-            "value": 55.52
+            "value": 52.98
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -407,11 +407,11 @@
       },
       {
         "ticker": "IRS",
-        "price": 16.6,
-        "daily_change_pct": -1.25,
+        "price": 16.31,
+        "daily_change_pct": -2.97,
         "indicators": {
           "rsi14": {
-            "value": 60.35
+            "value": 57.53
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -428,14 +428,14 @@
     "cripto": [
       {
         "ticker": "IBIT",
-        "price": 36.67,
-        "daily_change_pct": -1.35,
+        "price": 36.36,
+        "daily_change_pct": -2.18,
         "indicators": {
           "rsi14": {
-            "value": 38.6
+            "value": 37.61
           },
           "macd": {
-            "diagnostic": "MACD: sesgo alcista"
+            "diagnostic": "MACD: sesgo bajista"
           },
           "sma21": {
             "status": "below"
@@ -447,11 +447,11 @@
       },
       {
         "ticker": "ETHA",
-        "price": 13.23,
-        "daily_change_pct": -2.29,
+        "price": 13.07,
+        "daily_change_pct": -3.47,
         "indicators": {
           "rsi14": {
-            "value": 39.48
+            "value": 38.45
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -466,11 +466,11 @@
       },
       {
         "ticker": "COIN",
-        "price": 168.35,
-        "daily_change_pct": -0.54,
+        "price": 164.91,
+        "daily_change_pct": -2.57,
         "indicators": {
           "rsi14": {
-            "value": 45.94
+            "value": 44.07
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -485,11 +485,11 @@
       },
       {
         "ticker": "MSTR",
-        "price": 120.04,
-        "daily_change_pct": -2.26,
+        "price": 116.56,
+        "daily_change_pct": -5.09,
         "indicators": {
           "rsi14": {
-            "value": 37.18
+            "value": 35.71
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -504,11 +504,11 @@
       },
       {
         "ticker": "RIOT",
-        "price": 27.76,
-        "daily_change_pct": 1.24,
+        "price": 27.43,
+        "daily_change_pct": 0.04,
         "indicators": {
           "rsi14": {
-            "value": 62.09
+            "value": 60.98
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -523,11 +523,11 @@
       },
       {
         "ticker": "MARA",
-        "price": 14.31,
-        "daily_change_pct": -0.76,
+        "price": 13.92,
+        "daily_change_pct": -3.47,
         "indicators": {
           "rsi14": {
-            "value": 56.76
+            "value": 53.81
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -542,11 +542,11 @@
       },
       {
         "ticker": "HUT",
-        "price": 121.7,
-        "daily_change_pct": 0.18,
+        "price": 118.88,
+        "daily_change_pct": -2.14,
         "indicators": {
           "rsi14": {
-            "value": 58.61
+            "value": 56.17
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -563,11 +563,11 @@
     "brasil": [
       {
         "ticker": "EWZ",
-        "price": 34.22,
-        "daily_change_pct": -0.55,
+        "price": 34.11,
+        "daily_change_pct": -0.87,
         "indicators": {
           "rsi14": {
-            "value": 38.57
+            "value": 37.83
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -582,11 +582,11 @@
       },
       {
         "ticker": "NU",
-        "price": 12.98,
-        "daily_change_pct": 2.08,
+        "price": 12.88,
+        "daily_change_pct": 1.26,
         "indicators": {
           "rsi14": {
-            "value": 53.87
+            "value": 52.63
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -620,11 +620,11 @@
       },
       {
         "ticker": "XP",
-        "price": 15.49,
-        "daily_change_pct": -1.21,
+        "price": 15.42,
+        "daily_change_pct": -1.66,
         "indicators": {
           "rsi14": {
-            "value": 39.9
+            "value": 39.35
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -639,11 +639,11 @@
       },
       {
         "ticker": "VALE",
-        "price": 15.57,
-        "daily_change_pct": -2.53,
+        "price": 15.55,
+        "daily_change_pct": -2.72,
         "indicators": {
           "rsi14": {
-            "value": 44.52
+            "value": 44.17
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -658,11 +658,11 @@
       },
       {
         "ticker": "PBR",
-        "price": 16.85,
-        "daily_change_pct": -1.17,
+        "price": 16.81,
+        "daily_change_pct": -1.41,
         "indicators": {
           "rsi14": {
-            "value": 27.51
+            "value": 27.24
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -677,11 +677,11 @@
       },
       {
         "ticker": "ITUB",
-        "price": 7.97,
-        "daily_change_pct": 0.19,
+        "price": 7.96,
+        "daily_change_pct": 0.13,
         "indicators": {
           "rsi14": {
-            "value": 51.19
+            "value": 51.03
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -697,10 +697,10 @@
       {
         "ticker": "ABEV",
         "price": 3.15,
-        "daily_change_pct": -1.56,
+        "daily_change_pct": -1.41,
         "indicators": {
           "rsi14": {
-            "value": 48.62
+            "value": 48.99
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -717,11 +717,11 @@
     "china": [
       {
         "ticker": "FXI",
-        "price": 33.76,
-        "daily_change_pct": -2.33,
+        "price": 33.67,
+        "daily_change_pct": -2.58,
         "indicators": {
           "rsi14": {
-            "value": 34.45
+            "value": 33.88
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -736,11 +736,11 @@
       },
       {
         "ticker": "BABA",
-        "price": 107.92,
-        "daily_change_pct": -2.75,
+        "price": 107.49,
+        "daily_change_pct": -3.14,
         "indicators": {
           "rsi14": {
-            "value": 25.9
+            "value": 25.56
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -755,11 +755,11 @@
       },
       {
         "ticker": "JD",
-        "price": 27.92,
-        "daily_change_pct": -1.64,
+        "price": 27.91,
+        "daily_change_pct": -1.66,
         "indicators": {
           "rsi14": {
-            "value": 37.83
+            "value": 37.8
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -774,11 +774,11 @@
       },
       {
         "ticker": "NIO",
-        "price": 5.05,
-        "daily_change_pct": 0.7,
+        "price": 5.04,
+        "daily_change_pct": 0.6,
         "indicators": {
           "rsi14": {
-            "value": 36.61
+            "value": 36.45
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -812,11 +812,11 @@
       },
       {
         "ticker": "BIDU",
-        "price": 111.55,
-        "daily_change_pct": -1.04,
+        "price": 111.61,
+        "daily_change_pct": -0.98,
         "indicators": {
           "rsi14": {
-            "value": 34.17
+            "value": 34.21
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -831,11 +831,11 @@
       },
       {
         "ticker": "PDD",
-        "price": 79.77,
-        "daily_change_pct": -2.23,
+        "price": 79.86,
+        "daily_change_pct": -2.12,
         "indicators": {
           "rsi14": {
-            "value": 32.35
+            "value": 32.47
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -850,17 +850,17 @@
       },
       {
         "ticker": "NTES",
-        "price": 121.25,
-        "daily_change_pct": -0.46,
+        "price": 120.9,
+        "daily_change_pct": -0.75,
         "indicators": {
           "rsi14": {
-            "value": 51.66
+            "value": 50.86
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
           },
           "sma21": {
-            "status": "above"
+            "status": "below"
           },
           "sma200": {
             "status": "below"
@@ -871,11 +871,11 @@
     "tecnologia_usa": [
       {
         "ticker": "ADBE",
-        "price": 198.38,
-        "daily_change_pct": -4.31,
+        "price": 196.28,
+        "daily_change_pct": -5.33,
         "indicators": {
           "rsi14": {
-            "value": 28.77
+            "value": 28.14
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -890,11 +890,11 @@
       },
       {
         "ticker": "ORCL",
-        "price": 185.29,
-        "daily_change_pct": -1.62,
+        "price": 183.49,
+        "daily_change_pct": -2.57,
         "indicators": {
           "rsi14": {
-            "value": 43.37
+            "value": 42.61
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -909,11 +909,11 @@
       },
       {
         "ticker": "CRM",
-        "price": 155.6,
-        "daily_change_pct": -3.78,
+        "price": 155.05,
+        "daily_change_pct": -4.12,
         "indicators": {
           "rsi14": {
-            "value": 32.79
+            "value": 32.51
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -928,11 +928,11 @@
       },
       {
         "ticker": "AMD",
-        "price": 516.81,
-        "daily_change_pct": 1.88,
+        "price": 512.48,
+        "daily_change_pct": 1.02,
         "indicators": {
           "rsi14": {
-            "value": 58.29
+            "value": 57.68
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -947,11 +947,11 @@
       },
       {
         "ticker": "INTC",
-        "price": 121.53,
-        "daily_change_pct": 3.83,
+        "price": 121.1,
+        "daily_change_pct": 3.46,
         "indicators": {
           "rsi14": {
-            "value": 57.6
+            "value": 57.34
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -966,11 +966,11 @@
       },
       {
         "ticker": "AVGO",
-        "price": 393.05,
-        "daily_change_pct": 4.34,
+        "price": 392.9,
+        "daily_change_pct": 4.3,
         "indicators": {
           "rsi14": {
-            "value": 46.19
+            "value": 46.15
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -985,11 +985,11 @@
       },
       {
         "ticker": "CSCO",
-        "price": 117.88,
-        "daily_change_pct": -1.41,
+        "price": 117.33,
+        "daily_change_pct": -1.87,
         "indicators": {
           "rsi14": {
-            "value": 53.58
+            "value": 52.7
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1004,11 +1004,11 @@
       },
       {
         "ticker": "NOW",
-        "price": 96.66,
-        "daily_change_pct": -4.61,
+        "price": 95.47,
+        "daily_change_pct": -5.78,
         "indicators": {
           "rsi14": {
-            "value": 41.99
+            "value": 41.14
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1025,11 +1025,11 @@
     "finanzas_usa": [
       {
         "ticker": "JPM",
-        "price": 332.2,
-        "daily_change_pct": 0.32,
+        "price": 333.57,
+        "daily_change_pct": 0.73,
         "indicators": {
           "rsi14": {
-            "value": 71.44
+            "value": 72.16
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1044,11 +1044,11 @@
       },
       {
         "ticker": "BAC",
-        "price": 56.5,
-        "daily_change_pct": -0.6,
+        "price": 56.52,
+        "daily_change_pct": -0.56,
         "indicators": {
           "rsi14": {
-            "value": 72.08
+            "value": 72.27
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1063,11 +1063,11 @@
       },
       {
         "ticker": "WFC",
-        "price": 84.13,
-        "daily_change_pct": -1.08,
+        "price": 83.79,
+        "daily_change_pct": -1.48,
         "indicators": {
           "rsi14": {
-            "value": 64.32
+            "value": 62.84
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1082,11 +1082,11 @@
       },
       {
         "ticker": "GS",
-        "price": 1105.5,
-        "daily_change_pct": 1.36,
+        "price": 1099.09,
+        "daily_change_pct": 0.77,
         "indicators": {
           "rsi14": {
-            "value": 67.18
+            "value": 66.39
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1101,11 +1101,11 @@
       },
       {
         "ticker": "MS",
-        "price": 225.01,
-        "daily_change_pct": 1.89,
+        "price": 225.12,
+        "daily_change_pct": 1.94,
         "indicators": {
           "rsi14": {
-            "value": 71.75
+            "value": 71.82
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1120,11 +1120,11 @@
       },
       {
         "ticker": "V",
-        "price": 330.56,
-        "daily_change_pct": -0.77,
+        "price": 330.43,
+        "daily_change_pct": -0.81,
         "indicators": {
           "rsi14": {
-            "value": 57.32
+            "value": 57.18
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1139,11 +1139,11 @@
       },
       {
         "ticker": "MA",
-        "price": 494.38,
-        "daily_change_pct": -1.39,
+        "price": 492.84,
+        "daily_change_pct": -1.69,
         "indicators": {
           "rsi14": {
-            "value": 50.71
+            "value": 49.77
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1158,11 +1158,11 @@
       },
       {
         "ticker": "BRK-B",
-        "price": 488.78,
-        "daily_change_pct": -1.25,
+        "price": 491.25,
+        "daily_change_pct": -0.75,
         "indicators": {
           "rsi14": {
-            "value": 55.93
+            "value": 58.94
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1171,7 +1171,7 @@
             "status": "above"
           },
           "sma200": {
-            "status": "below"
+            "status": "above"
           }
         }
       }
@@ -1179,11 +1179,11 @@
     "consumo_usa": [
       {
         "ticker": "WMT",
-        "price": 117.76,
-        "daily_change_pct": -2.7,
+        "price": 118.13,
+        "daily_change_pct": -2.4,
         "indicators": {
           "rsi14": {
-            "value": 39.83
+            "value": 40.57
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1198,14 +1198,14 @@
       },
       {
         "ticker": "KO",
-        "price": 79.69,
-        "daily_change_pct": -0.73,
+        "price": 79.94,
+        "daily_change_pct": -0.42,
         "indicators": {
           "rsi14": {
-            "value": 50.07
+            "value": 51.12
           },
           "macd": {
-            "diagnostic": "MACD: sesgo bajista"
+            "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
             "status": "below"
@@ -1217,11 +1217,11 @@
       },
       {
         "ticker": "PEP",
-        "price": 141.49,
-        "daily_change_pct": -3.17,
+        "price": 141.59,
+        "daily_change_pct": -3.1,
         "indicators": {
           "rsi14": {
-            "value": 40.37
+            "value": 40.56
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1236,11 +1236,11 @@
       },
       {
         "ticker": "PG",
-        "price": 150.34,
-        "daily_change_pct": -1.41,
+        "price": 150.62,
+        "daily_change_pct": -1.23,
         "indicators": {
           "rsi14": {
-            "value": 59.11
+            "value": 59.82
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1255,11 +1255,11 @@
       },
       {
         "ticker": "COST",
-        "price": 964.22,
-        "daily_change_pct": -2.28,
+        "price": 965.59,
+        "daily_change_pct": -2.14,
         "indicators": {
           "rsi14": {
-            "value": 41.13
+            "value": 41.5
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1274,11 +1274,11 @@
       },
       {
         "ticker": "MCD",
-        "price": 284.15,
-        "daily_change_pct": -1.31,
+        "price": 283.81,
+        "daily_change_pct": -1.43,
         "indicators": {
           "rsi14": {
-            "value": 52.82
+            "value": 52.28
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1293,17 +1293,17 @@
       },
       {
         "ticker": "NKE",
-        "price": 44.62,
-        "daily_change_pct": -0.94,
+        "price": 44.19,
+        "daily_change_pct": -1.88,
         "indicators": {
           "rsi14": {
-            "value": 50.56
+            "value": 48.47
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
-            "status": "above"
+            "status": "below"
           },
           "sma200": {
             "status": "below"
@@ -1312,11 +1312,11 @@
       },
       {
         "ticker": "SBUX",
-        "price": 99.39,
-        "daily_change_pct": -2.25,
+        "price": 99.82,
+        "daily_change_pct": -1.83,
         "indicators": {
           "rsi14": {
-            "value": 47.82
+            "value": 48.92
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1333,11 +1333,11 @@
     "energia": [
       {
         "ticker": "XOM",
-        "price": 140.91,
-        "daily_change_pct": -0.67,
+        "price": 140.76,
+        "daily_change_pct": -0.78,
         "indicators": {
           "rsi14": {
-            "value": 36.74
+            "value": 36.56
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1352,11 +1352,11 @@
       },
       {
         "ticker": "CVX",
-        "price": 177.89,
-        "daily_change_pct": -1.23,
+        "price": 177.57,
+        "daily_change_pct": -1.41,
         "indicators": {
           "rsi14": {
-            "value": 37.54
+            "value": 37.2
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1371,11 +1371,11 @@
       },
       {
         "ticker": "SLB",
-        "price": 50.69,
-        "daily_change_pct": -4.48,
+        "price": 50.34,
+        "daily_change_pct": -5.14,
         "indicators": {
           "rsi14": {
-            "value": 34.67
+            "value": 33.87
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1390,11 +1390,11 @@
       },
       {
         "ticker": "COP",
-        "price": 111.25,
-        "daily_change_pct": -0.08,
+        "price": 111.22,
+        "daily_change_pct": -0.11,
         "indicators": {
           "rsi14": {
-            "value": 38.73
+            "value": 38.69
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1409,11 +1409,11 @@
       },
       {
         "ticker": "EOG",
-        "price": 133.32,
-        "daily_change_pct": 0.96,
+        "price": 133.28,
+        "daily_change_pct": 0.93,
         "indicators": {
           "rsi14": {
-            "value": 44.1
+            "value": 44.02
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1428,11 +1428,11 @@
       },
       {
         "ticker": "OXY",
-        "price": 53.18,
-        "daily_change_pct": -0.91,
+        "price": 53.05,
+        "daily_change_pct": -1.16,
         "indicators": {
           "rsi14": {
-            "value": 37.39
+            "value": 37.06
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1447,11 +1447,11 @@
       },
       {
         "ticker": "BP",
-        "price": 40.18,
-        "daily_change_pct": -2.36,
+        "price": 40.15,
+        "daily_change_pct": -2.44,
         "indicators": {
           "rsi14": {
-            "value": 32.89
+            "value": 32.77
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1466,11 +1466,11 @@
       },
       {
         "ticker": "PSX",
-        "price": 168.65,
-        "daily_change_pct": -1.95,
+        "price": 167.26,
+        "daily_change_pct": -2.76,
         "indicators": {
           "rsi14": {
-            "value": 39.61
+            "value": 38.25
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1487,11 +1487,11 @@
     "salud": [
       {
         "ticker": "JNJ",
-        "price": 232.47,
-        "daily_change_pct": -1.15,
+        "price": 234.05,
+        "daily_change_pct": -0.48,
         "indicators": {
           "rsi14": {
-            "value": 51.37
+            "value": 54.0
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1506,11 +1506,11 @@
       },
       {
         "ticker": "LLY",
-        "price": 1110.39,
-        "daily_change_pct": -1.08,
+        "price": 1111.81,
+        "daily_change_pct": -0.95,
         "indicators": {
           "rsi14": {
-            "value": 57.02
+            "value": 57.36
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1525,11 +1525,11 @@
       },
       {
         "ticker": "UNH",
-        "price": 402.72,
-        "daily_change_pct": -1.21,
+        "price": 399.58,
+        "daily_change_pct": -1.98,
         "indicators": {
           "rsi14": {
-            "value": 61.72
+            "value": 58.94
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1544,11 +1544,11 @@
       },
       {
         "ticker": "ABBV",
-        "price": 220.45,
-        "daily_change_pct": -0.91,
+        "price": 221.21,
+        "daily_change_pct": -0.57,
         "indicators": {
           "rsi14": {
-            "value": 53.51
+            "value": 54.67
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1563,11 +1563,11 @@
       },
       {
         "ticker": "MRK",
-        "price": 114.77,
-        "daily_change_pct": -0.35,
+        "price": 115.49,
+        "daily_change_pct": 0.28,
         "indicators": {
           "rsi14": {
-            "value": 46.36
+            "value": 48.08
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1582,11 +1582,11 @@
       },
       {
         "ticker": "PFE",
-        "price": 25.91,
-        "daily_change_pct": -0.52,
+        "price": 25.92,
+        "daily_change_pct": -0.46,
         "indicators": {
           "rsi14": {
-            "value": 49.52
+            "value": 49.78
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1601,11 +1601,11 @@
       },
       {
         "ticker": "TMO",
-        "price": 460.25,
-        "daily_change_pct": -2.62,
+        "price": 461.7,
+        "daily_change_pct": -2.31,
         "indicators": {
           "rsi14": {
-            "value": 44.41
+            "value": 44.98
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1620,11 +1620,11 @@
       },
       {
         "ticker": "DHR",
-        "price": 177.44,
-        "daily_change_pct": -2.16,
+        "price": 177.87,
+        "daily_change_pct": -1.92,
         "indicators": {
           "rsi14": {
-            "value": 47.18
+            "value": 47.74
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1641,11 +1641,11 @@
     "industriales": [
       {
         "ticker": "CAT",
-        "price": 962.09,
-        "daily_change_pct": 1.76,
+        "price": 956.59,
+        "daily_change_pct": 1.18,
         "indicators": {
           "rsi14": {
-            "value": 62.26
+            "value": 61.5
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1660,11 +1660,11 @@
       },
       {
         "ticker": "DE",
-        "price": 590.15,
-        "daily_change_pct": 0.83,
+        "price": 588.79,
+        "daily_change_pct": 0.6,
         "indicators": {
           "rsi14": {
-            "value": 58.73
+            "value": 58.25
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1679,11 +1679,11 @@
       },
       {
         "ticker": "BA",
-        "price": 226.73,
-        "daily_change_pct": -0.33,
+        "price": 225.55,
+        "daily_change_pct": -0.85,
         "indicators": {
           "rsi14": {
-            "value": 54.21
+            "value": 53.19
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1698,11 +1698,11 @@
       },
       {
         "ticker": "GE",
-        "price": 357.44,
-        "daily_change_pct": 1.62,
+        "price": 357.05,
+        "daily_change_pct": 1.51,
         "indicators": {
           "rsi14": {
-            "value": 71.37
+            "value": 71.24
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1717,11 +1717,11 @@
       },
       {
         "ticker": "HON",
-        "price": 229.4,
-        "daily_change_pct": -0.04,
+        "price": 228.61,
+        "daily_change_pct": -0.38,
         "indicators": {
           "rsi14": {
-            "value": 56.91
+            "value": 56.12
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1736,17 +1736,17 @@
       },
       {
         "ticker": "UPS",
-        "price": 106.04,
-        "daily_change_pct": -3.61,
+        "price": 105.13,
+        "daily_change_pct": -4.44,
         "indicators": {
           "rsi14": {
-            "value": 51.63
+            "value": 49.8
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
           },
           "sma21": {
-            "status": "above"
+            "status": "below"
           },
           "sma200": {
             "status": "above"
@@ -1755,11 +1755,11 @@
       },
       {
         "ticker": "FDX",
-        "price": 326.06,
-        "daily_change_pct": -2.88,
+        "price": 325.9,
+        "daily_change_pct": -2.93,
         "indicators": {
           "rsi14": {
-            "value": 51.44
+            "value": 51.34
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1774,11 +1774,11 @@
       },
       {
         "ticker": "LMT",
-        "price": 530.18,
-        "daily_change_pct": -1.08,
+        "price": 532.31,
+        "daily_change_pct": -0.68,
         "indicators": {
           "rsi14": {
-            "value": 49.95
+            "value": 51.05
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1787,7 +1787,7 @@
             "status": "above"
           },
           "sma200": {
-            "status": "below"
+            "status": "above"
           }
         }
       }
@@ -1795,11 +1795,11 @@
     "commodities": [
       {
         "ticker": "GLD",
-        "price": 389.18,
-        "daily_change_pct": -2.13,
+        "price": 388.61,
+        "daily_change_pct": -2.27,
         "indicators": {
           "rsi14": {
-            "value": 39.19
+            "value": 38.92
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1814,11 +1814,11 @@
       },
       {
         "ticker": "SLV",
-        "price": 61.47,
-        "daily_change_pct": -3.03,
+        "price": 60.6,
+        "daily_change_pct": -4.4,
         "indicators": {
           "rsi14": {
-            "value": 41.09
+            "value": 39.61
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1835,11 +1835,11 @@
     "mineras": [
       {
         "ticker": "GOLD",
-        "price": 42.97,
-        "daily_change_pct": -1.73,
+        "price": 42.69,
+        "daily_change_pct": -2.38,
         "indicators": {
           "rsi14": {
-            "value": 52.57
+            "value": 51.55
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1854,11 +1854,11 @@
       },
       {
         "ticker": "PAAS",
-        "price": 51.39,
-        "daily_change_pct": -1.02,
+        "price": 50.47,
+        "daily_change_pct": -2.79,
         "indicators": {
           "rsi14": {
-            "value": 48.39
+            "value": 46.55
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1873,11 +1873,11 @@
       },
       {
         "ticker": "HMY",
-        "price": 17.32,
-        "daily_change_pct": -2.62,
+        "price": 17.08,
+        "daily_change_pct": -3.91,
         "indicators": {
           "rsi14": {
-            "value": 53.91
+            "value": 52.49
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1892,17 +1892,17 @@
       },
       {
         "ticker": "CDE",
-        "price": 17.97,
-        "daily_change_pct": -4.36,
+        "price": 17.52,
+        "daily_change_pct": -6.76,
         "indicators": {
           "rsi14": {
-            "value": 50.28
+            "value": 48.12
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
-            "status": "above"
+            "status": "below"
           },
           "sma200": {
             "status": "below"
@@ -1911,17 +1911,17 @@
       },
       {
         "ticker": "KGC",
-        "price": 27.88,
-        "daily_change_pct": -0.39,
+        "price": 27.3,
+        "daily_change_pct": -2.48,
         "indicators": {
           "rsi14": {
-            "value": 49.47
+            "value": 47.18
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
-            "status": "above"
+            "status": "below"
           },
           "sma200": {
             "status": "below"
@@ -1930,5 +1930,5 @@
       }
     ]
   },
-  "updated_at": "2026-06-17T19:24:13Z"
+  "updated_at": "2026-06-17T20:12:34Z"
 }
