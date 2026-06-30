@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-06-30T01:30:18.482766",
+  "as_of": "2026-06-30T13:21:34.345601",
   "sectors": {
     "etfs_mercado_usa": [
       {
@@ -1717,17 +1717,17 @@
       },
       {
         "ticker": "HON",
-        "price": 227.8,
-        "daily_change_pct": -6.72,
+        "price": 232.21,
+        "daily_change_pct": 0.42,
         "indicators": {
           "rsi14": {
-            "value": 43.78
+            "value": 58.22
           },
           "macd": {
-            "diagnostic": "MACD: sesgo bajista"
+            "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
-            "status": "below"
+            "status": "above"
           },
           "sma200": {
             "status": "above"
@@ -1930,5 +1930,5 @@
       }
     ]
   },
-  "updated_at": "2026-06-30T01:30:39Z"
+  "updated_at": "2026-06-30T13:21:55Z"
 }
