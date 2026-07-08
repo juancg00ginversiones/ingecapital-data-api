@@ -1,14 +1,14 @@
 {
-  "updated_at": "2026-07-08T01:00:20Z",
+  "updated_at": "2026-07-08T13:01:29Z",
   "current": [
     {
       "casa": "oficial",
       "label": "Dólar Oficial",
       "compra": 1465,
       "venta": 1515.0,
-      "fechaActualizacion": "2026-07-07T18:20:00.000Z",
+      "fechaActualizacion": "2026-07-07T18:55:00.000Z",
       "variation": {
-        "venta_pct": 0.33
+        "venta_pct": 0.0
       }
     },
     {
@@ -16,7 +16,7 @@
       "label": "Dólar Blue",
       "compra": 1495,
       "venta": 1515.0,
-      "fechaActualizacion": "2026-07-07T21:19:00.000Z",
+      "fechaActualizacion": "2026-07-08T11:59:00.000Z",
       "variation": {
         "venta_pct": 0.0
       }
@@ -26,9 +26,9 @@
       "label": "Dólar Tarjeta",
       "compra": 1904.5,
       "venta": 1969.5,
-      "fechaActualizacion": "2026-07-07T18:20:00.000Z",
+      "fechaActualizacion": "2026-07-07T18:55:00.000Z",
       "variation": {
-        "venta_pct": 0.33
+        "venta_pct": 0.0
       }
     },
     {
@@ -36,9 +36,9 @@
       "label": "Dólar CCL",
       "compra": 1573.9,
       "venta": 1574.3,
-      "fechaActualizacion": "2026-07-07T21:19:00.000Z",
+      "fechaActualizacion": "2026-07-08T11:59:00.000Z",
       "variation": {
-        "venta_pct": 0.29
+        "venta_pct": 0.0
       }
     },
     {
@@ -46,9 +46,9 @@
       "label": "Dólar MEP",
       "compra": 1527.6,
       "venta": 1531.3,
-      "fechaActualizacion": "2026-07-07T21:19:00.000Z",
+      "fechaActualizacion": "2026-07-08T11:59:00.000Z",
       "variation": {
-        "venta_pct": 0.41
+        "venta_pct": 0.0
       }
     },
     {
@@ -58,17 +58,17 @@
       "venta": 1492.0,
       "fechaActualizacion": "2026-07-07T16:31:00.000Z",
       "variation": {
-        "venta_pct": 0.37
+        "venta_pct": 0.0
       }
     },
     {
       "casa": "cripto",
       "label": "Dólar Cripto",
-      "compra": 1555.45,
-      "venta": 1562.42,
-      "fechaActualizacion": "2026-07-07T21:19:00.000Z",
+      "compra": 1564.86,
+      "venta": 1566.68,
+      "fechaActualizacion": "2026-07-08T11:59:00.000Z",
       "variation": {
-        "venta_pct": 3.36
+        "venta_pct": 0.27
       }
     }
   ],
@@ -1893,6 +1893,11 @@
         "date": "2026-07-06",
         "compra": 1460.0,
         "venta": 1510.0
+      },
+      {
+        "date": "2026-07-07",
+        "compra": 1465.0,
+        "venta": 1515.0
       }
     ],
     "blue": [
@@ -3713,6 +3718,11 @@
       },
       {
         "date": "2026-07-06",
+        "compra": 1495.0,
+        "venta": 1515.0
+      },
+      {
+        "date": "2026-07-07",
         "compra": 1495.0,
         "venta": 1515.0
       }
@@ -5537,6 +5547,11 @@
         "date": "2026-07-06",
         "compra": 1898.0,
         "venta": 1963.0
+      },
+      {
+        "date": "2026-07-07",
+        "compra": 1904.5,
+        "venta": 1969.5
       }
     ],
     "contadoconliqui": [
@@ -7359,6 +7374,11 @@
         "date": "2026-07-06",
         "compra": 1569.2,
         "venta": 1569.7
+      },
+      {
+        "date": "2026-07-07",
+        "compra": 1573.9,
+        "venta": 1574.3
       }
     ],
     "bolsa": [
@@ -9181,6 +9201,11 @@
         "date": "2026-07-06",
         "compra": 1521.1,
         "venta": 1525.1
+      },
+      {
+        "date": "2026-07-07",
+        "compra": 1527.6,
+        "venta": 1531.3
       }
     ],
     "mayorista": [
@@ -11003,6 +11028,11 @@
         "date": "2026-07-06",
         "compra": 1477.5,
         "venta": 1486.5
+      },
+      {
+        "date": "2026-07-07",
+        "compra": 1483.0,
+        "venta": 1492.0
       }
     ],
     "cripto": [
@@ -12825,6 +12855,11 @@
         "date": "2026-07-06",
         "compra": 1511.6,
         "venta": 1511.7
+      },
+      {
+        "date": "2026-07-07",
+        "compra": 1555.45,
+        "venta": 1562.42
       }
     ]
   }

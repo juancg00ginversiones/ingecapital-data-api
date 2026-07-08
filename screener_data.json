@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-07-08T00:59:54.599953",
+  "as_of": "2026-07-08T13:01:03.760850",
   "sectors": {
     "etfs_mercado_usa": [
       {
@@ -602,16 +602,16 @@
       {
         "ticker": "BBD",
         "price": 3.4,
-        "daily_change_pct": -2.86,
+        "daily_change_pct": -0.96,
         "indicators": {
           "rsi14": {
-            "value": 45.38
+            "value": 50.08
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
-            "status": "below"
+            "status": "above"
           },
           "sma200": {
             "status": "below"
@@ -1930,5 +1930,5 @@
       }
     ]
   },
-  "updated_at": "2026-07-08T01:00:18Z"
+  "updated_at": "2026-07-08T13:01:28Z"
 }
