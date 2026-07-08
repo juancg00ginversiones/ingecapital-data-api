@@ -1,14 +1,14 @@
 {
-  "as_of": "2026-07-08T20:17:52.686929",
+  "as_of": "2026-07-08T20:57:51.381368",
   "sectors": {
     "etfs_mercado_usa": [
       {
         "ticker": "SPY",
-        "price": 745.32,
-        "daily_change_pct": -0.32,
+        "price": 745.4,
+        "daily_change_pct": -0.31,
         "indicators": {
           "rsi14": {
-            "value": 53.39
+            "value": 53.45
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -42,11 +42,11 @@
       },
       {
         "ticker": "DIA",
-        "price": 522.82,
+        "price": 522.77,
         "daily_change_pct": -1.07,
         "indicators": {
           "rsi14": {
-            "value": 58.78
+            "value": 58.71
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -61,11 +61,11 @@
       },
       {
         "ticker": "IWM",
-        "price": 293.53,
-        "daily_change_pct": -0.9,
+        "price": 293.48,
+        "daily_change_pct": -0.91,
         "indicators": {
           "rsi14": {
-            "value": 51.04
+            "value": 50.97
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -736,11 +736,11 @@
       },
       {
         "ticker": "BABA",
-        "price": 108.96,
-        "daily_change_pct": 11.03,
+        "price": 108.98,
+        "daily_change_pct": 11.05,
         "indicators": {
           "rsi14": {
-            "value": 51.34
+            "value": 51.37
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -793,11 +793,11 @@
       },
       {
         "ticker": "XPEV",
-        "price": 13.26,
-        "daily_change_pct": 0.68,
+        "price": 13.27,
+        "daily_change_pct": 0.76,
         "indicators": {
           "rsi14": {
-            "value": 42.19
+            "value": 42.3
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -890,11 +890,11 @@
       },
       {
         "ticker": "ORCL",
-        "price": 140.57,
-        "daily_change_pct": -0.73,
+        "price": 140.49,
+        "daily_change_pct": -0.78,
         "indicators": {
           "rsi14": {
-            "value": 28.73
+            "value": 28.7
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1333,17 +1333,17 @@
     "energia": [
       {
         "ticker": "XOM",
-        "price": 140.95,
-        "daily_change_pct": -0.52,
+        "price": 141.13,
+        "daily_change_pct": -0.4,
         "indicators": {
           "rsi14": {
-            "value": 47.47
+            "value": 47.82
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
-            "status": "below"
+            "status": "above"
           },
           "sma200": {
             "status": "above"
@@ -1352,11 +1352,11 @@
       },
       {
         "ticker": "CVX",
-        "price": 175.94,
-        "daily_change_pct": 1.11,
+        "price": 175.97,
+        "daily_change_pct": 1.13,
         "indicators": {
           "rsi14": {
-            "value": 48.74
+            "value": 48.79
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1544,11 +1544,11 @@
       },
       {
         "ticker": "ABBV",
-        "price": 252.61,
-        "daily_change_pct": -0.8,
+        "price": 252.74,
+        "daily_change_pct": -0.75,
         "indicators": {
           "rsi14": {
-            "value": 66.13
+            "value": 66.29
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1582,11 +1582,11 @@
       },
       {
         "ticker": "PFE",
-        "price": 24.04,
-        "daily_change_pct": -0.12,
+        "price": 24.05,
+        "daily_change_pct": -0.08,
         "indicators": {
           "rsi14": {
-            "value": 39.46
+            "value": 39.56
           },
           "macd": {
             "diagnostic": "MACD: sesgo bajista"
@@ -1930,5 +1930,5 @@
       }
     ]
   },
-  "updated_at": "2026-07-08T20:18:29Z"
+  "updated_at": "2026-07-08T20:58:13Z"
 }
