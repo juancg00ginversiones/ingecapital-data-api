@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-07-13T20:51:05.186195",
+  "as_of": "2026-07-13T22:01:04.290369",
   "sectors": {
     "etfs_mercado_usa": [
       {
@@ -653,6 +653,25 @@
           },
           "sma200": {
             "status": "below"
+          }
+        }
+      },
+      {
+        "ticker": "PBR",
+        "price": 17.88,
+        "daily_change_pct": 3.23,
+        "indicators": {
+          "rsi14": {
+            "value": 57.6
+          },
+          "macd": {
+            "diagnostic": "MACD: sesgo alcista"
+          },
+          "sma21": {
+            "status": "above"
+          },
+          "sma200": {
+            "status": "above"
           }
         }
       },
@@ -1911,5 +1930,5 @@
       }
     ]
   },
-  "updated_at": "2026-07-13T20:51:29Z"
+  "updated_at": "2026-07-13T22:01:37Z"
 }
