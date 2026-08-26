@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-08-25T23:49:26.421346",
+  "as_of": "2026-08-26T11:55:27.169936",
   "sectors": {
     "etfs_mercado_usa": [
       {
@@ -659,13 +659,13 @@
       {
         "ticker": "PBR",
         "price": 17.85,
-        "daily_change_pct": -4.03,
+        "daily_change_pct": -1.22,
         "indicators": {
           "rsi14": {
-            "value": 45.01
+            "value": 50.62
           },
           "macd": {
-            "diagnostic": "MACD: sesgo bajista"
+            "diagnostic": "MACD: sesgo alcista"
           },
           "sma21": {
             "status": "below"
@@ -1488,10 +1488,10 @@
       {
         "ticker": "JNJ",
         "price": 273.14,
-        "daily_change_pct": 0.04,
+        "daily_change_pct": 0.53,
         "indicators": {
           "rsi14": {
-            "value": 64.39
+            "value": 65.55
           },
           "macd": {
             "diagnostic": "MACD: sesgo alcista"
@@ -1930,5 +1930,5 @@
       }
     ]
   },
-  "updated_at": "2026-08-25T23:49:55Z"
+  "updated_at": "2026-08-26T11:55:48Z"
 }
