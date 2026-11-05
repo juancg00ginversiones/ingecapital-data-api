@@ -1,12 +1,12 @@
 {
-  "updated_at": "2026-11-05T03:37:51Z",
+  "updated_at": "2026-11-05T18:53:47Z",
   "current": [
     {
       "casa": "oficial",
       "label": "Dólar Oficial",
       "compra": 1520,
       "venta": 1570.0,
-      "fechaActualizacion": "2026-11-04T18:00:00.000Z",
+      "fechaActualizacion": "2026-11-05T15:00:00.000Z",
       "variation": {
         "venta_pct": 0.0
       }
@@ -14,11 +14,11 @@
     {
       "casa": "blue",
       "label": "Dólar Blue",
-      "compra": 1540,
-      "venta": 1560.0,
-      "fechaActualizacion": "2026-11-04T20:55:00.000Z",
+      "compra": 1530,
+      "venta": 1550.0,
+      "fechaActualizacion": "2026-11-05T17:58:00.000Z",
       "variation": {
-        "venta_pct": -0.64
+        "venta_pct": -1.27
       }
     },
     {
@@ -26,7 +26,7 @@
       "label": "Dólar Tarjeta",
       "compra": 1976,
       "venta": 2041.0,
-      "fechaActualizacion": "2026-11-04T18:00:00.000Z",
+      "fechaActualizacion": "2026-11-05T15:00:00.000Z",
       "variation": {
         "venta_pct": 0.0
       }
@@ -35,40 +35,40 @@
       "casa": "contadoconliqui",
       "label": "Dólar CCL",
       "compra": 1676.7,
-      "venta": 1680.4,
-      "fechaActualizacion": "2026-11-04T20:55:00.000Z",
+      "venta": 1677.4,
+      "fechaActualizacion": "2026-11-05T17:58:00.000Z",
       "variation": {
-        "venta_pct": 0.7
+        "venta_pct": 0.52
       }
     },
     {
       "casa": "bolsa",
       "label": "Dólar MEP",
-      "compra": 1575.7,
-      "venta": 1588.6,
-      "fechaActualizacion": "2026-11-04T20:55:00.000Z",
+      "compra": 1582.2,
+      "venta": 1584.9,
+      "fechaActualizacion": "2026-11-05T17:58:00.000Z",
       "variation": {
-        "venta_pct": 0.47
+        "venta_pct": 0.24
       }
     },
     {
       "casa": "mayorista",
       "label": "Dólar Mayorista",
-      "compra": 1537,
-      "venta": 1546.0,
-      "fechaActualizacion": "2026-11-04T16:24:00.000Z",
+      "compra": 1536,
+      "venta": 1545.0,
+      "fechaActualizacion": "2026-11-05T12:46:00.000Z",
       "variation": {
-        "venta_pct": -0.32
+        "venta_pct": -0.39
       }
     },
     {
       "casa": "cripto",
       "label": "Dólar Cripto",
-      "compra": 1659.63,
-      "venta": 1667.14,
-      "fechaActualizacion": "2026-11-04T20:55:00.000Z",
+      "compra": 1668.48,
+      "venta": 1674.45,
+      "fechaActualizacion": "2026-11-05T17:58:00.000Z",
       "variation": {
-        "venta_pct": 0.46
+        "venta_pct": 0.9
       }
     }
   ],
@@ -1898,6 +1898,11 @@
         "date": "2026-11-04",
         "compra": 1520.0,
         "venta": 1570.0
+      },
+      {
+        "date": "2026-11-05",
+        "compra": 1520.0,
+        "venta": 1570.0
       }
     ],
     "blue": [
@@ -3725,6 +3730,11 @@
         "date": "2026-11-04",
         "compra": 1550.0,
         "venta": 1570.0
+      },
+      {
+        "date": "2026-11-05",
+        "compra": 1540.0,
+        "venta": 1560.0
       }
     ],
     "tarjeta": [
@@ -5550,6 +5560,11 @@
       },
       {
         "date": "2026-11-04",
+        "compra": 1976.0,
+        "venta": 2041.0
+      },
+      {
+        "date": "2026-11-05",
         "compra": 1976.0,
         "venta": 2041.0
       }
@@ -7379,6 +7394,11 @@
         "date": "2026-11-04",
         "compra": 1667.2,
         "venta": 1668.8
+      },
+      {
+        "date": "2026-11-05",
+        "compra": 1676.7,
+        "venta": 1680.4
       }
     ],
     "bolsa": [
@@ -9206,6 +9226,11 @@
         "date": "2026-11-04",
         "compra": 1575.3,
         "venta": 1581.1
+      },
+      {
+        "date": "2026-11-05",
+        "compra": 1575.7,
+        "venta": 1588.6
       }
     ],
     "mayorista": [
@@ -11033,6 +11058,11 @@
         "date": "2026-11-04",
         "compra": 1542.0,
         "venta": 1551.0
+      },
+      {
+        "date": "2026-11-05",
+        "compra": 1537.0,
+        "venta": 1546.0
       }
     ],
     "cripto": [
@@ -12860,6 +12890,11 @@
         "date": "2026-11-04",
         "compra": 1654.13,
         "venta": 1659.45
+      },
+      {
+        "date": "2026-11-05",
+        "compra": 1659.63,
+        "venta": 1667.14
       }
     ]
   }
