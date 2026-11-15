@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-11-08T14:55:29Z",
-  "fecha": "2026-11-08",
+  "updated_at": "2026-11-15T15:31:38Z",
+  "fecha": "2026-11-15",
   "metodologia": "Rendimientos históricos reales en USD via yfinance (5 años de historia). Proyección GBM con reversión a media de largo plazo: mu_final = min(0.40 × mu_histórico + 0.60 × mu_largo_plazo, 20% anual). Benchmarks: Conservador 5%, Moderado 7%, Agresivo 9%, Muy Agresivo 11%. Volatilidad calculada con ventana de 750 días de trading. Sharpe ratio con tasa libre de riesgo 4.5% (T-Bills USA).",
   "disclaimer": "Rendimientos pasados no garantizan resultados futuros. Esto es información educativa, no asesoramiento de inversión.",
   "portfolios": [
@@ -9,9 +9,9 @@
       "title": "Lo Esencial — Must Have",
       "risk": "Moderado",
       "rendimientos": {
-        "ytd": 1.25,
-        "1y": 1.64,
-        "3y": 66.03
+        "ytd": 0.56,
+        "1y": 0.83,
+        "3y": 66.86
       },
       "historial_anual": {
         "2023": 22.54,
@@ -19,90 +19,90 @@
         "2025": 22.04
       },
       "metricas": {
-        "volatilidad_anual": 18.66,
-        "sharpe_ratio": 0.92
+        "volatilidad_anual": 18.69,
+        "sharpe_ratio": 0.89
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 21.7% · mu_LP: 7% · mu_final: 12.9% · sigma_anual: 18.7%",
-        "mu_historico": 21.72,
+        "metodologia": "GBM reversión a media — mu_hist: 21.1% · mu_LP: 7% · mu_final: 12.7% · sigma_anual: 18.7%",
+        "mu_historico": 21.15,
         "mu_largo_plazo": 7.0,
-        "mu_final": 12.89,
-        "pesimista": -1.67,
-        "base": 11.56,
-        "optimista": 25.84,
+        "mu_final": 12.66,
+        "pesimista": -1.92,
+        "base": 11.3,
+        "optimista": 25.57,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -2.85,
-            "base": 0.76,
-            "optimista": 4.44
+            "pesimista": -2.88,
+            "base": 0.74,
+            "optimista": 4.43
           },
           {
             "mes": 2,
-            "pesimista": -3.43,
-            "base": 1.61,
-            "optimista": 6.93
+            "pesimista": -3.48,
+            "base": 1.57,
+            "optimista": 6.9
           },
           {
             "mes": 3,
-            "pesimista": -3.92,
-            "base": 2.54,
-            "optimista": 9.26
+            "pesimista": -3.98,
+            "base": 2.48,
+            "optimista": 9.2
           },
           {
             "mes": 4,
-            "pesimista": -3.94,
-            "base": 3.51,
-            "optimista": 11.29
+            "pesimista": -4.02,
+            "base": 3.43,
+            "optimista": 11.22
           },
           {
             "mes": 5,
-            "pesimista": -3.72,
-            "base": 4.36,
-            "optimista": 13.54
+            "pesimista": -3.82,
+            "base": 4.26,
+            "optimista": 13.45
           },
           {
             "mes": 6,
-            "pesimista": -3.51,
-            "base": 5.68,
-            "optimista": 15.52
+            "pesimista": -3.63,
+            "base": 5.56,
+            "optimista": 15.41
           },
           {
             "mes": 7,
-            "pesimista": -3.44,
-            "base": 6.48,
-            "optimista": 17.14
+            "pesimista": -3.58,
+            "base": 6.34,
+            "optimista": 17.0
           },
           {
             "mes": 8,
-            "pesimista": -3.12,
-            "base": 7.53,
-            "optimista": 18.96
+            "pesimista": -3.29,
+            "base": 7.37,
+            "optimista": 18.8
           },
           {
             "mes": 9,
-            "pesimista": -2.88,
-            "base": 8.39,
-            "optimista": 20.49
+            "pesimista": -3.06,
+            "base": 8.2,
+            "optimista": 20.3
           },
           {
             "mes": 10,
-            "pesimista": -2.65,
-            "base": 9.27,
-            "optimista": 22.62
+            "pesimista": -2.86,
+            "base": 9.06,
+            "optimista": 22.4
           },
           {
             "mes": 11,
-            "pesimista": -2.22,
-            "base": 10.44,
-            "optimista": 24.26
+            "pesimista": -2.45,
+            "base": 10.21,
+            "optimista": 24.02
           },
           {
             "mes": 12,
-            "pesimista": -1.67,
-            "base": 11.56,
-            "optimista": 25.84
+            "pesimista": -1.92,
+            "base": 11.3,
+            "optimista": 25.57
           }
         ]
       }
@@ -112,9 +112,9 @@
       "title": "Tecnología Mega Cap",
       "risk": "Moderado",
       "rendimientos": {
-        "ytd": 4.17,
-        "1y": 4.61,
-        "3y": 162.02
+        "ytd": 6.54,
+        "1y": 8.4,
+        "3y": 156.71
       },
       "historial_anual": {
         "2023": 101.46,
@@ -122,90 +122,90 @@
         "2025": 29.53
       },
       "metricas": {
-        "volatilidad_anual": 25.69,
-        "sharpe_ratio": 1.17
+        "volatilidad_anual": 25.72,
+        "sharpe_ratio": 1.18
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 34.5% · mu_LP: 7% · mu_final: 18.0% · sigma_anual: 25.7%",
-        "mu_historico": 34.5,
+        "metodologia": "GBM reversión a media — mu_hist: 34.8% · mu_LP: 7% · mu_final: 18.1% · sigma_anual: 25.7%",
+        "mu_historico": 34.75,
         "mu_largo_plazo": 7.0,
-        "mu_final": 18.0,
-        "pesimista": -2.91,
-        "base": 15.51,
-        "optimista": 36.34,
+        "mu_final": 18.1,
+        "pesimista": -2.85,
+        "base": 15.62,
+        "optimista": 36.49,
         "fan": [
           {
             "mes": 1,
             "pesimista": -3.96,
             "base": 0.99,
-            "optimista": 6.11
+            "optimista": 6.12
           },
           {
             "mes": 2,
-            "pesimista": -4.8,
-            "base": 2.12,
-            "optimista": 9.54
+            "pesimista": -4.79,
+            "base": 2.13,
+            "optimista": 9.57
           },
           {
             "mes": 3,
-            "pesimista": -5.5,
-            "base": 3.34,
-            "optimista": 12.78
+            "pesimista": -5.49,
+            "base": 3.37,
+            "optimista": 12.81
           },
           {
             "mes": 4,
-            "pesimista": -5.58,
-            "base": 4.64,
-            "optimista": 15.62
+            "pesimista": -5.56,
+            "base": 4.68,
+            "optimista": 15.67
           },
           {
             "mes": 5,
-            "pesimista": -5.33,
-            "base": 5.77,
-            "optimista": 18.79
+            "pesimista": -5.31,
+            "base": 5.81,
+            "optimista": 18.85
           },
           {
             "mes": 6,
-            "pesimista": -5.1,
-            "base": 7.56,
-            "optimista": 21.58
+            "pesimista": -5.07,
+            "base": 7.61,
+            "optimista": 21.66
           },
           {
             "mes": 7,
-            "pesimista": -5.06,
-            "base": 8.62,
-            "optimista": 23.87
+            "pesimista": -5.02,
+            "base": 8.68,
+            "optimista": 23.96
           },
           {
             "mes": 8,
-            "pesimista": -4.68,
-            "base": 10.04,
-            "optimista": 26.46
+            "pesimista": -4.64,
+            "base": 10.11,
+            "optimista": 26.56
           },
           {
             "mes": 9,
-            "pesimista": -4.4,
-            "base": 11.19,
-            "optimista": 28.63
+            "pesimista": -4.35,
+            "base": 11.27,
+            "optimista": 28.75
           },
           {
             "mes": 10,
-            "pesimista": -4.15,
-            "base": 12.38,
-            "optimista": 31.7
+            "pesimista": -4.09,
+            "base": 12.47,
+            "optimista": 31.82
           },
           {
             "mes": 11,
-            "pesimista": -3.61,
-            "base": 13.98,
-            "optimista": 34.06
+            "pesimista": -3.55,
+            "base": 14.08,
+            "optimista": 34.2
           },
           {
             "mes": 12,
-            "pesimista": -2.91,
-            "base": 15.51,
-            "optimista": 36.34
+            "pesimista": -2.85,
+            "base": 15.62,
+            "optimista": 36.49
           }
         ]
       }
@@ -215,9 +215,9 @@
       "title": "IA & Semiconductores",
       "risk": "Agresivo",
       "rendimientos": {
-        "ytd": 33.22,
-        "1y": 35.55,
-        "3y": 295.65
+        "ytd": 45.28,
+        "1y": 49.31,
+        "3y": 306.76
       },
       "historial_anual": {
         "2023": 112.17,
@@ -225,90 +225,90 @@
         "2025": 72.84
       },
       "metricas": {
-        "volatilidad_anual": 41.55,
-        "sharpe_ratio": 1.2
+        "volatilidad_anual": 41.8,
+        "sharpe_ratio": 1.24
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 54.4% · mu_LP: 9% · mu_final: 20.0% · sigma_anual: 41.5%",
-        "mu_historico": 54.43,
+        "metodologia": "GBM reversión a media — mu_hist: 56.2% · mu_LP: 9% · mu_final: 20.0% · sigma_anual: 41.8%",
+        "mu_historico": 56.24,
         "mu_largo_plazo": 9.0,
         "mu_final": 20.0,
-        "pesimista": -15.79,
-        "base": 11.53,
-        "optimista": 45.83,
+        "pesimista": -16.03,
+        "base": 11.41,
+        "optimista": 45.91,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -7.28,
-            "base": 0.56,
-            "optimista": 8.93
+            "pesimista": -7.34,
+            "base": 0.55,
+            "optimista": 8.97
           },
           {
             "mes": 2,
-            "pesimista": -9.53,
-            "base": 1.33,
-            "optimista": 13.51
+            "pesimista": -9.61,
+            "base": 1.31,
+            "optimista": 13.56
           },
           {
             "mes": 3,
-            "pesimista": -11.54,
-            "base": 2.24,
-            "optimista": 17.76
+            "pesimista": -11.64,
+            "base": 2.21,
+            "optimista": 17.82
           },
           {
             "mes": 4,
-            "pesimista": -12.56,
-            "base": 3.26,
-            "optimista": 21.34
+            "pesimista": -12.68,
+            "base": 3.22,
+            "optimista": 21.41
           },
           {
             "mes": 5,
-            "pesimista": -13.09,
-            "base": 3.98,
-            "optimista": 25.45
+            "pesimista": -13.23,
+            "base": 3.93,
+            "optimista": 25.54
           },
           {
             "mes": 6,
-            "pesimista": -13.64,
-            "base": 5.74,
-            "optimista": 28.92
+            "pesimista": -13.79,
+            "base": 5.68,
+            "optimista": 29.01
           },
           {
             "mes": 7,
-            "pesimista": -14.47,
-            "base": 6.33,
-            "optimista": 31.5
+            "pesimista": -14.64,
+            "base": 6.26,
+            "optimista": 31.59
           },
           {
             "mes": 8,
-            "pesimista": -14.81,
-            "base": 7.48,
-            "optimista": 34.58
+            "pesimista": -14.99,
+            "base": 7.4,
+            "optimista": 34.66
           },
           {
             "mes": 9,
-            "pesimista": -15.28,
-            "base": 8.17,
-            "optimista": 36.92
+            "pesimista": -15.47,
+            "base": 8.08,
+            "optimista": 37.0
           },
           {
             "mes": 10,
-            "pesimista": -15.79,
-            "base": 8.92,
-            "optimista": 40.76
+            "pesimista": -16.0,
+            "base": 8.82,
+            "optimista": 40.85
           },
           {
             "mes": 11,
-            "pesimista": -15.9,
-            "base": 10.29,
-            "optimista": 43.38
+            "pesimista": -16.12,
+            "base": 10.18,
+            "optimista": 43.47
           },
           {
             "mes": 12,
-            "pesimista": -15.79,
-            "base": 11.53,
-            "optimista": 45.83
+            "pesimista": -16.03,
+            "base": 11.41,
+            "optimista": 45.91
           }
         ]
       }
@@ -318,9 +318,9 @@
       "title": "Software & Cloud",
       "risk": "Moderado",
       "rendimientos": {
-        "ytd": -15.74,
-        "1y": -17.65,
-        "3y": 172.29
+        "ytd": -14.16,
+        "1y": -15.18,
+        "3y": 176.06
       },
       "historial_anual": {
         "2023": 88.76,
@@ -328,90 +328,90 @@
         "2025": 24.02
       },
       "metricas": {
-        "volatilidad_anual": 32.43,
+        "volatilidad_anual": 32.48,
         "sharpe_ratio": 0.69
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 27.0% · mu_LP: 7% · mu_final: 15.0% · sigma_anual: 32.4%",
-        "mu_historico": 27.02,
+        "metodologia": "GBM reversión a media — mu_hist: 27.0% · mu_LP: 7% · mu_final: 15.0% · sigma_anual: 32.5%",
+        "mu_historico": 26.96,
         "mu_largo_plazo": 7.0,
-        "mu_final": 15.01,
-        "pesimista": -11.79,
-        "base": 9.85,
-        "optimista": 35.42,
+        "mu_final": 14.99,
+        "pesimista": -11.85,
+        "base": 9.81,
+        "optimista": 35.41,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -5.66,
-            "base": 0.51,
-            "optimista": 6.98
+            "pesimista": -5.68,
+            "base": 0.5,
+            "optimista": 6.99
           },
           {
             "mes": 2,
-            "pesimista": -7.39,
+            "pesimista": -7.41,
             "base": 1.18,
-            "optimista": 10.56
+            "optimista": 10.57
           },
           {
             "mes": 3,
-            "pesimista": -8.92,
-            "base": 1.97,
-            "optimista": 13.86
+            "pesimista": -8.95,
+            "base": 1.96,
+            "optimista": 13.87
           },
           {
             "mes": 4,
-            "pesimista": -9.68,
-            "base": 2.84,
+            "pesimista": -9.71,
+            "base": 2.82,
             "optimista": 16.64
           },
           {
             "mes": 5,
-            "pesimista": -10.04,
-            "base": 3.47,
-            "optimista": 19.8
+            "pesimista": -10.08,
+            "base": 3.45,
+            "optimista": 19.81
           },
           {
             "mes": 6,
-            "pesimista": -10.43,
-            "base": 4.91,
+            "pesimista": -10.47,
+            "base": 4.89,
             "optimista": 22.47
           },
           {
             "mes": 7,
-            "pesimista": -11.03,
-            "base": 5.44,
+            "pesimista": -11.08,
+            "base": 5.42,
             "optimista": 24.47
           },
           {
             "mes": 8,
-            "pesimista": -11.24,
-            "base": 6.41,
-            "optimista": 26.82
+            "pesimista": -11.29,
+            "base": 6.38,
+            "optimista": 26.83
           },
           {
             "mes": 9,
-            "pesimista": -11.56,
-            "base": 7.02,
-            "optimista": 28.64
+            "pesimista": -11.61,
+            "base": 6.99,
+            "optimista": 28.63
           },
           {
             "mes": 10,
-            "pesimista": -11.91,
-            "base": 7.68,
-            "optimista": 31.55
+            "pesimista": -11.97,
+            "base": 7.64,
+            "optimista": 31.54
           },
           {
             "mes": 11,
-            "pesimista": -11.94,
-            "base": 8.82,
-            "optimista": 33.55
+            "pesimista": -12.01,
+            "base": 8.77,
+            "optimista": 33.54
           },
           {
             "mes": 12,
-            "pesimista": -11.79,
-            "base": 9.85,
-            "optimista": 35.42
+            "pesimista": -11.85,
+            "base": 9.81,
+            "optimista": 35.41
           }
         ]
       }
@@ -421,9 +421,9 @@
       "title": "Tecnología Disruptiva",
       "risk": "Agresivo",
       "rendimientos": {
-        "ytd": 6.25,
-        "1y": -2.34,
-        "3y": 243.37
+        "ytd": 9.21,
+        "1y": 2.67,
+        "3y": 254.56
       },
       "historial_anual": {
         "2023": 79.48,
@@ -431,90 +431,90 @@
         "2025": 79.06
       },
       "metricas": {
-        "volatilidad_anual": 38.84,
+        "volatilidad_anual": 39.06,
         "sharpe_ratio": 1.21
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 51.6% · mu_LP: 9% · mu_final: 20.0% · sigma_anual: 38.8%",
-        "mu_historico": 51.63,
+        "metodologia": "GBM reversión a media — mu_hist: 51.8% · mu_LP: 9% · mu_final: 20.0% · sigma_anual: 39.1%",
+        "mu_historico": 51.82,
         "mu_largo_plazo": 9.0,
         "mu_final": 20.0,
-        "pesimista": -13.28,
-        "base": 12.78,
-        "optimista": 44.92,
+        "pesimista": -13.48,
+        "base": 12.69,
+        "optimista": 44.99,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -6.68,
-            "base": 0.67,
-            "optimista": 8.49
+            "pesimista": -6.73,
+            "base": 0.66,
+            "optimista": 8.53
           },
           {
             "mes": 2,
-            "pesimista": -8.66,
-            "base": 1.55,
-            "optimista": 12.92
+            "pesimista": -8.73,
+            "base": 1.53,
+            "optimista": 12.97
           },
           {
             "mes": 3,
-            "pesimista": -10.42,
-            "base": 2.56,
-            "optimista": 17.04
+            "pesimista": -10.51,
+            "base": 2.54,
+            "optimista": 17.1
           },
           {
             "mes": 4,
-            "pesimista": -11.25,
-            "base": 3.67,
-            "optimista": 20.55
+            "pesimista": -11.36,
+            "base": 3.64,
+            "optimista": 20.62
           },
           {
             "mes": 5,
-            "pesimista": -11.62,
-            "base": 4.51,
-            "optimista": 24.56
+            "pesimista": -11.74,
+            "base": 4.47,
+            "optimista": 24.63
           },
           {
             "mes": 6,
-            "pesimista": -12.01,
-            "base": 6.32,
-            "optimista": 27.97
+            "pesimista": -12.14,
+            "base": 6.28,
+            "optimista": 28.05
           },
           {
             "mes": 7,
-            "pesimista": -12.67,
-            "base": 7.04,
-            "optimista": 30.56
+            "pesimista": -12.81,
+            "base": 6.99,
+            "optimista": 30.64
           },
           {
             "mes": 8,
-            "pesimista": -12.86,
-            "base": 8.28,
-            "optimista": 33.62
+            "pesimista": -13.01,
+            "base": 8.22,
+            "optimista": 33.7
           },
           {
             "mes": 9,
-            "pesimista": -13.18,
-            "base": 9.1,
-            "optimista": 36.0
+            "pesimista": -13.34,
+            "base": 9.03,
+            "optimista": 36.07
           },
           {
             "mes": 10,
-            "pesimista": -13.54,
-            "base": 9.97,
-            "optimista": 39.78
+            "pesimista": -13.72,
+            "base": 9.89,
+            "optimista": 39.86
           },
           {
             "mes": 11,
-            "pesimista": -13.51,
-            "base": 11.44,
-            "optimista": 42.42
+            "pesimista": -13.71,
+            "base": 11.35,
+            "optimista": 42.5
           },
           {
             "mes": 12,
-            "pesimista": -13.28,
-            "base": 12.78,
-            "optimista": 44.92
+            "pesimista": -13.48,
+            "base": 12.69,
+            "optimista": 44.99
           }
         ]
       }
@@ -524,9 +524,9 @@
       "title": "Data Centers & Energía IA",
       "risk": "Agresivo",
       "rendimientos": {
-        "ytd": -36.89,
-        "1y": -44.6,
-        "3y": 153.63
+        "ytd": -33.3,
+        "1y": -37.71,
+        "3y": 163.47
       },
       "historial_anual": {
         "2023": 111.97,
@@ -534,90 +534,90 @@
         "2025": 68.75
       },
       "metricas": {
-        "volatilidad_anual": 54.81,
-        "sharpe_ratio": 0.97
+        "volatilidad_anual": 55.07,
+        "sharpe_ratio": 0.98
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 57.6% · mu_LP: 9% · mu_final: 20.0% · sigma_anual: 54.8%",
-        "mu_historico": 57.6,
+        "metodologia": "GBM reversión a media — mu_hist: 58.7% · mu_LP: 9% · mu_final: 20.0% · sigma_anual: 55.1%",
+        "mu_historico": 58.74,
         "mu_largo_plazo": 9.0,
         "mu_final": 20.0,
-        "pesimista": -27.89,
-        "base": 4.47,
-        "optimista": 48.81,
+        "pesimista": -28.12,
+        "base": 4.32,
+        "optimista": 48.84,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -10.25,
-            "base": -0.1,
-            "optimista": 11.02
+            "pesimista": -10.31,
+            "base": -0.12,
+            "optimista": 11.06
           },
           {
             "mes": 2,
-            "pesimista": -13.83,
-            "base": 0.07,
-            "optimista": 16.24
+            "pesimista": -13.92,
+            "base": 0.04,
+            "optimista": 16.29
           },
           {
             "mes": 3,
-            "pesimista": -17.04,
-            "base": 0.42,
-            "optimista": 21.0
+            "pesimista": -17.14,
+            "base": 0.38,
+            "optimista": 21.06
           },
           {
             "mes": 4,
-            "pesimista": -18.98,
-            "base": 0.89,
-            "optimista": 24.83
+            "pesimista": -19.1,
+            "base": 0.84,
+            "optimista": 24.89
           },
           {
             "mes": 5,
-            "pesimista": -20.3,
-            "base": 0.98,
-            "optimista": 29.36
+            "pesimista": -20.44,
+            "base": 0.91,
+            "optimista": 29.43
           },
           {
             "mes": 6,
-            "pesimista": -21.62,
-            "base": 2.38,
-            "optimista": 32.98
+            "pesimista": -21.78,
+            "base": 2.3,
+            "optimista": 33.05
           },
           {
             "mes": 7,
-            "pesimista": -23.25,
-            "base": 2.28,
-            "optimista": 35.37
+            "pesimista": -23.43,
+            "base": 2.19,
+            "optimista": 35.43
           },
           {
             "mes": 8,
-            "pesimista": -24.29,
-            "base": 2.87,
-            "optimista": 38.4
+            "pesimista": -24.47,
+            "base": 2.77,
+            "optimista": 38.46
           },
           {
             "mes": 9,
-            "pesimista": -25.46,
-            "base": 2.89,
-            "optimista": 40.4
+            "pesimista": -25.66,
+            "base": 2.77,
+            "optimista": 40.46
           },
           {
             "mes": 10,
-            "pesimista": -26.67,
-            "base": 2.96,
-            "optimista": 44.42
+            "pesimista": -26.88,
+            "base": 2.83,
+            "optimista": 44.48
           },
           {
             "mes": 11,
-            "pesimista": -27.41,
-            "base": 3.8,
-            "optimista": 46.75
+            "pesimista": -27.63,
+            "base": 3.66,
+            "optimista": 46.79
           },
           {
             "mes": 12,
-            "pesimista": -27.89,
-            "base": 4.47,
-            "optimista": 48.81
+            "pesimista": -28.12,
+            "base": 4.32,
+            "optimista": 48.84
           }
         ]
       }
@@ -627,9 +627,9 @@
       "title": "Dividendos & Valor",
       "risk": "Conservador",
       "rendimientos": {
-        "ytd": 22.05,
-        "1y": 27.48,
-        "3y": 86.47
+        "ytd": 24.82,
+        "1y": 27.12,
+        "3y": 92.8
       },
       "historial_anual": {
         "2023": 6.37,
@@ -637,90 +637,90 @@
         "2025": 20.72
       },
       "metricas": {
-        "volatilidad_anual": 12.65,
-        "sharpe_ratio": 1.38
+        "volatilidad_anual": 12.67,
+        "sharpe_ratio": 1.42
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 22.0% · mu_LP: 5% · mu_final: 11.8% · sigma_anual: 12.6%",
-        "mu_historico": 22.02,
+        "metodologia": "GBM reversión a media — mu_hist: 22.5% · mu_LP: 5% · mu_final: 12.0% · sigma_anual: 12.7%",
+        "mu_historico": 22.53,
         "mu_largo_plazo": 5.0,
-        "mu_final": 11.81,
-        "pesimista": 2.34,
-        "base": 11.48,
-        "optimista": 20.96,
+        "mu_final": 12.01,
+        "pesimista": 2.53,
+        "base": 11.71,
+        "optimista": 21.23,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -1.66,
-            "base": 0.8,
-            "optimista": 3.29
+            "pesimista": -1.65,
+            "base": 0.82,
+            "optimista": 3.31
           },
           {
             "mes": 2,
-            "pesimista": -1.78,
-            "base": 1.67,
-            "optimista": 5.25
+            "pesimista": -1.75,
+            "base": 1.71,
+            "optimista": 5.29
           },
           {
             "mes": 3,
-            "pesimista": -1.83,
-            "base": 2.59,
-            "optimista": 7.1
+            "pesimista": -1.79,
+            "base": 2.65,
+            "optimista": 7.17
           },
           {
             "mes": 4,
-            "pesimista": -1.56,
-            "base": 3.55,
-            "optimista": 8.77
+            "pesimista": -1.5,
+            "base": 3.62,
+            "optimista": 8.85
           },
           {
             "mes": 5,
-            "pesimista": -1.12,
-            "base": 4.43,
-            "optimista": 10.57
+            "pesimista": -1.05,
+            "base": 4.52,
+            "optimista": 10.67
           },
           {
             "mes": 6,
-            "pesimista": -0.69,
-            "base": 5.62,
-            "optimista": 12.2
+            "pesimista": -0.6,
+            "base": 5.73,
+            "optimista": 12.32
           },
           {
             "mes": 7,
-            "pesimista": -0.36,
-            "base": 6.47,
-            "optimista": 13.59
+            "pesimista": -0.25,
+            "base": 6.6,
+            "optimista": 13.73
           },
           {
             "mes": 8,
-            "pesimista": 0.15,
-            "base": 7.49,
-            "optimista": 15.11
+            "pesimista": 0.28,
+            "base": 7.64,
+            "optimista": 15.28
           },
           {
             "mes": 9,
-            "pesimista": 0.61,
-            "base": 8.38,
-            "optimista": 16.44
+            "pesimista": 0.75,
+            "base": 8.55,
+            "optimista": 16.64
           },
           {
             "mes": 10,
-            "pesimista": 1.06,
-            "base": 9.29,
-            "optimista": 18.17
+            "pesimista": 1.22,
+            "base": 9.48,
+            "optimista": 18.39
           },
           {
             "mes": 11,
-            "pesimista": 1.66,
-            "base": 10.4,
-            "optimista": 19.59
+            "pesimista": 1.83,
+            "base": 10.61,
+            "optimista": 19.83
           },
           {
             "mes": 12,
-            "pesimista": 2.34,
-            "base": 11.48,
-            "optimista": 20.96
+            "pesimista": 2.53,
+            "base": 11.71,
+            "optimista": 21.23
           }
         ]
       }
@@ -730,9 +730,9 @@
       "title": "Defensivo Clásico",
       "risk": "Conservador",
       "rendimientos": {
-        "ytd": 22.91,
-        "1y": 29.46,
-        "3y": 83.42
+        "ytd": 26.81,
+        "1y": 28.59,
+        "3y": 90.49
       },
       "historial_anual": {
         "2023": 15.68,
@@ -740,90 +740,90 @@
         "2025": 16.28
       },
       "metricas": {
-        "volatilidad_anual": 13.78,
-        "sharpe_ratio": 1.24
+        "volatilidad_anual": 13.8,
+        "sharpe_ratio": 1.32
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 21.6% · mu_LP: 5% · mu_final: 11.6% · sigma_anual: 13.8%",
-        "mu_historico": 21.58,
+        "metodologia": "GBM reversión a media — mu_hist: 22.7% · mu_LP: 5% · mu_final: 12.1% · sigma_anual: 13.8%",
+        "mu_historico": 22.68,
         "mu_largo_plazo": 5.0,
-        "mu_final": 11.63,
-        "pesimista": 1.22,
-        "base": 11.11,
-        "optimista": 21.44,
+        "mu_final": 12.07,
+        "pesimista": 1.65,
+        "base": 11.6,
+        "optimista": 21.99,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -1.91,
-            "base": 0.76,
-            "optimista": 3.47
+            "pesimista": -1.88,
+            "base": 0.8,
+            "optimista": 3.51
           },
           {
             "mes": 2,
-            "pesimista": -2.15,
-            "base": 1.6,
-            "optimista": 5.5
+            "pesimista": -2.08,
+            "base": 1.68,
+            "optimista": 5.58
           },
           {
             "mes": 3,
-            "pesimista": -2.31,
-            "base": 2.49,
-            "optimista": 7.41
+            "pesimista": -2.21,
+            "base": 2.61,
+            "optimista": 7.53
           },
           {
             "mes": 4,
-            "pesimista": -2.12,
-            "base": 3.43,
-            "optimista": 9.11
+            "pesimista": -1.99,
+            "base": 3.58,
+            "optimista": 9.28
           },
           {
             "mes": 5,
-            "pesimista": -1.76,
-            "base": 4.26,
-            "optimista": 10.96
+            "pesimista": -1.58,
+            "base": 4.45,
+            "optimista": 11.17
           },
           {
             "mes": 6,
-            "pesimista": -1.4,
-            "base": 5.45,
-            "optimista": 12.62
+            "pesimista": -1.19,
+            "base": 5.68,
+            "optimista": 12.87
           },
           {
             "mes": 7,
-            "pesimista": -1.15,
-            "base": 6.26,
-            "optimista": 14.01
+            "pesimista": -0.9,
+            "base": 6.53,
+            "optimista": 14.32
           },
           {
             "mes": 8,
-            "pesimista": -0.71,
-            "base": 7.25,
-            "optimista": 15.56
+            "pesimista": -0.42,
+            "base": 7.56,
+            "optimista": 15.9
           },
           {
             "mes": 9,
-            "pesimista": -0.32,
-            "base": 8.1,
-            "optimista": 16.89
+            "pesimista": 0.01,
+            "base": 8.46,
+            "optimista": 17.28
           },
           {
             "mes": 10,
-            "pesimista": 0.06,
-            "base": 8.97,
-            "optimista": 18.65
+            "pesimista": 0.42,
+            "base": 9.37,
+            "optimista": 19.1
           },
           {
             "mes": 11,
-            "pesimista": 0.59,
-            "base": 10.06,
-            "optimista": 20.07
+            "pesimista": 0.99,
+            "base": 10.5,
+            "optimista": 20.56
           },
           {
             "mes": 12,
-            "pesimista": 1.22,
-            "base": 11.11,
-            "optimista": 21.44
+            "pesimista": 1.65,
+            "base": 11.6,
+            "optimista": 21.99
           }
         ]
       }
@@ -833,9 +833,9 @@
       "title": "Salud & Farma Líderes",
       "risk": "Moderado",
       "rendimientos": {
-        "ytd": 19.69,
-        "1y": 30.04,
-        "3y": 56.99
+        "ytd": 24.04,
+        "1y": 27.47,
+        "3y": 64.52
       },
       "historial_anual": {
         "2023": 21.55,
@@ -843,90 +843,90 @@
         "2025": 9.69
       },
       "metricas": {
-        "volatilidad_anual": 19.45,
-        "sharpe_ratio": 0.51
+        "volatilidad_anual": 19.47,
+        "sharpe_ratio": 0.57
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 14.4% · mu_LP: 7% · mu_final: 10.0% · sigma_anual: 19.5%",
-        "mu_historico": 14.39,
+        "metodologia": "GBM reversión a media — mu_hist: 15.6% · mu_LP: 7% · mu_final: 10.4% · sigma_anual: 19.5%",
+        "mu_historico": 15.59,
         "mu_largo_plazo": 7.0,
-        "mu_final": 9.96,
-        "pesimista": -5.17,
-        "base": 8.17,
-        "optimista": 22.64,
+        "mu_final": 10.44,
+        "pesimista": -4.73,
+        "base": 8.68,
+        "optimista": 23.23,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -3.26,
-            "base": 0.49,
-            "optimista": 4.32
+            "pesimista": -3.22,
+            "base": 0.53,
+            "optimista": 4.37
           },
           {
             "mes": 2,
-            "pesimista": -4.15,
-            "base": 1.08,
-            "optimista": 6.6
+            "pesimista": -4.07,
+            "base": 1.16,
+            "optimista": 6.69
           },
           {
             "mes": 3,
-            "pesimista": -4.93,
-            "base": 1.74,
-            "optimista": 8.7
+            "pesimista": -4.82,
+            "base": 1.86,
+            "optimista": 8.83
           },
           {
             "mes": 4,
-            "pesimista": -5.23,
-            "base": 2.45,
-            "optimista": 10.48
+            "pesimista": -5.08,
+            "base": 2.61,
+            "optimista": 10.67
           },
           {
             "mes": 5,
-            "pesimista": -5.28,
-            "base": 3.01,
-            "optimista": 12.48
+            "pesimista": -5.1,
+            "base": 3.22,
+            "optimista": 12.71
           },
           {
             "mes": 6,
-            "pesimista": -5.35,
-            "base": 4.06,
-            "optimista": 14.19
+            "pesimista": -5.13,
+            "base": 4.31,
+            "optimista": 14.47
           },
           {
             "mes": 7,
-            "pesimista": -5.56,
-            "base": 4.57,
-            "optimista": 15.51
+            "pesimista": -5.3,
+            "base": 4.86,
+            "optimista": 15.84
           },
           {
             "mes": 8,
-            "pesimista": -5.52,
-            "base": 5.34,
-            "optimista": 17.04
+            "pesimista": -5.23,
+            "base": 5.68,
+            "optimista": 17.42
           },
           {
             "mes": 9,
-            "pesimista": -5.55,
-            "base": 5.9,
-            "optimista": 18.25
+            "pesimista": -5.22,
+            "base": 6.28,
+            "optimista": 18.69
           },
           {
             "mes": 10,
-            "pesimista": -5.6,
-            "base": 6.49,
-            "optimista": 20.07
+            "pesimista": -5.23,
+            "base": 6.91,
+            "optimista": 20.56
           },
           {
             "mes": 11,
-            "pesimista": -5.44,
-            "base": 7.36,
-            "optimista": 21.39
+            "pesimista": -5.04,
+            "base": 7.83,
+            "optimista": 21.94
           },
           {
             "mes": 12,
-            "pesimista": -5.17,
-            "base": 8.17,
-            "optimista": 22.64
+            "pesimista": -4.73,
+            "base": 8.68,
+            "optimista": 23.23
           }
         ]
       }
@@ -936,98 +936,98 @@
       "title": "Cripto Equities",
       "risk": "Muy Agresivo",
       "rendimientos": {
-        "ytd": -22.19,
-        "1y": -37.01,
+        "ytd": -30.21,
+        "1y": -40.44,
         "3y": null
       },
       "historial_anual": {
         "2025": -16.36
       },
       "metricas": {
-        "volatilidad_anual": 59.38,
-        "sharpe_ratio": 0.12
+        "volatilidad_anual": 59.28,
+        "sharpe_ratio": 0.05
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 11.9% · mu_LP: 11% · mu_final: 11.4% · sigma_anual: 59.4%",
-        "mu_historico": 11.9,
+        "metodologia": "GBM reversión a media — mu_hist: 7.3% · mu_LP: 11% · mu_final: 9.5% · sigma_anual: 59.3%",
+        "mu_historico": 7.27,
         "mu_largo_plazo": 11.0,
-        "mu_final": 11.36,
-        "pesimista": -37.55,
-        "base": -6.69,
-        "optimista": 36.89,
+        "mu_final": 9.51,
+        "pesimista": -38.62,
+        "base": -8.34,
+        "optimista": 34.37,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -11.91,
-            "base": -1.08,
-            "optimista": 10.9
+            "pesimista": -12.03,
+            "base": -1.22,
+            "optimista": 10.72
           },
           {
             "mes": 2,
-            "pesimista": -16.53,
-            "base": -1.85,
-            "optimista": 15.44
+            "pesimista": -16.76,
+            "base": -2.14,
+            "optimista": 15.07
           },
           {
             "mes": 3,
-            "pesimista": -20.66,
-            "base": -2.43,
-            "optimista": 19.4
+            "pesimista": -20.99,
+            "base": -2.87,
+            "optimista": 18.83
           },
           {
             "mes": 4,
-            "pesimista": -23.42,
-            "base": -2.88,
-            "optimista": 22.31
+            "pesimista": -23.84,
+            "base": -3.46,
+            "optimista": 21.53
           },
           {
             "mes": 5,
-            "pesimista": -25.5,
-            "base": -3.73,
-            "optimista": 25.89
+            "pesimista": -26.02,
+            "base": -4.45,
+            "optimista": 24.9
           },
           {
             "mes": 6,
-            "pesimista": -27.55,
-            "base": -3.23,
-            "optimista": 28.46
+            "pesimista": -28.16,
+            "base": -4.09,
+            "optimista": 27.26
           },
           {
             "mes": 7,
-            "pesimista": -29.86,
-            "base": -4.27,
-            "optimista": 29.7
+            "pesimista": -30.56,
+            "base": -5.27,
+            "optimista": 28.28
           },
           {
             "mes": 8,
-            "pesimista": -31.55,
-            "base": -4.6,
-            "optimista": 31.56
+            "pesimista": -32.33,
+            "base": -5.73,
+            "optimista": 29.93
           },
           {
             "mes": 9,
-            "pesimista": -33.36,
-            "base": -5.51,
-            "optimista": 32.33
+            "pesimista": -34.21,
+            "base": -6.77,
+            "optimista": 30.49
           },
           {
             "mes": 10,
-            "pesimista": -35.16,
-            "base": -6.35,
-            "optimista": 35.12
+            "pesimista": -36.08,
+            "base": -7.73,
+            "optimista": 33.04
           },
           {
             "mes": 11,
-            "pesimista": -36.49,
-            "base": -6.43,
-            "optimista": 36.15
+            "pesimista": -37.48,
+            "base": -7.95,
+            "optimista": 33.85
           },
           {
             "mes": 12,
-            "pesimista": -37.55,
-            "base": -6.69,
-            "optimista": 36.89
+            "pesimista": -38.62,
+            "base": -8.34,
+            "optimista": 34.37
           }
         ]
       }
@@ -1037,9 +1037,9 @@
       "title": "Argentina Blue Chips",
       "risk": "Agresivo",
       "rendimientos": {
-        "ytd": -36.47,
-        "1y": -31.3,
-        "3y": 99.72
+        "ytd": -35.98,
+        "1y": -30.07,
+        "3y": 110.06
       },
       "historial_anual": {
         "2023": 71.22,
@@ -1047,90 +1047,90 @@
         "2025": 7.63
       },
       "metricas": {
-        "volatilidad_anual": 48.18,
-        "sharpe_ratio": 0.68
+        "volatilidad_anual": 48.14,
+        "sharpe_ratio": 0.65
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 37.2% · mu_LP: 9% · mu_final: 20.0% · sigma_anual: 48.2%",
-        "mu_historico": 37.21,
+        "metodologia": "GBM reversión a media — mu_hist: 35.7% · mu_LP: 9% · mu_final: 19.7% · sigma_anual: 48.1%",
+        "mu_historico": 35.7,
         "mu_largo_plazo": 9.0,
-        "mu_final": 20.0,
-        "pesimista": -21.91,
-        "base": 8.18,
-        "optimista": 47.64,
+        "mu_final": 19.68,
+        "pesimista": -22.11,
+        "base": 7.86,
+        "optimista": 47.16,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -8.76,
-            "base": 0.24,
-            "optimista": 9.99
+            "pesimista": -8.78,
+            "base": 0.22,
+            "optimista": 9.95
           },
           {
             "mes": 2,
-            "pesimista": -11.68,
-            "base": 0.73,
-            "optimista": 14.91
+            "pesimista": -11.71,
+            "base": 0.68,
+            "optimista": 14.84
           },
           {
             "mes": 3,
-            "pesimista": -14.28,
-            "base": 1.38,
-            "optimista": 19.43
+            "pesimista": -14.33,
+            "base": 1.31,
+            "optimista": 19.33
           },
           {
             "mes": 4,
-            "pesimista": -15.77,
-            "base": 2.14,
-            "optimista": 23.16
+            "pesimista": -15.83,
+            "base": 2.04,
+            "optimista": 23.02
           },
           {
             "mes": 5,
-            "pesimista": -16.69,
-            "base": 2.56,
-            "optimista": 27.51
+            "pesimista": -16.78,
+            "base": 2.43,
+            "optimista": 27.33
           },
           {
             "mes": 6,
-            "pesimista": -17.64,
-            "base": 4.16,
-            "optimista": 31.08
+            "pesimista": -17.74,
+            "base": 4.0,
+            "optimista": 30.86
           },
           {
             "mes": 7,
-            "pesimista": -18.88,
-            "base": 4.42,
-            "optimista": 33.59
+            "pesimista": -19.0,
+            "base": 4.24,
+            "optimista": 33.33
           },
           {
             "mes": 8,
-            "pesimista": -19.57,
-            "base": 5.3,
-            "optimista": 36.68
+            "pesimista": -19.71,
+            "base": 5.09,
+            "optimista": 36.37
           },
           {
             "mes": 9,
-            "pesimista": -20.4,
-            "base": 5.67,
-            "optimista": 38.88
+            "pesimista": -20.56,
+            "base": 5.43,
+            "optimista": 38.53
           },
           {
             "mes": 10,
-            "pesimista": -21.28,
-            "base": 6.09,
-            "optimista": 42.84
+            "pesimista": -21.45,
+            "base": 5.83,
+            "optimista": 42.45
           },
           {
             "mes": 11,
-            "pesimista": -21.71,
-            "base": 7.21,
-            "optimista": 45.35
+            "pesimista": -21.9,
+            "base": 6.92,
+            "optimista": 44.91
           },
           {
             "mes": 12,
-            "pesimista": -21.91,
-            "base": 8.18,
-            "optimista": 47.64
+            "pesimista": -22.11,
+            "base": 7.86,
+            "optimista": 47.16
           }
         ]
       }
@@ -1140,9 +1140,9 @@
       "title": "Metales & Mineras",
       "risk": "Moderado",
       "rendimientos": {
-        "ytd": -9.93,
-        "1y": 17.46,
-        "3y": 176.57
+        "ytd": -15.8,
+        "1y": 2.32,
+        "3y": 159.92
       },
       "historial_anual": {
         "2023": 21.23,
@@ -1150,90 +1150,90 @@
         "2025": 116.59
       },
       "metricas": {
-        "volatilidad_anual": 36.29,
-        "sharpe_ratio": 1.09
+        "volatilidad_anual": 36.32,
+        "sharpe_ratio": 0.95
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 43.9% · mu_LP: 7% · mu_final: 20.0% · sigma_anual: 36.3%",
-        "mu_historico": 43.9,
+        "metodologia": "GBM reversión a media — mu_hist: 39.0% · mu_LP: 7% · mu_final: 19.8% · sigma_anual: 36.3%",
+        "mu_historico": 39.0,
         "mu_largo_plazo": 7.0,
-        "mu_final": 20.0,
-        "pesimista": -10.89,
-        "base": 13.9,
-        "optimista": 43.96,
+        "mu_final": 19.8,
+        "pesimista": -11.1,
+        "base": 13.66,
+        "optimista": 43.68,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -6.12,
-            "base": 0.78,
-            "optimista": 8.07
+            "pesimista": -6.14,
+            "base": 0.76,
+            "optimista": 8.06
           },
           {
             "mes": 2,
-            "pesimista": -7.85,
-            "base": 1.75,
-            "optimista": 12.36
+            "pesimista": -7.88,
+            "base": 1.71,
+            "optimista": 12.32
           },
           {
             "mes": 3,
-            "pesimista": -9.37,
-            "base": 2.85,
-            "optimista": 16.36
+            "pesimista": -9.42,
+            "base": 2.79,
+            "optimista": 16.31
           },
           {
             "mes": 4,
-            "pesimista": -10.02,
-            "base": 4.04,
-            "optimista": 19.79
+            "pesimista": -10.09,
+            "base": 3.97,
+            "optimista": 19.72
           },
           {
             "mes": 5,
-            "pesimista": -10.24,
-            "base": 4.98,
-            "optimista": 23.69
+            "pesimista": -10.33,
+            "base": 4.89,
+            "optimista": 23.59
           },
           {
             "mes": 6,
-            "pesimista": -10.48,
-            "base": 6.84,
-            "optimista": 27.04
+            "pesimista": -10.59,
+            "base": 6.73,
+            "optimista": 26.92
           },
           {
             "mes": 7,
-            "pesimista": -10.97,
-            "base": 7.67,
-            "optimista": 29.63
+            "pesimista": -11.09,
+            "base": 7.54,
+            "optimista": 29.49
           },
           {
             "mes": 8,
-            "pesimista": -11.02,
-            "base": 9.0,
-            "optimista": 32.66
+            "pesimista": -11.16,
+            "base": 8.85,
+            "optimista": 32.49
           },
           {
             "mes": 9,
-            "pesimista": -11.19,
-            "base": 9.94,
-            "optimista": 35.06
+            "pesimista": -11.35,
+            "base": 9.76,
+            "optimista": 34.87
           },
           {
             "mes": 10,
-            "pesimista": -11.4,
-            "base": 10.92,
-            "optimista": 38.78
+            "pesimista": -11.57,
+            "base": 10.72,
+            "optimista": 38.55
           },
           {
             "mes": 11,
-            "pesimista": -11.25,
-            "base": 12.47,
-            "optimista": 41.44
+            "pesimista": -11.44,
+            "base": 12.25,
+            "optimista": 41.19
           },
           {
             "mes": 12,
-            "pesimista": -10.89,
-            "base": 13.9,
-            "optimista": 43.96
+            "pesimista": -11.1,
+            "base": 13.66,
+            "optimista": 43.68
           }
         ]
       }
@@ -1243,9 +1243,9 @@
       "title": "Brasil Select",
       "risk": "Agresivo",
       "rendimientos": {
-        "ytd": -10.59,
-        "1y": -9.05,
-        "3y": 15.06
+        "ytd": -9.06,
+        "1y": -9.1,
+        "3y": 16.57
       },
       "historial_anual": {
         "2023": 48.29,
@@ -1253,90 +1253,90 @@
         "2025": 59.21
       },
       "metricas": {
-        "volatilidad_anual": 30.63,
-        "sharpe_ratio": 0.2
+        "volatilidad_anual": 30.75,
+        "sharpe_ratio": 0.21
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 10.7% · mu_LP: 9% · mu_final: 9.7% · sigma_anual: 30.6%",
-        "mu_historico": 10.74,
+        "metodologia": "GBM reversión a media — mu_hist: 10.9% · mu_LP: 9% · mu_final: 9.7% · sigma_anual: 30.7%",
+        "mu_historico": 10.87,
         "mu_largo_plazo": 9.0,
-        "mu_final": 9.7,
-        "pesimista": -14.83,
-        "base": 4.78,
-        "optimista": 27.68,
+        "mu_final": 9.75,
+        "pesimista": -14.88,
+        "base": 4.79,
+        "optimista": 27.79,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -5.69,
+            "pesimista": -5.71,
             "base": 0.13,
-            "optimista": 6.21
+            "optimista": 6.23
           },
           {
             "mes": 2,
-            "pesimista": -7.64,
+            "pesimista": -7.67,
             "base": 0.41,
-            "optimista": 9.18
+            "optimista": 9.21
           },
           {
             "mes": 3,
-            "pesimista": -9.41,
-            "base": 0.79,
-            "optimista": 11.86
+            "pesimista": -9.44,
+            "base": 0.8,
+            "optimista": 11.91
           },
           {
             "mes": 4,
-            "pesimista": -10.43,
+            "pesimista": -10.47,
             "base": 1.25,
-            "optimista": 14.04
+            "optimista": 14.09
           },
           {
             "mes": 5,
-            "pesimista": -11.09,
+            "pesimista": -11.13,
             "base": 1.48,
-            "optimista": 16.55
+            "optimista": 16.61
           },
           {
             "mes": 6,
-            "pesimista": -11.75,
-            "base": 2.45,
-            "optimista": 18.58
+            "pesimista": -11.8,
+            "base": 2.46,
+            "optimista": 18.65
           },
           {
             "mes": 7,
-            "pesimista": -12.62,
-            "base": 2.59,
-            "optimista": 19.98
+            "pesimista": -12.67,
+            "base": 2.6,
+            "optimista": 20.07
           },
           {
             "mes": 8,
-            "pesimista": -13.12,
-            "base": 3.11,
-            "optimista": 21.7
+            "pesimista": -13.17,
+            "base": 3.12,
+            "optimista": 21.79
           },
           {
             "mes": 9,
-            "pesimista": -13.72,
-            "base": 3.31,
-            "optimista": 22.91
+            "pesimista": -13.77,
+            "base": 3.32,
+            "optimista": 23.01
           },
           {
             "mes": 10,
-            "pesimista": -14.34,
-            "base": 3.54,
-            "optimista": 25.1
+            "pesimista": -14.4,
+            "base": 3.55,
+            "optimista": 25.2
           },
           {
             "mes": 11,
-            "pesimista": -14.67,
-            "base": 4.21,
-            "optimista": 26.45
+            "pesimista": -14.73,
+            "base": 4.22,
+            "optimista": 26.56
           },
           {
             "mes": 12,
-            "pesimista": -14.83,
-            "base": 4.78,
-            "optimista": 27.68
+            "pesimista": -14.88,
+            "base": 4.79,
+            "optimista": 27.79
           }
         ]
       }
@@ -1346,9 +1346,9 @@
       "title": "LATAM & Emergentes",
       "risk": "Agresivo",
       "rendimientos": {
-        "ytd": -14.56,
-        "1y": -16.34,
-        "3y": 33.0
+        "ytd": -15.65,
+        "1y": -17.6,
+        "3y": 30.19
       },
       "historial_anual": {
         "2023": 29.75,
@@ -1356,90 +1356,90 @@
         "2025": 58.53
       },
       "metricas": {
-        "volatilidad_anual": 25.78,
-        "sharpe_ratio": 0.43
+        "volatilidad_anual": 25.82,
+        "sharpe_ratio": 0.42
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 15.5% · mu_LP: 9% · mu_final: 11.6% · sigma_anual: 25.8%",
-        "mu_historico": 15.47,
+        "metodologia": "GBM reversión a media — mu_hist: 15.2% · mu_LP: 9% · mu_final: 11.5% · sigma_anual: 25.8%",
+        "mu_historico": 15.23,
         "mu_largo_plazo": 9.0,
-        "mu_final": 11.59,
-        "pesimista": -9.02,
-        "base": 8.31,
-        "optimista": 27.92,
+        "mu_final": 11.49,
+        "pesimista": -9.14,
+        "base": 8.2,
+        "optimista": 27.81,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -4.49,
-            "base": 0.45,
+            "pesimista": -4.5,
+            "base": 0.44,
             "optimista": 5.56
           },
           {
             "mes": 2,
-            "pesimista": -5.84,
-            "base": 1.03,
-            "optimista": 8.4
+            "pesimista": -5.87,
+            "base": 1.01,
+            "optimista": 8.39
           },
           {
             "mes": 3,
-            "pesimista": -7.04,
-            "base": 1.69,
-            "optimista": 11.01
+            "pesimista": -7.08,
+            "base": 1.66,
+            "optimista": 11.0
           },
           {
             "mes": 4,
-            "pesimista": -7.62,
-            "base": 2.42,
-            "optimista": 13.21
+            "pesimista": -7.67,
+            "base": 2.39,
+            "optimista": 13.19
           },
           {
             "mes": 5,
-            "pesimista": -7.87,
-            "base": 2.97,
-            "optimista": 15.69
+            "pesimista": -7.93,
+            "base": 2.92,
+            "optimista": 15.66
           },
           {
             "mes": 6,
-            "pesimista": -8.15,
-            "base": 4.15,
-            "optimista": 17.78
+            "pesimista": -8.21,
+            "base": 4.1,
+            "optimista": 17.75
           },
           {
             "mes": 7,
-            "pesimista": -8.6,
-            "base": 4.62,
-            "optimista": 19.36
+            "pesimista": -8.68,
+            "base": 4.55,
+            "optimista": 19.31
           },
           {
             "mes": 8,
-            "pesimista": -8.73,
-            "base": 5.42,
-            "optimista": 21.21
+            "pesimista": -8.82,
+            "base": 5.35,
+            "optimista": 21.15
           },
           {
             "mes": 9,
-            "pesimista": -8.95,
-            "base": 5.95,
-            "optimista": 22.63
+            "pesimista": -9.05,
+            "base": 5.87,
+            "optimista": 22.57
           },
           {
             "mes": 10,
-            "pesimista": -9.2,
-            "base": 6.51,
-            "optimista": 24.89
+            "pesimista": -9.31,
+            "base": 6.42,
+            "optimista": 24.81
           },
           {
             "mes": 11,
-            "pesimista": -9.19,
-            "base": 7.45,
-            "optimista": 26.45
+            "pesimista": -9.3,
+            "base": 7.35,
+            "optimista": 26.36
           },
           {
             "mes": 12,
-            "pesimista": -9.02,
-            "base": 8.31,
-            "optimista": 27.92
+            "pesimista": -9.14,
+            "base": 8.2,
+            "optimista": 27.81
           }
         ]
       }
@@ -1449,9 +1449,9 @@
       "title": "China Tech & Consumer",
       "risk": "Agresivo",
       "rendimientos": {
-        "ytd": -11.82,
-        "1y": -16.2,
-        "3y": 38.56
+        "ytd": -18.1,
+        "1y": -22.1,
+        "3y": 27.44
       },
       "historial_anual": {
         "2023": 0.96,
@@ -1459,90 +1459,90 @@
         "2025": 51.8
       },
       "metricas": {
-        "volatilidad_anual": 29.83,
-        "sharpe_ratio": 0.42
+        "volatilidad_anual": 29.74,
+        "sharpe_ratio": 0.33
       },
       "proyeccion_1y": {
         "horizonte": "1 año",
-        "metodologia": "GBM reversión a media — mu_hist: 17.0% · mu_LP: 9% · mu_final: 12.2% · sigma_anual: 29.8%",
-        "mu_historico": 17.01,
+        "metodologia": "GBM reversión a media — mu_hist: 14.5% · mu_LP: 9% · mu_final: 11.2% · sigma_anual: 29.7%",
+        "mu_historico": 14.46,
         "mu_largo_plazo": 9.0,
-        "mu_final": 12.21,
-        "pesimista": -11.97,
-        "base": 7.71,
-        "optimista": 30.58,
+        "mu_final": 11.18,
+        "pesimista": -12.78,
+        "base": 6.65,
+        "optimista": 29.21,
         "fan": [
           {
             "mes": 1,
-            "pesimista": -5.32,
-            "base": 0.37,
-            "optimista": 6.3
+            "pesimista": -5.38,
+            "base": 0.28,
+            "optimista": 6.19
           },
           {
             "mes": 2,
-            "pesimista": -7.0,
-            "base": 0.88,
-            "optimista": 9.45
+            "pesimista": -7.13,
+            "base": 0.72,
+            "optimista": 9.24
           },
           {
             "mes": 3,
-            "pesimista": -8.52,
-            "base": 1.5,
-            "optimista": 12.34
+            "pesimista": -8.71,
+            "base": 1.25,
+            "optimista": 12.02
           },
           {
             "mes": 4,
-            "pesimista": -9.31,
-            "base": 2.19,
-            "optimista": 14.74
+            "pesimista": -9.57,
+            "base": 1.85,
+            "optimista": 14.32
           },
           {
             "mes": 5,
-            "pesimista": -9.74,
-            "base": 2.67,
-            "optimista": 17.48
+            "pesimista": -10.07,
+            "base": 2.24,
+            "optimista": 16.95
           },
           {
             "mes": 6,
-            "pesimista": -10.18,
-            "base": 3.88,
-            "optimista": 19.77
+            "pesimista": -10.58,
+            "base": 3.36,
+            "optimista": 19.12
           },
           {
             "mes": 7,
-            "pesimista": -10.83,
-            "base": 4.26,
-            "optimista": 21.44
+            "pesimista": -11.3,
+            "base": 3.66,
+            "optimista": 20.68
           },
           {
             "mes": 8,
-            "pesimista": -11.11,
-            "base": 5.03,
-            "optimista": 23.43
+            "pesimista": -11.65,
+            "base": 4.33,
+            "optimista": 22.55
           },
           {
             "mes": 9,
-            "pesimista": -11.49,
-            "base": 5.48,
-            "optimista": 24.93
+            "pesimista": -12.1,
+            "base": 4.7,
+            "optimista": 23.93
           },
           {
             "mes": 10,
-            "pesimista": -11.91,
-            "base": 5.96,
-            "optimista": 27.39
+            "pesimista": -12.58,
+            "base": 5.09,
+            "optimista": 26.27
           },
           {
             "mes": 11,
-            "pesimista": -12.02,
-            "base": 6.89,
-            "optimista": 29.05
+            "pesimista": -12.77,
+            "base": 5.92,
+            "optimista": 27.8
           },
           {
             "mes": 12,
-            "pesimista": -11.97,
-            "base": 7.71,
-            "optimista": 30.58
+            "pesimista": -12.78,
+            "base": 6.65,
+            "optimista": 29.21
           }
         ]
       }
